@@ -3,10 +3,11 @@ import { useState } from "react";
 function App() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loadingQuestion, setLoadingQuestion] = useState(false);
+  const [loadingAnswer, setLoadingAnswer] = useState(false);
 
   const getQuestion = async () => {
-    setLoading(true);
+    setLoadingQuestion(true);
     setAnswer("");
     setQuestion("");
     try {
@@ -20,11 +21,11 @@ function App() {
     } catch (error) {
       console.log("Error:", error);
     }
-    setLoading(false);
+    setLoadingQuestion(false);
   };
 
   const getAnswer = async () => {
-    setLoading(true);
+    setLoadingAnswer(true);
     try {
       const res = await fetch("/api/question", {
         method: "POST",
@@ -36,7 +37,7 @@ function App() {
     } catch (error) {
       console.log("Error:", error);
     }
-    setLoading(false);
+    setLoadingAnswer(false);
   };
 
   return (
@@ -48,16 +49,16 @@ function App() {
         </div>
 
         <div style={styles.card}>
-          <button onClick={getQuestion} disabled={loading} style={styles.primaryButton}>
-            {loading ? "Loading..." : "Get Question"}
+          <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} style={styles.primaryButton}>
+            {loadingQuestion ? "Loading..." : "Get Question"}
           </button>
 
           {question && (
             <div style={styles.section}>
               <p style={styles.label}>QUESTION</p>
               <p style={styles.text}>{question}</p>
-              <button onClick={getAnswer} disabled={loading} style={styles.secondaryButton}>
-                {loading ? "Loading..." : "Show Answer"}
+              <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer} style={styles.secondaryButton}>
+                {loadingAnswer ? "Loading..." : "Show Answer"}
               </button>
             </div>
           )}
