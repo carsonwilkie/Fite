@@ -47,7 +47,7 @@ function App() {
         body: JSON.stringify({ type: "answer", question }),
       });
       const data = await res.json();
-      setAnswer(data.result);
+      setAnswer((current) => current || data.result);
     } catch (error) {
       console.log("Error:", error);
     }
