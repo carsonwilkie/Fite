@@ -1,19 +1,19 @@
-import OpenAI from "openai";
+const OpenAI = require("openai");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { type } = req.body;
+  const { type, question } = req.body;
 
   const prompt =
     type === "answer"
-      ? `Give a thorough but concise answer to this finance interview question: ${req.body.question}`
+      ? `Give a thorough but concise answer to this finance interview question: ${question}`
       : "Give me a finance interview question. Just the question, nothing else.";
 
   try {
@@ -27,4 +27,4 @@ export default async function handler(req, res) {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
