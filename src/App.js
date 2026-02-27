@@ -49,11 +49,13 @@ function App() {
       </div>
       <div style={styles.container}>
         <div style={styles.header}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <img src="/favicon.png" alt="logo" style={{ height: "40px", width: "40px" }} />
-            <h1 style={styles.logo}>Fite Finance</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <img src="/favicon.png" alt="logo" style={{ height: "64px", width: "64px" }} />
+            <div>
+              <h1 style={styles.logo}>Fite Finance</h1>
+              <p style={styles.tagline}>The finance site sharpening your interview skills</p>
+            </div>
           </div>
-          <p style={styles.tagline}>The finance site sharpening your interview skills</p>
         </div>
 
         <div style={styles.card}>
