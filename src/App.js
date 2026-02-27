@@ -71,7 +71,7 @@ function App() {
         </div>
 
         <div style={styles.card}>
-          <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} style={styles.primaryButton} className="primary-btn">
+          <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
             {loadingQuestion ? "Loading..." : "Get Question"}
           </button>
 
@@ -79,7 +79,7 @@ function App() {
             <div style={styles.section}>
               <p style={styles.label}>QUESTION</p>
               <p style={styles.text}>{question}</p>
-              <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer} style={styles.secondaryButton} className="secondary-btn">
+              <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer} className="secondary-btn">
                 {loadingAnswer ? "Loading..." : "Show Answer"}
               </button>
             </div>
