@@ -20,6 +20,14 @@ function App() {
       });
       const data = await res.json();
       setQuestion(data.result);
+      // Preload the answer in the background
+      fetch("/api/question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "answer", question: data.result }),
+      })
+        .then((res) => res.json())
+        .then((data) => setAnswer(data.result));
     } catch (error) {
       console.log("Error:", error);
     }
@@ -27,6 +35,7 @@ function App() {
   };
 
   const getAnswer = async () => {
+    if (answer) return;
     setLoadingAnswer(true);
     try {
       const res = await fetch("/api/question", {
@@ -41,6 +50,10 @@ function App() {
     }
     setLoadingAnswer(false);
   };
+
+```
+The logic here is: when a question loads, it immediately fires off the answer call in the background. If the answer is already ready by the time the user clicks "Show Answer" it displays instantly. If they click before it's done, it falls back to waiting for it normally.
+```
 
   return (
     <div style={styles.page}>
