@@ -44,7 +44,7 @@ function App() {
       <div style={styles.container}>
         <div style={styles.header}>
           <h1 style={styles.logo}>Fite Finance</h1>
-          <p style={styles.tagline}>Fite finance with this finance site</p>
+          <p style={styles.tagline}>The finance site sharpening your interview skills</p>
         </div>
 
         <div style={styles.card}>
