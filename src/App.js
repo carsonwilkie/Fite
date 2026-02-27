@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 function App() {
   const [question, setQuestion] = useState("");
@@ -66,7 +67,7 @@ function App() {
           {answer && (
             <div style={styles.section}>
               <p style={styles.label}>ANSWER</p>
-              <p style={styles.text}>{answer}</p>
+              <ReactMarkdown style={styles.text}>{answer}</ReactMarkdown>
             </div>
           )}
         </div>
