@@ -44,6 +44,9 @@ function App() {
 
   return (
     <div style={styles.page}>
+      <div style={styles.navbar}>
+        <img src="/favicon.png" alt="logo" style={{ height: "36px", width: "36px" }} />
+      </div>
       <div style={styles.container}>
         <div style={styles.header}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -154,6 +157,12 @@ const styles = {
     color: "#1a1a2e",
     lineHeight: "1.7",
     margin: 0,
+  },
+  navbar: {
+    position: "fixed",
+    top: "0",
+    right: "0",
+    padding: "16px 24px",
   },
 };
 
