@@ -16,7 +16,6 @@ function App() {
         body: JSON.stringify({ type: "question" }),
       });
       const data = await res.json();
-      console.log("Response data:", data);
       setQuestion(data.result);
     } catch (error) {
       console.log("Error:", error);
@@ -26,41 +25,130 @@ function App() {
 
   const getAnswer = async () => {
     setLoading(true);
-    const res = await fetch("/api/question", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "answer", question }),
-    });
-    const data = await res.json();
-    setAnswer(data.result);
+    try {
+      const res = await fetch("/api/question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "answer", question }),
+      });
+      const data = await res.json();
+      setAnswer(data.result);
+    } catch (error) {
+      console.log("Error:", error);
+    }
     setLoading(false);
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "60px auto", fontFamily: "sans-serif", padding: "0 20px" }}>
-      <h1>Fite — Finance Interview Practice</h1>
-      <button onClick={getQuestion} disabled={loading}>
-        {loading ? "Loading..." : "Get Question"}
-      </button>
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <div style={styles.header}>
+          <h1 style={styles.logo}>Fite Finance</h1>
+          <p style={styles.tagline}>Sharpen your finance interview skills</p>
+        </div>
 
-      {question && (
-        <div style={{ marginTop: "30px" }}>
-          <h3>Question:</h3>
-          <p>{question}</p>
-          <button onClick={getAnswer} disabled={loading}>
-            {loading ? "Loading..." : "Show Answer"}
+        <div style={styles.card}>
+          <button onClick={getQuestion} disabled={loading} style={styles.primaryButton}>
+            {loading ? "Loading..." : "Get Question"}
           </button>
-        </div>
-      )}
 
-      {answer && (
-        <div style={{ marginTop: "30px" }}>
-          <h3>Answer:</h3>
-          <p>{answer}</p>
+          {question && (
+            <div style={styles.section}>
+              <p style={styles.label}>QUESTION</p>
+              <p style={styles.text}>{question}</p>
+              <button onClick={getAnswer} disabled={loading} style={styles.secondaryButton}>
+                {loading ? "Loading..." : "Show Answer"}
+              </button>
+            </div>
+          )}
+
+          {answer && (
+            <div style={styles.section}>
+              <p style={styles.label}>ANSWER</p>
+              <p style={styles.text}>{answer}</p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
+
+const styles = {
+  page: {
+    minHeight: "100vh",
+    backgroundColor: "#f0f4f8",
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "center",
+    padding: "60px 20px",
+    fontFamily: "'Segoe UI', sans-serif",
+  },
+  container: {
+    width: "100%",
+    maxWidth: "680px",
+  },
+  header: {
+    marginBottom: "32px",
+  },
+  logo: {
+    fontSize: "32px",
+    fontWeight: "700",
+    color: "#0a2463",
+    margin: "0 0 6px 0",
+  },
+  tagline: {
+    fontSize: "15px",
+    color: "#4a6fa5",
+    margin: 0,
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
+    padding: "36px",
+    boxShadow: "0 2px 16px rgba(10, 36, 99, 0.08)",
+  },
+  primaryButton: {
+    backgroundColor: "#0a2463",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "8px",
+    padding: "14px 28px",
+    fontSize: "15px",
+    fontWeight: "600",
+    cursor: "pointer",
+    width: "100%",
+  },
+  secondaryButton: {
+    backgroundColor: "#ffffff",
+    color: "#0a2463",
+    border: "2px solid #0a2463",
+    borderRadius: "8px",
+    padding: "12px 28px",
+    fontSize: "15px",
+    fontWeight: "600",
+    cursor: "pointer",
+    width: "100%",
+    marginTop: "16px",
+  },
+  section: {
+    marginTop: "28px",
+    borderTop: "1px solid #e8edf5",
+    paddingTop: "24px",
+  },
+  label: {
+    fontSize: "11px",
+    fontWeight: "700",
+    color: "#4a6fa5",
+    letterSpacing: "1.2px",
+    margin: "0 0 10px 0",
+  },
+  text: {
+    fontSize: "16px",
+    color: "#1a1a2e",
+    lineHeight: "1.7",
+    margin: 0,
+  },
+};
 
 export default App;
