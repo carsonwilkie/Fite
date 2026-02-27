@@ -77,3 +77,10 @@ body {
   background-color: #0a2463;
   color: #ffffff;
 }
+
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #ffffff;
+  color: #0a2463;
+}
