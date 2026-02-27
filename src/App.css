@@ -18,7 +18,7 @@ body {
 }
 
 .markdown ul, .markdown ol {
-  margin: 2px 0;
+  margin: 1px 0;
   padding-left: 16px;
 }
 
@@ -31,9 +31,9 @@ body {
   font-size: 15px;
   color: #1a1a2e;
   line-height: 1.4;
-  margin: 3px 0;
+  margin: 2px 0;
 }
 
 .markdown li li {
-  margin: 1px 0;
+  margin: 3px 0;
 }
