@@ -57,6 +57,7 @@ function App() {
 
   return (
     <div style={styles.page}>
+      <Analytics />
       <div style={styles.navbar}>
         <img src="/favicon.png" alt="logo" style={{ height: "36px", width: "36px" }} />
       </div>
