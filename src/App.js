@@ -51,10 +51,6 @@ function App() {
     setLoadingAnswer(false);
   };
 
-```
-The logic here is: when a question loads, it immediately fires off the answer call in the background. If the answer is already ready by the time the user clicks "Show Answer" it displays instantly. If they click before it's done, it falls back to waiting for it normally.
-```
-
   return (
     <div style={styles.page}>
       <div style={styles.navbar}>
