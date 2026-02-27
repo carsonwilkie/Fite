@@ -46,7 +46,10 @@ function App() {
     <div style={styles.page}>
       <div style={styles.container}>
         <div style={styles.header}>
-          <h1 style={styles.logo}>Fite Finance</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <img src="/favicon.png" alt="logo" style={{ height: "40px", width: "40px" }} />
+            <h1 style={styles.logo}>Fite Finance</h1>
+          </div>
           <p style={styles.tagline}>The finance site sharpening your interview skills</p>
         </div>
 
