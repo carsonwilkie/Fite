@@ -79,7 +79,7 @@ function App() {
             <div style={styles.section}>
               <p style={styles.label}>QUESTION</p>
               <p style={styles.text}>{question}</p>
-              <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer} className="secondary-btn">
+              <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed} className="secondary-btn">
                 {loadingAnswer ? "Loading..." : "Show Answer"}
               </button>
             </div>
