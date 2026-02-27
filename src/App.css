@@ -74,7 +74,7 @@ body {
 }
 
 .secondary-btn:hover:not(:disabled) {
-  background-color: #0a2463;
+  background-color: #cccccc;
   color: #ffffff;
 }
 
