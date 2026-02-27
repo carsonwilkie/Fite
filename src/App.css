@@ -41,3 +41,20 @@ body {
 .markdown li > p {
   margin: 0;
 }
+
+.primary-btn {
+  transition: background-color 0.2s;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background-color: #1a3a7c;
+}
+
+.secondary-btn {
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.secondary-btn:hover:not(:disabled) {
+  background-color: #0a2463;
+  color: #ffffff;
+}

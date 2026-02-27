@@ -7,10 +7,12 @@ function App() {
   const [answer, setAnswer] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState(false);
   const [loadingAnswer, setLoadingAnswer] = useState(false);
+  const [answerRevealed, setAnswerRevealed] = useState(false);
 
   const getQuestion = async () => {
     setLoadingQuestion(true);
     setAnswer("");
+    setAnswerRevealed(false);
     setQuestion("");
     try {
       const res = await fetch("/api/question", {
@@ -35,6 +37,7 @@ function App() {
   };
 
   const getAnswer = async () => {
+    setAnswerRevealed(true);
     if (answer) return;
     setLoadingAnswer(true);
     try {
@@ -68,7 +71,7 @@ function App() {
         </div>
 
         <div style={styles.card}>
-          <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} style={styles.primaryButton}>
+          <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} style={styles.primaryButton} className="primary-btn">
             {loadingQuestion ? "Loading..." : "Get Question"}
           </button>
 
@@ -76,13 +79,13 @@ function App() {
             <div style={styles.section}>
               <p style={styles.label}>QUESTION</p>
               <p style={styles.text}>{question}</p>
-              <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer} style={styles.secondaryButton}>
+              <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer} style={styles.secondaryButton} className="secondary-btn">
                 {loadingAnswer ? "Loading..." : "Show Answer"}
               </button>
             </div>
           )}
 
-          {answer && (
+          {answerRevealed && answer && (
             <div style={styles.section}>
               <p style={styles.label}>ANSWER</p>
               <ReactMarkdown className="markdown">{answer}</ReactMarkdown>
