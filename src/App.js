@@ -9,13 +9,18 @@ function App() {
     setLoading(true);
     setAnswer("");
     setQuestion("");
-    const res = await fetch("/api/question", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "question" }),
-    });
-    const data = await res.json();
-    setQuestion(data.result);
+    try {
+      const res = await fetch("/api/question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "question" }),
+      });
+      const data = await res.json();
+      console.log("Response data:", data);
+      setQuestion(data.result);
+    } catch (error) {
+      console.log("Error:", error);
+    }
     setLoading(false);
   };
 
