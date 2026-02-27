@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import "./App.css";
+import { Analytics } from "@vercel/analytics/react"
 
 function App() {
   const [question, setQuestion] = useState("");
