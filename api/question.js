@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
   const prompt =
     type === "answer"
         ? `Give a thorough but concise answer to this finance interview question: ${question}. Format your response using markdown with bold headers and bullet points where appropriate. Do not use LaTeX or math notation — write all formulas and equations in plain text. Do not include any introductory or closing remarks — just the answer itself.`
-        : `Give me a finance interview question ${categoryText} ${difficultyText}. Just the question, nothing else.`
+        : `Give me a specific, technical finance interview question ${categoryText} ${difficultyText}. The question should be detailed and scenario-based rather than a simple definition question. For example, instead of "what is a DCF?" ask something like "walk me through how you would build a DCF for a company with negative free cash flow." Just the question, nothing else.`
         
 
   try {
