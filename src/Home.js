@@ -19,6 +19,7 @@ const difficulties = ["Easy", "Medium", "Hard"];
 function Home() {
   const navigate = useNavigate();
   const [difficulty, setDifficulty] = useState("Medium");
+  const [math, setMath] = useState("No Math");
 
   return (
     <div style={styles.page}>
@@ -47,13 +48,26 @@ function Home() {
             ))}
           </div>
 
+          <p style={{ ...styles.prompt, marginTop: "24px" }}>Math or no math:</p>
+          <div style={styles.difficultyRow}>
+            {["With Math", "No Math"].map((m) => (
+              <button
+                key={m}
+                onClick={() => setMath(m)}
+                className={`difficulty-btn ${math === m ? "difficulty-btn-active" : ""}`}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+
           <p style={{ ...styles.prompt, marginTop: "24px" }}>Select a category to get started:</p>
           <div style={styles.grid}>
             {categories.map((cat) => (
               <button
                 key={cat}
                 className="category-btn"
-                onClick={() => navigate(`/questions/${encodeURIComponent(cat)}/${encodeURIComponent(difficulty)}`)}
+                onClick={() => navigate(`/questions/${encodeURIComponent(cat)}/${encodeURIComponent(difficulty)}/${encodeURIComponent(math)}`)}
               >
                 {cat}
               </button>
