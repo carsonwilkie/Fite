@@ -11,7 +11,7 @@ function Success() {
   const isPaid = usePaidStatus();
 
   return (
-    <div style={styles.page}>
+    <div style={{ ...styles.page, backgroundColor: isPaid ? "#1a1400" : "#f0f4f8" }}>
       <div style={styles.container}>
         <div style={styles.navbar}>
             <SignedIn>
@@ -25,14 +25,18 @@ function Success() {
                 </SignInButton>
             </SignedOut>
         </div>
-        <div style={styles.header}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <img src="/favicon.png" alt="logo" style={{ height: "64px", width: "64px" }} />
-            <div>
-              <h1 style={styles.logo}>Fite Finance</h1>
-              <p style={styles.tagline}>The finance site sharpening your interview skills</p>
-            </div>
-          </div>
+        <img
+            src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
+            alt="logo"
+            style={{ height: "64px", width: "64px" }}
+        />
+        <div>
+            <h1 style={{ ...styles.logo, color: isPaid ? "#c9a84c" : "#0a2463" }}>
+                Fite Finance {isPaid && <span style={{ fontSize: "14px", fontWeight: "600" }}>⭐ Premium</span>}
+            </h1>
+            <p style={{ ...styles.tagline, color: isPaid ? "#c9a84c" : "#4a6fa5" }}>
+                The finance site sharpening your interview skills
+            </p>
         </div>
 
         <div style={styles.card}>
@@ -55,7 +59,7 @@ function Success() {
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundColor: isPaid ? "#1a1400" : "#f0f4f8",
+    backgroundColor: "#f0f4f8",
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",

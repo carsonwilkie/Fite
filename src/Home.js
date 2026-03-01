@@ -25,7 +25,7 @@ function Home() {
   const [math, setMath] = useState("No Math");
 
   return (
-    <div style={styles.page}>
+    <div style={{ ...styles.page, backgroundColor: isPaid ? "#1a1400" : "#f0f4f8" }}>
       <div style={styles.navbar}>
         <SignedOut>
           <SignInButton mode="modal">
@@ -106,7 +106,7 @@ function Home() {
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundColor: isPaid ? "#1a1400" : "#f0f4f8",
+    backgroundColor: "#f0f4f8",
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",
