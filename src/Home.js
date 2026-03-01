@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
+import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/clerk-react";
 import "./App.css";
 
 const categories = [
@@ -23,6 +24,18 @@ function Home() {
 
   return (
     <div style={styles.page}>
+      <div style={styles.navbar}>
+        <SignedOut>
+          <SignInButton mode="modal">
+            <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
+              Sign In
+            </button>
+          </SignInButton>
+        </SignedOut>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+      </div>
       <div style={styles.container}>
         <div style={styles.header}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -128,6 +141,12 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: "12px",
+  },
+  navbar: {
+    position: "fixed",
+    top: "0",
+    right: "0",
+    padding: "16px 24px",
   },
 };
 
