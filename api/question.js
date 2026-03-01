@@ -15,10 +15,13 @@ module.exports = async function handler(req, res) {
     ? `in the field of ${req.body.category}`
     : "across any finance field including investment banking, private equity, asset management, accounting, financial modeling, valuation, or sales and trading";
 
+  const difficultyText = req.body.difficulty ? `at a ${req.body.difficulty} difficulty level` : "";
+    
   const prompt =
     type === "answer"
         ? `Give a thorough but concise answer to this finance interview question: ${question}. Format your response using markdown with bold headers and bullet points where appropriate. Do not use LaTeX or math notation — write all formulas and equations in plain text. Do not include any introductory or closing remarks — just the answer itself.`
-        : `Give me a finance interview question ${categoryText}. Just the question, nothing else.`;
+        : `Give me a finance interview question ${categoryText} ${difficultyText}. Just the question, nothing else.`
+        
 
   try {
     const completion = await openai.chat.completions.create({

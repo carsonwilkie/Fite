@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import "./App.css";
 
 function Questions() {
-  const { category } = useParams();
+  const { category, difficulty } = useParams();
   const navigate = useNavigate();
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -22,14 +22,14 @@ function Questions() {
       const res = await fetch("/api/question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "question", category }),
+        body: JSON.stringify({ type: "question", category, difficulty }),
       });
       const data = await res.json();
       setQuestion(data.result);
       fetch("/api/question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "answer", question: data.result, category }),
+        body: JSON.stringify({ type: "answer", question: data.result, category, difficulty }),
       })
         .then((res) => res.json())
         .then((data) => setAnswer(data.result));
@@ -47,7 +47,7 @@ function Questions() {
       const res = await fetch("/api/question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "answer", question, category }),
+        body: JSON.stringify({ type: "answer", question, category, difficulty }),
       });
       const data = await res.json();
       setAnswer((current) => current || data.result);
