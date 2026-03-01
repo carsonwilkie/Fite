@@ -142,11 +142,10 @@ function Questions() {
                 <p style={styles.text}>{question}</p>
                 {question.includes("Upgrade to premium") ? (
                     <button
-                        className="primary-btn"
-                        style={{ marginTop: "16px" }}
+                        className="upgrade-btn"
                         onClick={handleUpgrade}
                     >
-                        Upgrade for $2/month
+                        ⭐ Upgrade for $2/month
                     </button>
                 ) : (
                     <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed} className="secondary-btn">
