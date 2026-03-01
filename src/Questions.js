@@ -77,6 +77,13 @@ function Questions() {
           <div style={styles.categoryHeader}>
             <button onClick={() => navigate("/")} className="back-btn">← Back</button>
             <p style={styles.categoryLabel}>{decodeURIComponent(category)}</p>
+            <span style={{
+                ...styles.mathBadge,
+                backgroundColor: decodeURIComponent(math) === "With Math" ? "#0a2463" : "#e8edf5",
+                color: decodeURIComponent(math) === "With Math" ? "#ffffff" : "#4a6fa5",
+            }}>
+                {decodeURIComponent(math)}
+            </span>
           </div>
 
           <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
@@ -175,6 +182,13 @@ const styles = {
     top: "0",
     right: "0",
     padding: "16px 24px",
+  },
+  mathBadge: {
+    fontSize: "11px",
+    fontWeight: "700",
+    letterSpacing: "0.8px",
+    padding: "4px 10px",
+    borderRadius: "20px",
   },
 };
 
