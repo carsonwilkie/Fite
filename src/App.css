@@ -155,13 +155,15 @@ body {
   cursor: pointer;
   width: 100%;
   margin-top: 16px;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, box-shadow 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  box-shadow: 0 0 12px rgba(201, 168, 76, 0.6);
 }
 
 .upgrade-btn:hover {
   background-color: #b8943e;
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.9);
 }
