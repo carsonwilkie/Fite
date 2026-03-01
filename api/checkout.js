@@ -27,6 +27,7 @@ module.exports = async function handler(req, res) {
 
     res.status(200).json({ url: session.url });
   } catch (error) {
+    console.error("Checkout error:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
