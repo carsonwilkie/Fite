@@ -84,3 +84,17 @@ body {
   background-color: #ffffff;
   color: #0a2463;
 }
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #4a6fa5;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.back-btn:hover {
+  color: #0a2463;
+}
