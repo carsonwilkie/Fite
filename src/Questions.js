@@ -13,26 +13,53 @@ function Questions() {
   const [loadingAnswer, setLoadingAnswer] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
 
+  const saveQuestion = (q) => {
+    const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
+    history.push({ question: q, timestamp: Date.now() });
+    localStorage.setItem("questionHistory", JSON.stringify(history));
+  };
+
+  const wasRecentlyAsked = (q) => {
+    const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
+    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    return history.some(
+      (item) => item.question === q && item.timestamp > oneDayAgo
+    );
+  };
+
   const getQuestion = async () => {
     setLoadingQuestion(true);
     setAnswer("");
     setAnswerRevealed(false);
     setQuestion("");
     try {
-      const res = await fetch("/api/question", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "question", category, difficulty, math }),
-      });
-      const data = await res.json();
-      setQuestion(data.result);
-      fetch("/api/question", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "answer", question: data.result, category, difficulty, math }),
-      })
-        .then((res) => res.json())
-        .then((data) => setAnswer(data.result));
+      let newQuestion = null;
+      let attempts = 0;
+      while (!newQuestion && attempts < 5) {
+        const res = await fetch("/api/question", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "question", category, difficulty, math }),
+        });
+        const data = await res.json();
+        if (!wasRecentlyAsked(data.result)) {
+          newQuestion = data.result;
+        }
+        attempts++;
+      }
+      if (newQuestion) {
+        saveQuestion(newQuestion);
+        setQuestion(newQuestion);
+        fetch("/api/question", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "answer", question: newQuestion, category, difficulty, math }),
+        })
+          .then((res) => res.json())
+          .then((data) => setAnswer(data.result));
+      } else {
+        setQuestion("You've seen all recent questions in this category! Try a different category or check back tomorrow.");
+      }
     } catch (error) {
       console.log("Error:", error);
     }
