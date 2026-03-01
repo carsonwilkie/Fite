@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { Analytics } from "@vercel/analytics/react";
 import { useUser } from "@clerk/clerk-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import usePaidStatus from "./usePaidStatus";
 import "./App.css";
 
 function Questions() {
@@ -15,6 +16,7 @@ function Questions() {
   const [loadingAnswer, setLoadingAnswer] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const { user } = useUser();
+  const isPaid = usePaidStatus();
 
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");

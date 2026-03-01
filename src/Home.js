@@ -20,9 +20,9 @@ const difficulties = ["Easy", "Medium", "Hard"];
 
 function Home() {
   const navigate = useNavigate();
+  const isPaid = usePaidStatus();
   const [difficulty, setDifficulty] = useState("Medium");
   const [math, setMath] = useState("No Math");
-  const isPaid = usePaidStatus();
 
   return (
     <div style={styles.page}>
