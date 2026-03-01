@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/clerk-react";
+import usePaidStatus from "./usePaidStatus";
 import "./App.css";
 
 const categories = [
@@ -21,6 +22,7 @@ function Home() {
   const navigate = useNavigate();
   const [difficulty, setDifficulty] = useState("Medium");
   const [math, setMath] = useState("No Math");
+  const isPaid = usePaidStatus();
 
   return (
     <div style={styles.page}>
@@ -39,10 +41,18 @@ function Home() {
       <div style={styles.container}>
         <div style={styles.header}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <img src="/favicon.png" alt="logo" style={{ height: "64px", width: "64px" }} />
+            <img
+              src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
+              alt="logo"
+              style={{ height: "64px", width: "64px" }}
+            />
             <div>
-              <h1 style={styles.logo}>Fite Finance</h1>
-              <p style={styles.tagline}>The finance site sharpening your interview skills</p>
+              <h1 style={{ ...styles.logo, color: isPaid ? "#c9a84c" : "#0a2463" }}>
+                Fite Finance {isPaid && <span style={{ fontSize: "14px", fontWeight: "600" }}>⭐ Premium</span>}
+              </h1>
+              <p style={{ ...styles.tagline, color: isPaid ? "#c9a84c" : "#4a6fa5" }}>
+                The finance site sharpening your interview skills
+              </p>
             </div>
           </div>
         </div>
@@ -96,7 +106,7 @@ function Home() {
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundColor: "#f0f4f8",
+    backgroundColor: isPaid ? "#1a1400" : "#f0f4f8",
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",

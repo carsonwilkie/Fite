@@ -178,7 +178,7 @@ function Questions() {
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundColor: "#f0f4f8",
+    backgroundColor: isPaid ? "#1a1400" : "#f0f4f8",
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",
