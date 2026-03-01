@@ -29,6 +29,18 @@ function Questions() {
     );
   };
 
+  const handleUpgrade = async () => {
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user?.id, email: user?.primaryEmailAddress?.emailAddress }),
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    }
+  };
+
   const getQuestion = async () => {
     setLoadingQuestion(true);
     setAnswer("");
@@ -126,8 +138,17 @@ function Questions() {
 
           {question && (
             <div style={styles.section}>
-              <p style={styles.label}>QUESTION</p>
-              <p style={styles.text}>{question}</p>
+                <p style={styles.label}>QUESTION</p>
+                <p style={styles.text}>{question}</p>
+                {question.includes("Upgrade to premium") && (
+                    <button
+                        className="primary-btn"
+                        style={{ marginTop: "16px" }}
+                        onClick={handleUpgrade}
+                    >
+                        Upgrade for $2/month
+                    </button>
+                )}
               <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed} className="secondary-btn">
                 {loadingAnswer ? "Loading..." : "Show Answer"}
               </button>
