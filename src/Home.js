@@ -30,16 +30,18 @@ function Home() {
         </div>
 
         <div style={styles.card}>
-          <p style={styles.prompt}>Select a category to get started:</p>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              className="category-btn"
-              onClick={() => navigate(`/questions/${encodeURIComponent(cat)}`)}
-            >
-              {cat}
-            </button>
-          ))}
+            <p style={styles.prompt}>Select a category to get started:</p>
+            <div style={styles.grid}>
+                {categories.map((cat) => (
+                <button
+                    key={cat}
+                    className="category-btn"
+                    onClick={() => navigate(`/questions/${encodeURIComponent(cat)}`)}
+                >
+                    {cat}
+                </button>
+                ))}
+            </div>
         </div>
       </div>
       <Analytics />
@@ -89,6 +91,11 @@ const styles = {
     color: "#0a2463",
     fontWeight: "600",
     margin: "0 0 8px 0",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "12px",
   },
 };
 

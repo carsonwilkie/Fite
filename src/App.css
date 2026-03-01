@@ -98,3 +98,22 @@ body {
 .back-btn:hover {
   color: #0a2463;
 }
+
+.category-btn {
+  background-color: #ffffff;
+  color: #0a2463;
+  border: 2px solid #0a2463;
+  border-radius: 8px;
+  padding: 18px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s, color 0.2s;
+  text-align: left;
+}
+
+.category-btn:hover {
+  background-color: #0a2463;
+  color: #ffffff;
+}
