@@ -140,7 +140,7 @@ function Questions() {
             <div style={styles.section}>
                 <p style={styles.label}>QUESTION</p>
                 <p style={styles.text}>{question}</p>
-                {question.includes("Upgrade to premium") && (
+                {question.includes("Upgrade to premium") ? (
                     <button
                         className="primary-btn"
                         style={{ marginTop: "16px" }}
@@ -148,14 +148,15 @@ function Questions() {
                     >
                         Upgrade for $2/month
                     </button>
+                ) : (
+                    <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed} className="secondary-btn">
+                        {loadingAnswer ? "Loading..." : "Show Answer"}
+                    </button>
                 )}
-              <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed} className="secondary-btn">
-                {loadingAnswer ? "Loading..." : "Show Answer"}
-              </button>
             </div>
           )}
 
-          {answerRevealed && answer && (
+          {!question.includes("Upgrade to premium") && answerRevealed && answer && (
             <div style={styles.section}>
               <p style={styles.label}>ANSWER</p>
               <ReactMarkdown className="markdown">{answer}</ReactMarkdown>
