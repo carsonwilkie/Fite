@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { Analytics } from "@vercel/analytics/react";
+import { useUser } from "@clerk/clerk-react";
 import "./App.css";
 
 function Questions() {
@@ -12,6 +13,7 @@ function Questions() {
   const [loadingQuestion, setLoadingQuestion] = useState(false);
   const [loadingAnswer, setLoadingAnswer] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
+  const { user } = useUser();
 
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
@@ -39,11 +41,16 @@ function Questions() {
         const res = await fetch("/api/question", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "question", category, difficulty, math }),
+          body: JSON.stringify({ type: "question", category, difficulty, math, userId: user?.id }),
         });
         const data = await res.json();
+        if (data.limitReached) {
+            setQuestion("You've reached your 5 free questions for today. Upgrade to premium for unlimited questions!");
+            setLoadingQuestion(false);
+            return;
+        }
         if (!wasRecentlyAsked(data.result)) {
-          newQuestion = data.result;
+            newQuestion = data.result;
         }
         attempts++;
       }
@@ -53,7 +60,7 @@ function Questions() {
         fetch("/api/question", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "answer", question: newQuestion, category, difficulty, math }),
+          body: JSON.stringify({ type: "answer", question: newQuestion, category, difficulty, math, userId: user?.id }),
         })
           .then((res) => res.json())
           .then((data) => setAnswer(data.result));
@@ -74,7 +81,7 @@ function Questions() {
       const res = await fetch("/api/question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "answer", question, category, difficulty, math }),
+        body: JSON.stringify({ type: "answer", question, category, difficulty, math, userId: user?.id }),
       });
       const data = await res.json();
       setAnswer((current) => current || data.result);
