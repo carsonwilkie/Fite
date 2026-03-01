@@ -4,18 +4,32 @@ const { Redis } = require("@upstash/redis");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const redis = Redis.fromEnv();
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+async function buffer(readable) {
+  const chunks = [];
+  for await (const chunk of readable) {
+    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   const sig = req.headers["stripe-signature"];
+  const buf = await buffer(req);
   let event;
 
   try {
-    const rawBody = JSON.stringify(req.body);
     event = stripe.webhooks.constructEvent(
-      rawBody,
+      buf,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
