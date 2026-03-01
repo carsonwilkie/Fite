@@ -13,18 +13,21 @@ module.exports = async function handler(req, res) {
   let event;
 
   try {
+    const rawBody = JSON.stringify(req.body);
     event = stripe.webhooks.constructEvent(
-      req.body,
+      rawBody,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (error) {
+    console.error("Webhook error:", error.message);
     return res.status(400).json({ error: error.message });
   }
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const userId = session.metadata.userId;
+    console.log("Marking user as paid:", userId);
     await redis.set(`paid:${userId}`, "true");
   }
 

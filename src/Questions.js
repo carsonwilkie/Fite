@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { Analytics } from "@vercel/analytics/react";
 import { useUser } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import "./App.css";
 
 function Questions() {
@@ -106,7 +107,16 @@ function Questions() {
   return (
     <div style={styles.page}>
       <div style={styles.navbar}>
-        <img src="/favicon.png" alt="logo" style={{ height: "36px", width: "36px" }} />
+        <SignedIn>
+            <UserButton />
+        </SignedIn>
+        <SignedOut>
+            <SignInButton mode="modal">
+            <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                Sign In
+            </button>
+            </SignInButton>
+        </SignedOut>
       </div>
       <div style={styles.container}>
         <div style={styles.header}>

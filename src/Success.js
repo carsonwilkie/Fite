@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import "./App.css";
 
 function Success() {
@@ -8,6 +9,18 @@ function Success() {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
+        <div style={styles.navbar}>
+            <SignedIn>
+                <UserButton />
+            </SignedIn>
+            <SignedOut>
+                <SignInButton mode="modal">
+                <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                    Sign In
+                </button>
+                </SignInButton>
+            </SignedOut>
+        </div>
         <div style={styles.header}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <img src="/favicon.png" alt="logo" style={{ height: "64px", width: "64px" }} />
@@ -81,6 +94,12 @@ const styles = {
     color: "#4a6fa5",
     lineHeight: "1.6",
     margin: 0,
+  },
+  navbar: {
+    position: "fixed",
+    top: "0",
+    right: "0",
+    padding: "16px 24px",
   },
 };
 
