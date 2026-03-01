@@ -1,13 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
-import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
 import "./App.css";
 
 function Success() {
   const navigate = useNavigate();
-  const { user } = useUser();
   const isPaid = usePaidStatus();
 
   return (
