@@ -4,12 +4,6 @@ const { Redis } = require("@upstash/redis");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const redis = Redis.fromEnv();
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 async function buffer(readable) {
   const chunks = [];
   for await (const chunk of readable) {
@@ -48,7 +42,17 @@ module.exports = async function handler(req, res) {
   if (event.type === "customer.subscription.deleted") {
     const subscription = event.data.object;
     const userId = subscription.metadata.userId;
+    console.log("Removing paid status:", userId);
     await redis.del(`paid:${userId}`);
+  }
+
+  if (event.type === "customer.subscription.updated") {
+    const subscription = event.data.object;
+    const userId = subscription.metadata.userId;
+    if (subscription.cancel_at_period_end) {
+      console.log("Subscription scheduled to cancel:", userId);
+      await redis.del(`paid:${userId}`);
+    }
   }
 
   res.status(200).json({ received: true });
