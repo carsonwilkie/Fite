@@ -8,10 +8,8 @@ function Success() {
   const navigate = useNavigate();
   const { isPaid, loading } = usePaidStatus();
 
-  if (loading) return null;
-
   return (
-    <div style={{ ...styles.page, backgroundColor: isPaid ? "#1a1400" : "#f0f4f8" }}>
+    <div style={styles.page}>
       <div style={styles.navbar}>
         <SignedIn>
           <UserButton />
@@ -33,7 +31,7 @@ function Success() {
           />
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h1 style={styles.logo}>Fite Finance</h1>
+              <h1 style={{ ...styles.logo, color: isPaid ? "#c9a84c" : "#0a2463" }}>Fite Finance</h1>
               {isPaid && (
                 <span style={{
                   fontSize: "11px",
