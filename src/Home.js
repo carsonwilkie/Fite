@@ -38,6 +38,18 @@ function Home() {
     }
   };
 
+  const handleUpgrade = async () => {
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user?.id, email: user?.primaryEmailAddress?.emailAddress }),
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    }
+  };
+
   return (
     <div style={styles.page}>
       <div style={styles.navbar}>
@@ -50,13 +62,21 @@ function Home() {
         </SignedOut>
         <SignedIn>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {isPaid && (
+            {isPaid ? (
               <button
                 onClick={handleManageSubscription}
                 className="primary-btn"
                 style={{ width: "auto", padding: "10px 20px" }}
               >
                 Manage Subscription
+              </button>
+            ) : (
+              <button
+                onClick={handleUpgrade}
+                className="upgrade-btn"
+                style={{ width: "auto", padding: "10px 20px" }}
+              >
+                ⭐ Upgrade to Premium
               </button>
             )}
             <UserButton />
