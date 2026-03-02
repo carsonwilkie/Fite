@@ -12,31 +12,44 @@ function Success() {
 
   return (
     <div style={{ ...styles.page, backgroundColor: isPaid ? "#1a1400" : "#f0f4f8" }}>
+      <div style={styles.navbar}>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+        <SignedOut>
+          <SignInButton mode="modal">
+            <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
+              Sign In
+            </button>
+          </SignInButton>
+        </SignedOut>
+      </div>
       <div style={styles.container}>
-        <div style={styles.navbar}>
-            <SignedIn>
-                <UserButton />
-            </SignedIn>
-            <SignedOut>
-                <SignInButton mode="modal">
-                <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
-                    Sign In
-                </button>
-                </SignInButton>
-            </SignedOut>
-        </div>
-        <img
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
+          <img
             src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
             alt="logo"
             style={{ height: "64px", width: "64px" }}
-        />
-        <div>
-            <h1 style={{ ...styles.logo, color: isPaid ? "#c9a84c" : "#0a2463" }}>
-                Fite Finance {isPaid && <span style={{ fontSize: "14px", fontWeight: "600" }}>⭐ Premium</span>}
-            </h1>
-            <p style={{ ...styles.tagline, color: isPaid ? "#c9a84c" : "#4a6fa5" }}>
-                The finance site sharpening your interview skills
-            </p>
+          />
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <h1 style={styles.logo}>Fite Finance</h1>
+              {isPaid && (
+                <span style={{
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  letterSpacing: "0.8px",
+                  padding: "4px 10px",
+                  borderRadius: "20px",
+                  backgroundColor: "#c9a84c",
+                  color: "#ffffff",
+                }}>
+                  ⭐ PREMIUM
+                </span>
+              )}
+            </div>
+            <p style={styles.tagline}>The finance site sharpening your interview skills</p>
+          </div>
         </div>
 
         <div style={styles.card}>
@@ -69,9 +82,6 @@ const styles = {
   container: {
     width: "100%",
     maxWidth: "680px",
-  },
-  header: {
-    marginBottom: "32px",
   },
   logo: {
     fontSize: "32px",

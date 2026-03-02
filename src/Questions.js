@@ -138,17 +138,32 @@ function Questions() {
         </div>
 
         <div style={styles.card}>
-          <div style={styles.categoryHeader}>
-            <button onClick={() => navigate("/")} className="back-btn">← Back</button>
-            <p style={styles.categoryLabel}>{decodeURIComponent(category)}</p>
-            <span style={{
-                ...styles.mathBadge,
-                backgroundColor: decodeURIComponent(math) === "With Math" ? "#0a2463" : "#e8edf5",
-                color: decodeURIComponent(math) === "With Math" ? "#ffffff" : "#4a6fa5",
-            }}>
-                {decodeURIComponent(math)}
-            </span>
-          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <img
+                src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
+                alt="logo"
+                style={{ height: "64px", width: "64px" }}
+            />
+            <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <h1 style={styles.logo}>Fite Finance</h1>
+                    {isPaid && (
+                        <span style={{
+                        fontSize: "11px",
+                        fontWeight: "700",
+                        letterSpacing: "0.8px",
+                        padding: "4px 10px",
+                        borderRadius: "20px",
+                        backgroundColor: "#c9a84c",
+                        color: "#ffffff",
+                        }}>
+                        ⭐ PREMIUM
+                        </span>
+                    )}
+                </div>
+                <p style={styles.tagline}>The finance site sharpening your interview skills</p>
+            </div>
+        </div>
 
           <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
             {loadingQuestion ? "Loading..." : "Get Question"}
