@@ -66,8 +66,8 @@ function Home() {
               <p style={styles.tagline}>The finance site sharpening your interview skills</p>
             </div>
           </div>
-          <p style={{ fontSize: "13px", color: "#4a6fa5", fontStyle: "italic", margin: 0 }}>
-            by colgate's finest
+          <p style={{ fontSize: "13px", color: "#5a060d", fontStyle: "italic", margin: 0 }}>
+            by Colgate's finest
           </p>
         </div>
 
