@@ -15,7 +15,7 @@ function Questions() {
   const [loadingAnswer, setLoadingAnswer] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const { user } = useUser();
-  const { isPaid, loading } = usePaidStatus();
+  const { isPaid } = usePaidStatus();
 
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");

@@ -6,7 +6,7 @@ import "./App.css";
 
 function Success() {
   const navigate = useNavigate();
-  const { isPaid, loading } = usePaidStatus();
+  const { isPaid } = usePaidStatus();
 
   return (
     <div style={styles.page}>
