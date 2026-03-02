@@ -31,7 +31,7 @@ function Success() {
           />
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h1 style={{ ...styles.logo, color: isPaid ? "#c9a84c" : "#0a2463" }}>Fite Finance</h1>
+              <h1 style={styles.logo}>Fite Finance</h1>
               {isPaid && (
                 <span style={{
                   fontSize: "11px",

@@ -39,7 +39,7 @@ function Home() {
         </SignedIn>
       </div>
       <div style={styles.container}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
           <img
             src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
             alt="logo"
@@ -47,7 +47,7 @@ function Home() {
           />
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h1 style={{ ...styles.logo, color: isPaid ? "#c9a84c" : "#0a2463" }}>Fite Finance</h1>
+              <h1 style={styles.logo}>Fite Finance</h1>
               {isPaid && (
                 <span style={{
                   fontSize: "11px",
