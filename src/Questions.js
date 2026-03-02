@@ -156,11 +156,27 @@ function Questions() {
             <p style={styles.categoryLabel}>{decodeURIComponent(category)}</p>
             <span style={{
               ...styles.mathBadge,
+              backgroundColor: "#e8edf5",
+              color: "#4a6fa5",
+            }}>
+              {decodeURIComponent(difficulty)}
+            </span>
+            <span style={{
+              ...styles.mathBadge,
               backgroundColor: decodeURIComponent(math) === "With Math" ? "#0a2463" : "#e8edf5",
               color: decodeURIComponent(math) === "With Math" ? "#ffffff" : "#4a6fa5",
             }}>
               {decodeURIComponent(math)}
             </span>
+            {customPrompt && decodeURIComponent(customPrompt) !== "" && decodeURIComponent(customPrompt) !== "undefined" && (
+              <span style={{
+                ...styles.mathBadge,
+                backgroundColor: "#c9a84c",
+                color: "#ffffff",
+              }}>
+                ⭐ {decodeURIComponent(customPrompt)}
+              </span>
+            )}
           </div>
 
           <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
