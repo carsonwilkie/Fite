@@ -7,7 +7,7 @@ import usePaidStatus from "./usePaidStatus";
 import "./App.css";
 
 function Questions() {
-  const { category, difficulty, math } = useParams();
+  const { category, difficulty, math, customPrompt } = useParams();
   const navigate = useNavigate();
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -55,7 +55,7 @@ function Questions() {
         const res = await fetch("/api/question", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "question", category, difficulty, math, userId: user?.id }),
+          body: JSON.stringify({ type: "question", category, difficulty, math, customPrompt, userId: user?.id }),
         });
         const data = await res.json();
         if (data.limitReached) {
@@ -74,7 +74,7 @@ function Questions() {
         fetch("/api/question", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "answer", question: newQuestion, category, difficulty, math, userId: user?.id }),
+          body: JSON.stringify({ type: "answer", question: newQuestion, category, difficulty, math, customPrompt, userId: user?.id }),
         })
           .then((res) => res.json())
           .then((data) => setAnswer(data.result));
@@ -95,7 +95,7 @@ function Questions() {
       const res = await fetch("/api/question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "answer", question, category, difficulty, math, userId: user?.id }),
+        body: JSON.stringify({ type: "answer", question, category, difficulty, math, customPrompt, userId: user?.id }),
       });
       const data = await res.json();
       setAnswer((current) => current || data.result);

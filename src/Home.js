@@ -25,6 +25,7 @@ function Home() {
   const { user } = useUser();
   const [difficulty, setDifficulty] = useState("Medium");
   const [math, setMath] = useState("No Math");
+  const [customPrompt, setCustomPrompt] = useState("");
 
   const handleManageSubscription = async () => {
     const res = await fetch("/api/portal", {
@@ -149,12 +150,46 @@ function Home() {
               <button
                 key={cat}
                 className="category-btn"
-                onClick={() => navigate(`/questions/${encodeURIComponent(cat)}/${encodeURIComponent(difficulty)}/${encodeURIComponent(math)}`)}
+                onClick={() => navigate(`/questions/${encodeURIComponent(cat)}/${encodeURIComponent(difficulty)}/${encodeURIComponent(math)}/${encodeURIComponent(customPrompt)}`)}
               >
                 {cat}
               </button>
             ))}
           </div>
+
+          {isPaid && (
+            <div style={{ marginTop: "24px", borderTop: "1px solid #e8edf5", paddingTop: "24px" }}>
+              <p style={{ ...styles.prompt, display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  letterSpacing: "0.8px",
+                  padding: "3px 8px",
+                  borderRadius: "20px",
+                  backgroundColor: "#c9a84c",
+                  color: "#ffffff",
+                }}>⭐ PREMIUM</span>
+                Custom question descriptor (optional):
+              </p>
+              <input
+                type="text"
+                placeholder='e.g. "LBO modeling" or "merger consequences"'
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "12px 16px",
+                  borderRadius: "8px",
+                  border: "2px solid #e8edf5",
+                  fontSize: "14px",
+                  color: "#1a1a2e",
+                  fontFamily: "'Segoe UI', sans-serif",
+                  boxSizing: "border-box",
+                  outline: "none",
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
       <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "40px", fontStyle: "italic" }}>
