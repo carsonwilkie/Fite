@@ -108,6 +108,9 @@ function Questions() {
   return (
     <div style={styles.page}>
       <div style={styles.navbar}>
+        <div style={styles.byline}>
+          by Colgate's finest
+        </div>
         <SignedIn>
           <UserButton />
         </SignedIn>
@@ -266,6 +269,15 @@ const styles = {
     letterSpacing: "0.8px",
     padding: "4px 10px",
     borderRadius: "20px",
+  },
+  byline: {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    padding: "16px 24px",
+    fontSize: "13px",
+    color: "#5a060d",
+    fontStyle: "italic",
   },
 };
 
