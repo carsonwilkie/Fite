@@ -190,6 +190,7 @@ const styles = {
     fontSize: "15px",
     color: "#4a6fa5",
     margin: 0,
+    cursor: "default",
   },
   card: {
     backgroundColor: "#ffffff",
