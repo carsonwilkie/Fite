@@ -8,7 +8,11 @@ export default function usePaidStatus() {
   });
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setIsPaid(false);
+      localStorage.setItem("isPaid", "false");
+      return;
+    }
     fetch("/api/checkPaid", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
