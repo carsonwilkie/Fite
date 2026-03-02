@@ -191,6 +191,9 @@ function Questions() {
           )}
         </div>
       </div>
+      <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "40px", fontStyle: "italic" }}>
+        For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
+      </p>
       <Analytics />
     </div>
   );
