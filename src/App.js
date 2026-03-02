@@ -9,6 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/questions/:category/:difficulty/:math/:customPrompt" element={<Questions />} />
+        <Route path="/questions/:category/:difficulty/:math" element={<Questions />} />
         <Route path="/success" element={<Success />} />
       </Routes>
     </BrowserRouter>
