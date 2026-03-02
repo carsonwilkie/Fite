@@ -39,31 +39,36 @@ function Home() {
         </SignedIn>
       </div>
       <div style={styles.container}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
-          <img
-            src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
-            alt="logo"
-            style={{ height: "64px", width: "64px" }}
-          />
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h1 style={styles.logo}>Fite Finance</h1>
-              {isPaid && (
-                <span style={{
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  letterSpacing: "0.8px",
-                  padding: "4px 10px",
-                  borderRadius: "20px",
-                  backgroundColor: "#c9a84c",
-                  color: "#ffffff",
-                }}>
-                  ⭐ PREMIUM
-                </span>
-              )}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "48px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <img
+              src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
+              alt="logo"
+              style={{ height: "64px", width: "64px" }}
+            />
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <h1 style={styles.logo}>Fite Finance</h1>
+                {isPaid && (
+                  <span style={{
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    letterSpacing: "0.8px",
+                    padding: "4px 10px",
+                    borderRadius: "20px",
+                    backgroundColor: "#c9a84c",
+                    color: "#ffffff",
+                  }}>
+                    ⭐ PREMIUM
+                  </span>
+                )}
+              </div>
+              <p style={styles.tagline}>The finance site sharpening your interview skills</p>
             </div>
-            <p style={styles.tagline}>The finance site sharpening your interview skills</p>
           </div>
+          <p style={{ fontSize: "13px", color: "#4a6fa5", fontStyle: "italic", margin: 0 }}>
+            by colgate's finest
+          </p>
         </div>
 
         <div style={styles.card}>
