@@ -22,9 +22,7 @@ module.exports = async function handler(req, res) {
       ],
       customer_email: email,
       metadata: { userId },
-      subscription_data: {
-        metadata: { userId },
-      },
+      subscription_data: { metadata: { userId } },
       success_url: `${process.env.NEXT_PUBLIC_URL}/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/`,
     });
