@@ -27,6 +27,9 @@ function Home() {
   return (
     <div style={styles.page}>
       <div style={styles.navbar}>
+        <div style={styles.byline}>
+          by Colgate's finest
+        </div>
         <SignedOut>
           <SignInButton mode="modal">
             <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
@@ -66,9 +69,6 @@ function Home() {
               <p style={styles.tagline}>The finance site sharpening your interview skills</p>
             </div>
           </div>
-          <p style={{ fontSize: "13px", color: "#5a060d", fontStyle: "italic", margin: 0 }}>
-            by Colgate's finest
-          </p>
         </div>
 
         <div style={styles.card}>
@@ -171,6 +171,15 @@ const styles = {
     top: "0",
     right: "0",
     padding: "16px 24px",
+  },
+  byline: {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    padding: "16px 24px",
+    fontSize: "13px",
+    color: "#5a060d",
+    fontStyle: "italic",
   },
 };
 
