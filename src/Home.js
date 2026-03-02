@@ -157,39 +157,40 @@ function Home() {
             ))}
           </div>
 
-          {isPaid && (
-            <div style={{ marginTop: "24px", borderTop: "1px solid #e8edf5", paddingTop: "24px" }}>
-              <p style={{ ...styles.prompt, display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  letterSpacing: "0.8px",
-                  padding: "3px 8px",
-                  borderRadius: "20px",
-                  backgroundColor: "#c9a84c",
-                  color: "#ffffff",
-                }}>⭐ PREMIUM</span>
-                Custom question descriptor (optional):
-              </p>
-              <input
-                type="text"
-                placeholder='e.g. "LBO modeling" or "merger consequences"'
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  border: "2px solid #e8edf5",
-                  fontSize: "14px",
-                  color: "#1a1a2e",
-                  fontFamily: "'Segoe UI', sans-serif",
-                  boxSizing: "border-box",
-                  outline: "none",
-                }}
-              />
-            </div>
-          )}
+          <div style={{ marginTop: "24px", borderTop: "1px solid #e8edf5", paddingTop: "24px" }}>
+            <p style={{ ...styles.prompt, display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{
+                fontSize: "11px",
+                fontWeight: "700",
+                letterSpacing: "0.8px",
+                padding: "3px 8px",
+                borderRadius: "20px",
+                backgroundColor: isPaid ? "#c9a84c" : "#e8edf5",
+                color: isPaid ? "#ffffff" : "#4a6fa5",
+              }}>⭐ PREMIUM</span>
+              Custom question descriptor (optional):
+            </p>
+            <input
+              type="text"
+              placeholder={isPaid ? 'e.g. "LBO modeling" or "merger consequences"' : "Upgrade to Premium to use this feature"}
+              value={customPrompt}
+              onChange={(e) => isPaid && setCustomPrompt(e.target.value)}
+              disabled={!isPaid}
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                border: "2px solid #e8edf5",
+                fontSize: "14px",
+                color: isPaid ? "#1a1a2e" : "#a0aec0",
+                fontFamily: "'Segoe UI', sans-serif",
+                boxSizing: "border-box",
+                outline: "none",
+                backgroundColor: isPaid ? "#ffffff" : "#f7f9fc",
+                cursor: isPaid ? "text" : "not-allowed",
+              }}
+            />
+          </div>
         </div>
       </div>
       <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "40px", fontStyle: "italic" }}>
