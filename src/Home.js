@@ -42,7 +42,7 @@ function Home() {
         </SignedIn>
       </div>
       <div style={styles.container}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "48px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <img
               src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
