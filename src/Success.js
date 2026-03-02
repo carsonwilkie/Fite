@@ -6,7 +6,9 @@ import "./App.css";
 
 function Success() {
   const navigate = useNavigate();
-  const isPaid = usePaidStatus();
+  const { isPaid, loading } = usePaidStatus();
+
+  if (loading) return null;
 
   return (
     <div style={{ ...styles.page, backgroundColor: isPaid ? "#1a1400" : "#f0f4f8" }}>

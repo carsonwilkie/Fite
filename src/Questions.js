@@ -16,7 +16,7 @@ function Questions() {
   const [loadingAnswer, setLoadingAnswer] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const { user } = useUser();
-  const isPaid = usePaidStatus();
+  const { isPaid, loading } = usePaidStatus();
 
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
@@ -105,6 +105,8 @@ function Questions() {
     }
     setLoadingAnswer(false);
   };
+
+  if (loading) return null;
 
   return (
     <div style={{ ...styles.page, backgroundColor: isPaid ? "#1a1400" : "#f0f4f8" }}>
