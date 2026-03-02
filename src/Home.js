@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
+import { useUser } from "@clerk/clerk-react";
 import "./App.css";
 
 const categories = [
@@ -21,12 +22,35 @@ const difficulties = ["Easy", "Medium", "Hard"];
 function Home() {
   const navigate = useNavigate();
   const { isPaid } = usePaidStatus();
+  const { user } = useUser();
   const [difficulty, setDifficulty] = useState("Medium");
   const [math, setMath] = useState("No Math");
+
+  const { user } = useUser();
+
+  const handleManageSubscription = async () => {
+    const res = await fetch("/api/portal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user?.id }),
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    }
+  };
 
   return (
     <div style={styles.page}>
       <div style={styles.navbar}>
+        {isPaid && (
+          <button
+            onClick={handleManageSubscription}
+            style={{ fontSize: "13px", color: "#4a6fa5", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+          >
+            Manage Subscription
+          </button>
+        )}
         <div style={styles.byline}>
           by Colgate's finest
         </div>
