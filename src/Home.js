@@ -41,17 +41,6 @@ function Home() {
   return (
     <div style={styles.page}>
       <div style={styles.navbar}>
-        {isPaid && (
-          <button
-            onClick={handleManageSubscription}
-            style={{ fontSize: "13px", color: "#4a6fa5", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
-          >
-            Manage Subscription
-          </button>
-        )}
-        <div style={styles.byline}>
-          by Colgate's finest
-        </div>
         <SignedOut>
           <SignInButton mode="modal">
             <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
@@ -60,7 +49,18 @@ function Home() {
           </SignInButton>
         </SignedOut>
         <SignedIn>
-          <UserButton />
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {isPaid && (
+              <button
+                onClick={handleManageSubscription}
+                className="primary-btn"
+                style={{ width: "auto", padding: "10px 20px" }}
+              >
+                Manage Subscription
+              </button>
+            )}
+            <UserButton />
+          </div>
         </SignedIn>
       </div>
       <div style={styles.container}>
