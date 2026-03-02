@@ -26,8 +26,6 @@ function Home() {
   const [difficulty, setDifficulty] = useState("Medium");
   const [math, setMath] = useState("No Math");
 
-  const { user } = useUser();
-
   const handleManageSubscription = async () => {
     const res = await fetch("/api/portal", {
       method: "POST",
