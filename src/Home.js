@@ -225,6 +225,7 @@ const styles = {
     fontSize: "13px",
     color: "#5a060d",
     fontStyle: "italic",
+    cursor: "default",
   },
 };
 
