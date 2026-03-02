@@ -153,8 +153,7 @@ body {
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  width: 100%;
-  margin-top: 16px;
+  width: auto !important;
   transition: background-color 0.2s, box-shadow 0.2s;
   display: flex;
   align-items: center;

@@ -172,7 +172,7 @@ function Questions() {
               <p style={styles.label}>QUESTION</p>
               <p style={styles.text}>{question}</p>
               {question.includes("Come back tomorrow") ? (
-                <button className="upgrade-btn" onClick={handleUpgrade}>
+                <button className="upgrade-btn" onClick={handleUpgrade} style={{ width: "100%" }}>
                   ⭐ Upgrade for $2/month
                 </button>
               ) : (
