@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { Analytics } from "@vercel/analytics/react";
-import { useUser } from "@clerk/clerk-react";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import { useUser, SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
 import "./App.css";
 
@@ -60,12 +59,12 @@ function Questions() {
         });
         const data = await res.json();
         if (data.limitReached) {
-            setQuestion("You've reached your 5 free questions for today. Upgrade to premium for unlimited questions!");
-            setLoadingQuestion(false);
-            return;
+          setQuestion("You've reached your 5 free questions for today. Upgrade to premium for unlimited questions!");
+          setLoadingQuestion(false);
+          return;
         }
         if (!wasRecentlyAsked(data.result)) {
-            newQuestion = data.result;
+          newQuestion = data.result;
         }
         attempts++;
       }
@@ -112,58 +111,56 @@ function Questions() {
     <div style={{ ...styles.page, backgroundColor: isPaid ? "#1a1400" : "#f0f4f8" }}>
       <div style={styles.navbar}>
         <SignedIn>
-            <UserButton />
+          <UserButton />
         </SignedIn>
         <SignedOut>
-            <SignInButton mode="modal">
+          <SignInButton mode="modal">
             <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
-                Sign In
+              Sign In
             </button>
-            </SignInButton>
+          </SignInButton>
         </SignedOut>
       </div>
       <div style={styles.container}>
-        <img
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
+          <img
             src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
             alt="logo"
             style={{ height: "64px", width: "64px" }}
-        />
-        <div>
-            <h1 style={{ ...styles.logo, color: isPaid ? "#c9a84c" : "#0a2463" }}>
-                Fite Finance {isPaid && <span style={{ fontSize: "14px", fontWeight: "600" }}>⭐ Premium</span>}
-            </h1>
-            <p style={{ ...styles.tagline, color: isPaid ? "#c9a84c" : "#4a6fa5" }}>
-                The finance site sharpening your interview skills
-            </p>
+          />
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <h1 style={styles.logo}>Fite Finance</h1>
+              {isPaid && (
+                <span style={{
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  letterSpacing: "0.8px",
+                  padding: "4px 10px",
+                  borderRadius: "20px",
+                  backgroundColor: "#c9a84c",
+                  color: "#ffffff",
+                }}>
+                  ⭐ PREMIUM
+                </span>
+              )}
+            </div>
+            <p style={styles.tagline}>The finance site sharpening your interview skills</p>
+          </div>
         </div>
 
         <div style={styles.card}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <img
-                src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
-                alt="logo"
-                style={{ height: "64px", width: "64px" }}
-            />
-            <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <h1 style={styles.logo}>Fite Finance</h1>
-                    {isPaid && (
-                        <span style={{
-                        fontSize: "11px",
-                        fontWeight: "700",
-                        letterSpacing: "0.8px",
-                        padding: "4px 10px",
-                        borderRadius: "20px",
-                        backgroundColor: "#c9a84c",
-                        color: "#ffffff",
-                        }}>
-                        ⭐ PREMIUM
-                        </span>
-                    )}
-                </div>
-                <p style={styles.tagline}>The finance site sharpening your interview skills</p>
-            </div>
-        </div>
+          <div style={styles.categoryHeader}>
+            <button onClick={() => navigate("/")} className="back-btn">← Back</button>
+            <p style={styles.categoryLabel}>{decodeURIComponent(category)}</p>
+            <span style={{
+              ...styles.mathBadge,
+              backgroundColor: decodeURIComponent(math) === "With Math" ? "#0a2463" : "#e8edf5",
+              color: decodeURIComponent(math) === "With Math" ? "#ffffff" : "#4a6fa5",
+            }}>
+              {decodeURIComponent(math)}
+            </span>
+          </div>
 
           <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
             {loadingQuestion ? "Loading..." : "Get Question"}
@@ -171,17 +168,17 @@ function Questions() {
 
           {question && (
             <div style={styles.section}>
-                <p style={styles.label}>QUESTION</p>
-                <p style={styles.text}>{question}</p>
-                {question.includes("Upgrade to premium") ? (
-                    <button className="upgrade-btn" onClick={handleUpgrade}>
-                        ⭐ Upgrade for $2/month
-                    </button>
-                ) : (
-                    <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed} className="secondary-btn">
-                        {loadingAnswer ? "Loading..." : "Show Answer"}
-                    </button>
-                )}
+              <p style={styles.label}>QUESTION</p>
+              <p style={styles.text}>{question}</p>
+              {question.includes("Upgrade to premium") ? (
+                <button className="upgrade-btn" onClick={handleUpgrade}>
+                  ⭐ Upgrade for $2/month
+                </button>
+              ) : (
+                <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed} className="secondary-btn">
+                  {loadingAnswer ? "Loading..." : "Show Answer"}
+                </button>
+              )}
             </div>
           )}
 
@@ -211,9 +208,6 @@ const styles = {
   container: {
     width: "100%",
     maxWidth: "680px",
-  },
-  header: {
-    marginBottom: "32px",
   },
   logo: {
     fontSize: "32px",
