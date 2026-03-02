@@ -168,7 +168,7 @@ function Questions() {
             <div style={styles.section}>
               <p style={styles.label}>QUESTION</p>
               <p style={styles.text}>{question}</p>
-              {question.includes("Upgrade to premium") ? (
+              {question.includes("upgrade to premium") ? (
                 <button className="upgrade-btn" onClick={handleUpgrade}>
                   ⭐ Upgrade for $2/month
                 </button>
