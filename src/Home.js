@@ -191,7 +191,7 @@ function Home() {
               }}
             />
             <p style={{ fontSize: "12px", fontStyle: "italic", color: "#4a6fa5", margin: "6px 0 0 0" }}>
-              Tailor your questions to your specific needs.
+              Tailor your questions to your specific needs. Add descriptor then select category.
             </p>
           </div>
         </div>
