@@ -167,7 +167,7 @@ function Home() {
                 borderRadius: "20px",
                 backgroundColor: isPaid ? "#c9a84c" : "#e8edf5",
                 color: isPaid ? "#ffffff" : "#4a6fa5",
-              }}>⭐ PREMIUM</span>
+              }}>PREMIUM</span>
               Custom question descriptor (optional):
             </p>
             <input
