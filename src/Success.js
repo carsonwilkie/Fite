@@ -45,7 +45,7 @@ function Success() {
                   backgroundColor: "#c9a84c",
                   color: "#ffffff",
                 }}>
-                  ⭐ PREMIUM
+                  PREMIUM
                 </span>
               )}
             </div>

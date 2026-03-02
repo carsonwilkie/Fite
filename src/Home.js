@@ -53,6 +53,9 @@ function Home() {
   return (
     <div style={styles.page}>
       <div style={styles.navbar}>
+        <div style={styles.byline}>
+          by Colgate's finest
+        </div>
         <SignedOut>
           <SignInButton mode="modal">
             <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
@@ -104,7 +107,7 @@ function Home() {
                     backgroundColor: "#c9a84c",
                     color: "#ffffff",
                   }}>
-                    ⭐ PREMIUM
+                    PREMIUM
                   </span>
                 )}
               </div>
