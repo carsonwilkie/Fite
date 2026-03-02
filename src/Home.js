@@ -190,7 +190,7 @@ function Home() {
                 cursor: isPaid ? "text" : "not-allowed",
               }}
             />
-            <p style={{ fontSize: "12px", fontStyle: "italic", color: "#4a6fa5", margin: "6px 0 0 0", paddingLeft: "12px" }}>
+            <p style={{ fontSize: "12px", fontStyle: "italic", color: "#4a6fa5", margin: "6px 0 0 0" }}>
               Tailor your questions to your specific needs.
             </p>
           </div>
