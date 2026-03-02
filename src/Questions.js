@@ -174,7 +174,7 @@ function Questions() {
                 backgroundColor: "#c9a84c",
                 color: "#ffffff",
               }}>
-                {decodeURIComponent(customPrompt)}
+                "{decodeURIComponent(customPrompt)}"
               </span>
             )}
           </div>
