@@ -59,7 +59,7 @@ function Questions() {
         });
         const data = await res.json();
         if (data.limitReached) {
-          setQuestion("You've reached your 5 free questions for today. Upgrade to premium for unlimited questions!");
+          setQuestion("You've reached your 5 free questions for today. Come back tomorrow, or upgrade to premium for unlimited questions!");
           setLoadingQuestion(false);
           return;
         }
