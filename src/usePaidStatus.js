@@ -3,14 +3,12 @@ import { useUser } from "@clerk/clerk-react";
 
 export default function usePaidStatus() {
   const { user } = useUser();
-  const [isPaid, setIsPaid] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isPaid, setIsPaid] = useState(() => {
+    return localStorage.getItem("isPaid") === "true";
+  });
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
     fetch("/api/checkPaid", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -19,9 +17,9 @@ export default function usePaidStatus() {
       .then((res) => res.json())
       .then((data) => {
         setIsPaid(data.isPaid);
-        setLoading(false);
+        localStorage.setItem("isPaid", data.isPaid);
       });
   }, [user]);
 
-  return { isPaid, loading };
+  return { isPaid };
 }
