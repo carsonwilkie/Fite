@@ -184,6 +184,7 @@ const styles = {
     fontWeight: "700",
     color: "#0a2463",
     margin: "0 0 6px 0",
+    cursor: "default",
   },
   tagline: {
     fontSize: "15px",
