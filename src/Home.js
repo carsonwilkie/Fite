@@ -23,9 +23,9 @@ function Home() {
   const navigate = useNavigate();
   const { isPaid } = usePaidStatus();
   const { user } = useUser();
-  const [difficulty, setDifficulty] = useState(() => localStorage.getItem("difficulty") || "Medium");
-  const [math, setMath] = useState(() => localStorage.getItem("math") || "No Math");
-  const [customPrompt, setCustomPrompt] = useState(() => localStorage.getItem("customPrompt") || "");
+  const [difficulty, setDifficulty] = useState(() => sessionStorage.getItem("difficulty") || "Medium");
+  const [math, setMath] = useState(() => sessionStorage.getItem("math") || "No Math");
+  const [customPrompt, setCustomPrompt] = useState(() => sessionStorage.getItem("customPrompt") || "");
 
   const handleManageSubscription = async () => {
     const res = await fetch("/api/portal", {
@@ -123,7 +123,7 @@ function Home() {
             {difficulties.map((d) => (
               <button
                 key={d}
-                onClick={() => { setDifficulty(d); localStorage.setItem("difficulty", d); }}
+                onClick={() => { setDifficulty(d); sessionStorage.setItem("difficulty", d); }}
                 className={`difficulty-btn ${difficulty === d ? "difficulty-btn-active" : ""}`}
               >
                 {d}
@@ -136,7 +136,7 @@ function Home() {
             {["With Math", "No Math"].map((m) => (
               <button
                 key={m}
-                onClick={() => { setMath(m); localStorage.setItem("math", m); }}
+                onClick={() => { setMath(m); sessionStorage.setItem("math", m); }}
                 className={`difficulty-btn ${math === m ? "difficulty-btn-active" : ""}`}
               >
                 {m}
@@ -174,7 +174,7 @@ function Home() {
               type="text"
               placeholder={isPaid ? 'e.g. "LBO modeling" or "merger consequences"' : "Upgrade to Premium to use this feature"}
               value={customPrompt}
-              onChange={(e) => { if (isPaid) { setCustomPrompt(e.target.value); localStorage.setItem("customPrompt", e.target.value); }}}
+              onChange={(e) => { if (isPaid) { setCustomPrompt(e.target.value); sessionStorage.setItem("customPrompt", e.target.value); }}}
               disabled={!isPaid}
               style={{
                 width: "100%",
