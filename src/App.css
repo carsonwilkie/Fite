@@ -179,6 +179,7 @@ body {
     align-items: center !important;
     padding: 12px 24px !important;
     box-sizing: border-box !important;
+    margin-bottom: 24px !important;
   }
 
   .byline-fixed {
