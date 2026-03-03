@@ -23,8 +23,8 @@ function Home() {
   const navigate = useNavigate();
   const { isPaid } = usePaidStatus();
   const { user } = useUser();
-  const [difficulty, setDifficulty] = useState(() => sessionStorage.getItem("difficulty") || "Medium");
-  const [math, setMath] = useState(() => sessionStorage.getItem("math") || "No Math");
+  const [difficulty, setDifficulty] = useState(() => sessionStorage.getItem("difficulty") || "");
+  const [math, setMath] = useState(() => sessionStorage.getItem("math") || "");
   const [customPrompt, setCustomPrompt] = useState(() => sessionStorage.getItem("customPrompt") || "");
 
   const handleManageSubscription = async () => {
@@ -150,7 +150,7 @@ function Home() {
               <button
                 key={cat}
                 className="category-btn"
-                onClick={() => navigate(`/questions/${encodeURIComponent(cat)}/${encodeURIComponent(difficulty)}/${encodeURIComponent(math)}/${encodeURIComponent(customPrompt)}`)}
+                onClick={() => navigate(`/questions/${encodeURIComponent(cat)}/${encodeURIComponent(difficulty || "Medium")}/${encodeURIComponent(math || "No Math")}/${encodeURIComponent(customPrompt)}`)}
               >
                 {cat}
               </button>
