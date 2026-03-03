@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { Analytics } from "@vercel/analytics/react";
 import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
+import usePrice from "./usePrice";
 import "./App.css";
 
 function Questions() {
@@ -16,6 +17,7 @@ function Questions() {
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const { user } = useUser();
   const { isPaid } = usePaidStatus();
+  const price = usePrice();
 
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
@@ -173,8 +175,8 @@ function Questions() {
               <p style={styles.label}>QUESTION</p>
               <p style={styles.text}>{question}</p>
               {question.includes("Come back tomorrow") ? (
-                <button className="upgrade-btn" onClick={handleUpgrade} style={{ width: "100%", display: "block" }}>
-                  ⭐ Upgrade for $3/month
+                <button className="upgrade-btn" onClick={handleUpgrade} style={{ width: "100%", display: "block", marginTop: "16px" }}>
+                  ⭐ Upgrade for {price || "$3/month"}
                 </button>
               ) : (
                 <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed} className="secondary-btn">
