@@ -59,7 +59,7 @@ function Home() {
         </div>
         <SignedOut>
           <SignInButton mode="modal">
-            <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
+            <button className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
               Sign In
             </button>
           </SignInButton>
@@ -67,11 +67,11 @@ function Home() {
         <SignedIn>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {isPaid ? (
-              <button onClick={handleManageSubscription} className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
+              <button onClick={handleManageSubscription} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
                 Manage Subscription
               </button>
             ) : (
-              <button onClick={handleUpgrade} className="upgrade-btn" style={{ width: "auto", padding: "10px 20px" }}>
+              <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
                 ⭐ Upgrade to Premium
               </button>
             )}
