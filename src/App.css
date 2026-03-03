@@ -173,14 +173,17 @@ body {
     top: auto !important;
     left: auto !important;
     right: auto !important;
+    width: 100% !important;
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    padding: 12px 24px;
+    padding: 12px 24px !important;
+    box-sizing: border-box !important;
   }
 
   .byline-fixed {
     display: block !important;
     font-size: 10px !important;
+    flex-shrink: 0 !important;
   }
 }
