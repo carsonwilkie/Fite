@@ -257,6 +257,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
+    minHeight: "60px",
   },
   byline: {
     fontSize: "13px",

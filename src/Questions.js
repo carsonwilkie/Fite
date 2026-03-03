@@ -311,6 +311,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
+    minHeight: "60px",
   },
   mathBadge: {
     fontSize: "11px",

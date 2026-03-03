@@ -182,6 +182,7 @@ body {
     margin-bottom: 24px !important;
     will-change: transform;
     backface-visibility: hidden;
+    min-height: 60px !important;
   }
 
   .byline-fixed {
