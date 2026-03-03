@@ -197,3 +197,7 @@ body {
     padding-top: 8px !important;
   }
 }
+
+img, span, button {
+  transition: opacity 0.15s ease;
+}
