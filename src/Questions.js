@@ -108,7 +108,7 @@ function Questions() {
   return (
     <div style={styles.page}>
       <div style={styles.navbar} className="navbar-fixed">
-        <div style={styles.byline}>
+        <div style={styles.byline} className="byline-fixed">
           by Colgate's finest
         </div>
         <SignedIn>
