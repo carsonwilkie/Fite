@@ -177,7 +177,7 @@ body {
     right: auto !important;
     width: 100% !important;
     box-sizing: border-box !important;
-    margin-bottom: 16px !important;
+    margin-bottom: 0 !important;
   }
 
   .byline-fixed {
