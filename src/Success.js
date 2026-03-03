@@ -35,7 +35,7 @@ function Success() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page} className="page-wrapper">
       <div style={styles.navbar} className="navbar-fixed">
         <div className="byline-fixed" style={styles.byline}>
           by Colgate's finest

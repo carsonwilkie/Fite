@@ -192,4 +192,8 @@ body {
     font-size: 11px !important;
     padding: 8px 12px !important;
   }
+
+  .page-wrapper {
+    padding-top: 8px !important;
+  }
 }
