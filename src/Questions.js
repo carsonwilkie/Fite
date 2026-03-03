@@ -43,6 +43,18 @@ function Questions() {
     }
   };
 
+  const handleManageSubscription = async () => {
+    const res = await fetch("/api/portal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user?.id }),
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    }
+  };
+
   const getQuestion = async () => {
     setLoadingQuestion(true);
     setAnswer("");
@@ -112,7 +124,18 @@ function Questions() {
           by Colgate's finest
         </div>
         <SignedIn>
-          <UserButton />
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {isPaid ? (
+              <button onClick={handleManageSubscription} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                Manage Subscription
+              </button>
+            ) : (
+              <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                ⭐ Upgrade to Premium
+              </button>
+            )}
+            <UserButton />
+          </div>
         </SignedIn>
         <SignedOut>
           <SignInButton mode="modal">

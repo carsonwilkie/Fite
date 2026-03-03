@@ -1,12 +1,38 @@
 import { useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
 import "./App.css";
 
 function Success() {
   const navigate = useNavigate();
   const { isPaid } = usePaidStatus();
+  const { user } = useUser();
+
+  const handleManageSubscription = async () => {
+    const res = await fetch("/api/portal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user?.id }),
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    }
+  };
+
+  const handleUpgrade = async () => {
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user?.id, email: user?.primaryEmailAddress?.emailAddress }),
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    }
+  };
 
   return (
     <div style={styles.page}>
@@ -15,7 +41,18 @@ function Success() {
           by Colgate's finest
         </div>
         <SignedIn>
-          <UserButton />
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {isPaid ? (
+              <button onClick={handleManageSubscription} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                Manage Subscription
+              </button>
+            ) : (
+              <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                ⭐ Upgrade to Premium
+              </button>
+            )}
+            <UserButton />
+          </div>
         </SignedIn>
         <SignedOut>
           <SignInButton mode="modal">
