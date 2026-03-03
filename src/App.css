@@ -168,8 +168,8 @@ body {
 }
 
 @media (max-width: 768px) {
-  .navbar-fixed {
-    background-color: #f0f4f8 !important;
+  .navbar-transparent {
+    pointer-events: auto !important;
   }
 }
 
@@ -180,4 +180,12 @@ img, span, button {
 .navbar-fixed {
   will-change: transform;
   backface-visibility: hidden;
+}
+
+.navbar-transparent {
+  pointer-events: none;
+}
+
+.navbar-transparent > div {
+  pointer-events: auto;
 }

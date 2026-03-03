@@ -31,31 +31,33 @@ function Navbar() {
   };
 
   return (
-    <div style={styles.navbar} className="navbar-fixed">
-      <div className="byline-fixed" style={styles.byline}>
+    <div style={styles.navbar} className="navbar-fixed navbar-transparent">
+      <div className="byline-fixed" style={{ ...styles.byline, pointerEvents: "auto" }}>
         by Colgate's finest
       </div>
-      <SignedOut>
-        <SignInButton mode="modal">
-          <button className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
-            Sign In
-          </button>
-        </SignInButton>
-      </SignedOut>
-      <SignedIn>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          {isPaid ? (
-            <button onClick={handleManageSubscription} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
-              Manage Subscription
+      <div style={{ pointerEvents: "auto" }}>
+        <SignedOut>
+          <SignInButton mode="modal">
+            <button className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+              Sign In
             </button>
-          ) : (
-            <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
-              ⭐ Upgrade to Premium
-            </button>
-          )}
-          <UserButton />
-        </div>
-      </SignedIn>
+          </SignInButton>
+        </SignedOut>
+        <SignedIn>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {isPaid ? (
+              <button onClick={handleManageSubscription} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                Manage Subscription
+              </button>
+            ) : (
+              <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                ⭐ Upgrade to Premium
+              </button>
+            )}
+            <UserButton />
+          </div>
+        </SignedIn>
+      </div>
     </div>
   );
 }
@@ -79,7 +81,7 @@ const styles = {
     color: "#5a060d",
     fontStyle: "italic",
     cursor: "default",
-  }
+  },
 };
 
 export default Navbar;
