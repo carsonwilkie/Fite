@@ -31,6 +31,18 @@ function Questions() {
     );
   };
 
+  const handleUpgrade = async () => {
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user?.id, email: user?.primaryEmailAddress?.emailAddress }),
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    }
+  };
+
   const getQuestion = async () => {
     setLoadingQuestion(true);
     setAnswer("");
