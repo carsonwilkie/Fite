@@ -171,19 +171,15 @@ body {
   .navbar-fixed {
     position: relative !important;
     top: auto !important;
+    left: auto !important;
     right: auto !important;
-    display: flex;
-    justify-content: flex-end;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
     padding: 16px 24px;
   }
-}
 
-@media (max-width: 768px) {
   .byline-fixed {
     position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    padding: 0;
-    font-size: 12px;
   }
 }

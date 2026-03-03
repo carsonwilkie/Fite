@@ -54,7 +54,7 @@ function Home() {
   return (
     <div style={styles.page}>
       <div style={styles.navbar} className="navbar-fixed">
-        <div style={styles.byline} className="byline-fixed">
+        <div className="byline-fixed" style={styles.byline}>
           by Colgate's finest
         </div>
         <SignedOut>
@@ -67,19 +67,11 @@ function Home() {
         <SignedIn>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {isPaid ? (
-              <button
-                onClick={handleManageSubscription}
-                className="primary-btn"
-                style={{ width: "auto", padding: "10px 20px" }}
-              >
+              <button onClick={handleManageSubscription} className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
                 Manage Subscription
               </button>
             ) : (
-              <button
-                onClick={handleUpgrade}
-                className="upgrade-btn"
-                style={{ width: "auto", padding: "10px 20px" }}
-              >
+              <button onClick={handleUpgrade} className="upgrade-btn" style={{ width: "auto", padding: "10px 20px" }}>
                 ⭐ Upgrade to Premium
               </button>
             )}
@@ -259,16 +251,16 @@ const styles = {
   navbar: {
     position: "fixed",
     top: "0",
+    left: "0",
     right: "0",
     padding: "16px 24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   byline: {
-    position: "fixed",
-    top: "0",
-    left: "0",
-    padding: "16px 24px",
     fontSize: "13px",
-    color: "#5a060d",
+    color: "#4a6fa5",
     fontStyle: "italic",
     cursor: "default",
   },
