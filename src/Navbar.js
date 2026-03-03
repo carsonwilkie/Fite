@@ -80,6 +80,19 @@ const styles = {
     fontStyle: "italic",
     cursor: "default",
   },
+  navbar: {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    right: "0",
+    padding: "16px 24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: "60px",
+    backgroundColor: "transparent",
+    zIndex: 100,
+    },
 };
 
 export default Navbar;

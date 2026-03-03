@@ -169,34 +169,7 @@ body {
 
 @media (max-width: 768px) {
   .navbar-fixed {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 12px 24px !important;
-    box-sizing: border-box !important;
     background-color: #f0f4f8 !important;
-    z-index: 100 !important;
-    min-height: 60px !important;
-  }
-
-  .byline-fixed {
-    display: block !important;
-    font-size: 10px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .manage-sub-btn {
-    font-size: 11px !important;
-    padding: 8px 12px !important;
-  }
-
-  .page-wrapper {
-    padding-top: 80px !important;
   }
 }
 
