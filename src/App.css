@@ -180,6 +180,8 @@ body {
     padding: 12px 24px !important;
     box-sizing: border-box !important;
     margin-bottom: 24px !important;
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
   .byline-fixed {
@@ -200,4 +202,9 @@ body {
 
 img, span, button {
   transition: opacity 0.15s ease;
+}
+
+.navbar-fixed {
+  will-change: transform;
+  backface-visibility: hidden;
 }
