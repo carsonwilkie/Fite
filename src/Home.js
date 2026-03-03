@@ -260,7 +260,7 @@ const styles = {
   },
   byline: {
     fontSize: "13px",
-    color: "#4a6fa5",
+    color: "#5a060d",
     fontStyle: "italic",
     cursor: "default",
   },

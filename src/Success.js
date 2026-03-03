@@ -11,7 +11,7 @@ function Success() {
   return (
     <div style={styles.page}>
       <div style={styles.navbar} className="navbar-fixed">
-        <div style={styles.byline} className="byline-fixed">
+        <div className="byline-fixed" style={styles.byline}>
           by Colgate's finest
         </div>
         <SignedIn>
@@ -123,14 +123,14 @@ const styles = {
   navbar: {
     position: "fixed",
     top: "0",
+    left: "0",
     right: "0",
     padding: "16px 24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   byline: {
-    position: "fixed",
-    top: "0",
-    left: "0",
-    padding: "16px 24px",
     fontSize: "13px",
     color: "#5a060d",
     fontStyle: "italic",
