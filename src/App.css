@@ -166,3 +166,14 @@ body {
   background-color: #b8943e;
   box-shadow: 0 0 20px rgba(201, 168, 76, 0.9);
 }
+
+@media (max-width: 768px) {
+  .navbar-fixed {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 24px;
+  }
+}

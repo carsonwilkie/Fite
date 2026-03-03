@@ -53,7 +53,7 @@ function Home() {
 
   return (
     <div style={styles.page}>
-      <div style={styles.navbar}>
+      <div style={styles.navbar} className="navbar-fixed">
         <div style={styles.byline}>
           by Colgate's finest
         </div>
