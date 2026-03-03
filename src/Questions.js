@@ -173,8 +173,8 @@ function Questions() {
               <p style={styles.label}>QUESTION</p>
               <p style={styles.text}>{question}</p>
               {question.includes("Come back tomorrow") ? (
-                <button className="upgrade-btn" onClick={handleUpgrade} style={{ width: "100%" }}>
-                  ⭐ Upgrade for $2/month
+                <button className="upgrade-btn" onClick={handleUpgrade} style={{ width: "100%", display: "block" }}>
+                  ⭐ Upgrade for $3/month
                 </button>
               ) : (
                 <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed} className="secondary-btn">
