@@ -170,6 +170,41 @@ body {
 @media (max-width: 768px) {
   .navbar-transparent {
     pointer-events: auto !important;
+    background-color: #f0f4f8 !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-bottom: 16px !important;
+  }
+
+  .byline-fixed {
+    display: block !important;
+    font-size: 10px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .manage-sub-btn {
+    font-size: 11px !important;
+    padding: 8px 12px !important;
+    max-width: 140px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .navbar-fixed {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px 24px !important;
+    min-height: 60px !important;
+  }
+
+  .page-wrapper {
+    padding-top: 8px !important;
   }
 }
 
