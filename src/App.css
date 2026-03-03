@@ -180,6 +180,6 @@ body {
   }
 
   .byline-fixed {
-    position: relative !important;
+    display: none !important;
   }
 }

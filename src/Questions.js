@@ -199,7 +199,7 @@ function Questions() {
             </div>
           )}
 
-          {!question.includes("Upgrade to premium") && answerRevealed && answer && (
+          {!question.includes("Come back tomorrow") && answerRevealed && answer && (
             <div style={styles.section}>
               <p style={styles.label}>ANSWER</p>
               <ReactMarkdown className="markdown">{answer}</ReactMarkdown>
