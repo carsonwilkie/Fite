@@ -19,7 +19,7 @@ function Success() {
         </SignedIn>
         <SignedOut>
           <SignInButton mode="modal">
-            <button className="primary-btn" style={{ width: "auto", padding: "10px 20px" }}>
+            <button className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
               Sign In
             </button>
           </SignInButton>
