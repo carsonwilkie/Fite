@@ -176,10 +176,11 @@ body {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    padding: 16px 24px;
+    padding: 12px 24px;
   }
 
   .byline-fixed {
-    display: none !important;
+    display: block !important;
+    font-size: 10px !important;
   }
 }
