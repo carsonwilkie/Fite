@@ -246,3 +246,8 @@ img, span, button {
 .navbar-transparent > div {
   pointer-events: auto;
 }
+
+.cl-avatarBox {
+  width: 40px !important;
+  height: 40px !important;
+}

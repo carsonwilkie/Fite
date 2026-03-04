@@ -22,7 +22,7 @@ function Home() {
   const { isPaid } = usePaidStatus();
   const [difficulty, setDifficulty] = useState(() => sessionStorage.getItem("difficulty") || "");
   const [math, setMath] = useState(() => sessionStorage.getItem("math") || "");
-  const [customPrompt, setCustomPrompt] = useState(() => sessionStorage.getItem("customPrompt") || "");
+  const [customPrompt, setCustomPrompt] = useState("");
 
   return (
     <div style={styles.page} className="page-wrapper">
@@ -112,7 +112,7 @@ function Home() {
               type="text"
               placeholder={isPaid ? 'e.g. "LBO modeling" or "merger consequences"' : "Upgrade to Premium to use this feature"}
               value={customPrompt}
-              onChange={(e) => { if (isPaid) { setCustomPrompt(e.target.value); sessionStorage.setItem("customPrompt", e.target.value); }}}
+              onChange={(e) => { if (isPaid) { setCustomPrompt(e.target.value); }}}
               disabled={!isPaid}
               style={{
                 width: "100%",
