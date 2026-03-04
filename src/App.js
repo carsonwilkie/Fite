@@ -3,10 +3,12 @@ import Home from "./Home";
 import Questions from "./Questions";
 import Success from "./Success";
 import Navbar from "./Navbar";
+import ScrollToTop from "./ScrollToTop";
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
