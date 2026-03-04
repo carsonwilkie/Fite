@@ -10,15 +10,16 @@ function Success() {
   return (
     <div style={styles.page} className="page-wrapper">
       <div style={styles.container}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }} className="header-mobile">
           <img
             src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
             alt="logo"
             style={{ height: "64px", width: "64px" }}
+            className="logo-img-mobile"
           />
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h1 style={styles.logo}>Fite Finance</h1>
+              <h1 style={styles.logo} className="logo-mobile">Fite Finance</h1>
               {isPaid && (
                 <span style={{
                   fontSize: "11px",

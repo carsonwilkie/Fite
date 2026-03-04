@@ -206,6 +206,28 @@ body {
   .page-wrapper {
     padding-top: 8px !important;
   }
+
+  .category-header-mobile {
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+
+  .card-mobile {
+    padding: 20px !important;
+  }
+
+  .header-mobile {
+    margin-bottom: 16px !important;
+  }
+
+  .logo-mobile {
+    font-size: 24px !important;
+  }
+
+  .logo-img-mobile {
+    height: 48px !important;
+    width: 48px !important;
+  }
 }
 
 img, span, button {
