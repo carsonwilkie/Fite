@@ -7,6 +7,11 @@ function Success() {
   const navigate = useNavigate();
   const { isPaid } = usePaidStatus();
 
+  if (!isPaid) {
+    navigate("/");
+    return null;
+  }
+
   return (
     <div style={styles.page} className="page-wrapper">
       <div style={styles.container}>
