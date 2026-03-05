@@ -40,7 +40,7 @@ function Success() {
 
         <div style={styles.card}>
           <h2 style={styles.title}>You're all set! 🎉</h2>
-          <p style={styles.text}>Welcome to Fite Finance Premium. You now have unlimited access to all finance interview questions.</p>
+          <p style={styles.text}>Welcome to Fite Finance Premium. You now have unlimited access to all finance questions.</p>
           <button
             className="primary-btn"
             style={{ marginTop: "24px" }}
