@@ -50,7 +50,7 @@ function Success() {
                   </span>
                 )}
               </div>
-              <p style={styles.tagline}>The finance site sharpening your interview skills</p>
+              <p style={styles.tagline} className="tagline-mobile">The finance site sharpening your interview skills</p>
             </div>
           </div>
 
@@ -102,7 +102,6 @@ const styles = {
     color: "#4a6fa5",
     margin: 0,
     cursor: "default",
-    maxWidth: "280px",
   },
   card: {
     backgroundColor: "#ffffff",

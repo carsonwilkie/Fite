@@ -263,6 +263,10 @@ body {
     grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
   }
+
+  .tagline-mobile {
+    max-width: 240px !important;
+  }
 }
 
 html, body {
