@@ -33,9 +33,9 @@ function Home() {
         width: "100%",
         maxWidth: "728px",
         boxSizing: "border-box",
-        marginBottom: "12px",
+        marginBottom: "24px",
         boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
-      }}>
+      }} className="wrapper-mobile">
         <div style={styles.container}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }} className="header-mobile">
             <img
@@ -156,11 +156,12 @@ function Home() {
 const styles = {
   page: {
     minHeight: "100vh",
+    backgroundColor: "transparent",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
-    padding: "20px 20px",
+    padding: "20px 20px 0 20px",
     fontFamily: "'Segoe UI', sans-serif",
   },
   container: {

@@ -255,6 +255,16 @@ body {
     grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
   }
+
+  .wrapper-mobile {
+    padding: 16px !important;
+  }
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
 img, span, button {
