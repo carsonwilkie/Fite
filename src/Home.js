@@ -33,7 +33,7 @@ function Home() {
         width: "100%",
         maxWidth: "728px",
         boxSizing: "border-box",
-        marginBottom: "24px",
+        marginBottom: "12px",
         boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
       }}>
         <div style={styles.container}>
@@ -145,7 +145,7 @@ function Home() {
           </div>
         </div>
       </div>
-      <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "40px", fontStyle: "italic" }}>
+      <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "12px", fontStyle: "italic" }}>
         For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
       </p>
       <Analytics />
