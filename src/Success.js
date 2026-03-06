@@ -22,6 +22,7 @@ function Success() {
         maxWidth: "728px",
         boxSizing: "border-box",
         marginBottom: "24px",
+        boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
       }}>
         <div style={styles.container}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }} className="header-mobile">
