@@ -108,7 +108,7 @@ function Questions() {
   };
 
   return (
-    <div style={styles.page} className="page-wrapper">
+    <div style={styles.page} className="page-bg page-wrapper">
       <div style={{
         backgroundColor: "#f0f4f8",
         borderRadius: "16px",
@@ -217,10 +217,6 @@ function Questions() {
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundImage: "url('/Background.png')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundAttachment: "fixed",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",

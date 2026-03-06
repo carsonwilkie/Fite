@@ -25,7 +25,7 @@ function Home() {
   const [customPrompt, setCustomPrompt] = useState("");
 
   return (
-    <div style={styles.page} className="page-wrapper">
+    <div style={styles.page} className="page-bg page-wrapper">
       <div style={{
         backgroundColor: "#f0f4f8",
         borderRadius: "16px",
@@ -93,7 +93,7 @@ function Home() {
             </div>
 
             <p style={{ ...styles.prompt, marginTop: "24px" }}>Select a category to get started:</p>
-            <div style={styles.grid}>
+            <div style={styles.grid} className="grid-mobile">
               {categories.map((cat) => (
                 <button
                   key={cat}
@@ -156,10 +156,6 @@ function Home() {
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundImage: "url('/Background.png')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundAttachment: "fixed",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
