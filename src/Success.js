@@ -14,45 +14,55 @@ function Success() {
 
   return (
     <div style={styles.page} className="page-wrapper">
-      <div style={styles.container}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }} className="header-mobile">
-          <img
-            src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
-            alt="logo"
-            style={{ height: "64px", width: "64px" }}
-            className="logo-img-mobile"
-          />
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h1 style={styles.logo} className="logo-mobile">Fite Finance</h1>
-              {isPaid && (
-                <span style={{
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  letterSpacing: "0.8px",
-                  padding: "4px 10px",
-                  borderRadius: "20px",
-                  backgroundColor: "#c9a84c",
-                  color: "#ffffff",
-                }}>
-                  PREMIUM
-                </span>
-              )}
+      <div style={{
+        backgroundColor: "#f0f4f8",
+        borderRadius: "16px",
+        padding: "24px",
+        width: "100%",
+        maxWidth: "728px",
+        boxSizing: "border-box",
+        marginBottom: "24px",
+      }}>
+        <div style={styles.container}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }} className="header-mobile">
+            <img
+              src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
+              alt="logo"
+              style={{ height: "64px", width: "64px" }}
+              className="logo-img-mobile"
+            />
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <h1 style={styles.logo} className="logo-mobile">Fite Finance</h1>
+                {isPaid && (
+                  <span style={{
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    letterSpacing: "0.8px",
+                    padding: "4px 10px",
+                    borderRadius: "20px",
+                    backgroundColor: "#c9a84c",
+                    color: "#ffffff",
+                  }}>
+                    PREMIUM
+                  </span>
+                )}
+              </div>
+              <p style={styles.tagline}>The finance site sharpening your interview skills</p>
             </div>
-            <p style={styles.tagline}>The finance site sharpening your interview skills</p>
           </div>
-        </div>
 
-        <div style={styles.card}>
-          <h2 style={styles.title}>You're all set! 🎉</h2>
-          <p style={styles.text}>Welcome to <span style={{ color: "#c9a84c", fontWeight: "700" }}>Fite Finance Premium</span>. You now have unlimited access to all finance interview questions.</p>
-          <button
-            className="primary-btn"
-            style={{ marginTop: "24px" }}
-            onClick={() => navigate("/")}
-          >
-            Start Practicing
-          </button>
+          <div style={styles.card}>
+            <h2 style={styles.title}>You're all set! 🎉</h2>
+            <p style={styles.text}>Welcome to <span style={{ color: "#c9a84c", fontWeight: "700" }}>Fite Finance Premium</span>. You now have unlimited access to all finance interview questions.</p>
+            <button
+              className="primary-btn"
+              style={{ marginTop: "24px" }}
+              onClick={() => navigate("/")}
+            >
+              Start Practicing
+            </button>
+          </div>
         </div>
       </div>
       <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "40px", fontStyle: "italic" }}>
@@ -66,12 +76,15 @@ function Success() {
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundColor: "#f0f4f8",
+    backgroundImage: "url('/Background.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "fixed",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
-    padding: "60px 20px",
+    padding: "20px 20px",
     fontFamily: "'Segoe UI', sans-serif",
   },
   container: {
