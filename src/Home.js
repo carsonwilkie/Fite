@@ -161,7 +161,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
-    padding: "20px 12px 0 12px",
+    padding: "20px 20px 40px 20px",
     fontFamily: "'Segoe UI', sans-serif",
   },
   container: {
@@ -182,6 +182,7 @@ const styles = {
     color: "#4a6fa5",
     margin: 0,
     cursor: "default",
+    maxWidth: "280px",
   },
   card: {
     backgroundColor: "#ffffff",
