@@ -33,11 +33,11 @@ function Home() {
         width: "100%",
         maxWidth: "728px",
         boxSizing: "border-box",
-        marginBottom: "24px",
+        marginBottom: "16px",
         boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
       }} className="wrapper-mobile">
         <div style={styles.container}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }} className="header-mobile">
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "26px" }} className="header-mobile">
             <img
               src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
               alt="logo"
@@ -145,7 +145,7 @@ function Home() {
           </div>
         </div>
       </div>
-      <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "12px", fontStyle: "italic" }}>
+      <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px", fontStyle: "italic" }}>
         For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
       </p>
       <Analytics />
@@ -161,7 +161,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
-    padding: "20px 20px 0 20px",
+    padding: "20px 12px 0 12px",
     fontFamily: "'Segoe UI', sans-serif",
   },
   container: {

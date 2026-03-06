@@ -235,7 +235,7 @@ body {
   }
 
   .card-mobile {
-    padding: 20px !important;
+    padding: 16px !important;
   }
 
   .header-mobile {
@@ -257,7 +257,8 @@ body {
   }
 
   .wrapper-mobile {
-    padding: 16px !important;
+    padding: 12px !important;
+    width: calc(100% - 24px) !important;
   }
 }
 
@@ -265,6 +266,8 @@ html, body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  height: 100%;
+  min-height: 100%;
 }
 
 img, span, button {
