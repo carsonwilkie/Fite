@@ -222,7 +222,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
-    padding: "20px 12px 0 12px",
+    padding: "20px 20px 0 20px",
     fontFamily: "'Segoe UI', sans-serif",
   },
   container: {

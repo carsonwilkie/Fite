@@ -2,15 +2,18 @@ import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 
 export default function usePaidStatus() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [isPaid, setIsPaid] = useState(() => {
     return localStorage.getItem("isPaid") === "true";
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isLoaded) return;
     if (!user) {
       setIsPaid(false);
       localStorage.setItem("isPaid", "false");
+      setLoading(false);
       return;
     }
     fetch("/api/checkPaid", {
@@ -22,8 +25,9 @@ export default function usePaidStatus() {
       .then((data) => {
         setIsPaid(data.isPaid);
         localStorage.setItem("isPaid", data.isPaid);
+        setLoading(false);
       });
-  }, [user]);
+  }, [user, isLoaded]);
 
-  return { isPaid };
+  return { isPaid, loading };
 }

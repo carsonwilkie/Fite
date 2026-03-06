@@ -234,8 +234,16 @@ body {
     gap: 8px !important;
   }
 
+  .wrapper-mobile {
+    padding: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
   .card-mobile {
     padding: 16px !important;
+    overflow: hidden !important;
   }
 
   .header-mobile {
@@ -254,11 +262,6 @@ body {
   .grid-mobile {
     grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
-  }
-
-  .wrapper-mobile {
-    padding: 12px !important;
-    width: calc(100% - 24px) !important;
   }
 }
 

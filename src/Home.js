@@ -65,7 +65,7 @@ function Home() {
             </div>
           </div>
 
-          <div style={styles.card}>
+          <div style={styles.card} className="card-mobile">
             <p style={styles.prompt}>Select a difficulty:</p>
             <div style={styles.difficultyRow}>
               {difficulties.map((d) => (
