@@ -49,7 +49,7 @@ function Navbar() {
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {isPaid ? (
               <>
-                <button disabled className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.5, cursor: "not-allowed" }}>
+                <button onClick={() => navigate("/history")} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
                   History
                 </button>
                 <button onClick={handleManageSubscription} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
@@ -58,7 +58,7 @@ function Navbar() {
               </>
             ) : (
               <>
-                <button disabled className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.4, cursor: "not-allowed" }}>
+                <button disabled className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.5, cursor: "not-allowed" }}>
                   History
                 </button>
                 <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
