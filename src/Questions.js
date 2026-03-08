@@ -18,6 +18,9 @@ function Questions() {
   const { user } = useUser();
   const { isPaid } = usePaidStatus();
   const price = usePrice();
+  const [userAnswer, setUserAnswer] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
 
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
@@ -50,6 +53,8 @@ function Questions() {
     setAnswer("");
     setAnswerRevealed(false);
     setQuestion("");
+    setUserAnswer("");
+    setFeedback("");
     try {
       let newQuestion = null;
       let attempts = 0;
@@ -105,6 +110,22 @@ function Questions() {
       console.log("Error:", error);
     }
     setLoadingAnswer(false);
+  };
+
+  const handleGrade = async () => {
+    setLoadingFeedback(true);
+    try {
+      const res = await fetch("/api/grade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, userAnswer }),
+      });
+      const data = await res.json();
+      setFeedback(data.feedback);
+    } catch (error) {
+      console.log("Error:", error);
+    }
+    setLoadingFeedback(false);
   };
 
   return (
@@ -185,6 +206,58 @@ function Questions() {
               <div style={styles.section}>
                 <p style={styles.label}>QUESTION</p>
                 <p style={styles.text}>{question}</p>
+
+                {!question.includes("Come back tomorrow") && (
+                  <div style={{ marginTop: "20px" }}>
+                    <p style={{ ...styles.label, marginBottom: "8px" }}>
+                      YOUR ANSWER
+                      {!isPaid && (
+                        <span style={{ marginLeft: "8px", fontSize: "11px", fontWeight: "700", padding: "3px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5" }}>
+                          PREMIUM
+                        </span>
+                      )}
+                    </p>
+                    <textarea
+                      placeholder={isPaid ? "Type your answer here to get AI feedback..." : "Upgrade to Premium to get AI feedback on your answers"}
+                      value={userAnswer}
+                      onChange={(e) => isPaid && setUserAnswer(e.target.value)}
+                      disabled={!isPaid}
+                      style={{
+                        width: "100%",
+                        minHeight: "120px",
+                        padding: "12px 16px",
+                        borderRadius: "8px",
+                        border: "2px solid #e8edf5",
+                        fontSize: "14px",
+                        color: isPaid ? "#1a1a2e" : "#a0aec0",
+                        fontFamily: "'Segoe UI', sans-serif",
+                        boxSizing: "border-box",
+                        outline: "none",
+                        backgroundColor: isPaid ? "#ffffff" : "#f7f9fc",
+                        cursor: isPaid ? "text" : "not-allowed",
+                        resize: "vertical",
+                      }}
+                    />
+                    {isPaid && (
+                      <button
+                        onClick={handleGrade}
+                        disabled={loadingFeedback || !userAnswer.trim()}
+                        className="secondary-btn"
+                        style={{ marginTop: "12px" }}
+                      >
+                        {loadingFeedback ? "Grading..." : "Grade My Answer"}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {feedback && (
+                  <div style={{ marginTop: "20px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: "4px solid #0a2463" }}>
+                    <p style={{ ...styles.label, marginBottom: "8px" }}>FEEDBACK</p>
+                    <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{feedback}</p>
+                  </div>
+                )}
+
                 {question.includes("Come back tomorrow") ? (
                   <button className="upgrade-btn" onClick={handleUpgrade} style={{ width: "100%", display: "block", marginTop: "16px" }}>
                     ⭐ Upgrade for {price || "$3/month"}
