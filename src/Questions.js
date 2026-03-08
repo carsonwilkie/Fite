@@ -209,13 +209,17 @@ function Questions() {
 
                 {!question.includes("Come back tomorrow") && (
                   <div style={{ marginTop: "20px" }}>
-                    <p style={{ ...styles.label, marginBottom: "8px" }}>
+                    <p style={{ ...styles.label, marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
                       YOUR ANSWER
-                      {!isPaid && (
-                        <span style={{ marginLeft: "8px", fontSize: "11px", fontWeight: "700", padding: "3px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5" }}>
-                          PREMIUM
-                        </span>
-                      )}
+                      <span style={{
+                        fontSize: "11px",
+                        fontWeight: "700",
+                        letterSpacing: "0.8px",
+                        padding: "3px 8px",
+                        borderRadius: "20px",
+                        backgroundColor: isPaid ? "#c9a84c" : "#e8edf5",
+                        color: isPaid ? "#ffffff" : "#4a6fa5",
+                      }}>PREMIUM</span>
                     </p>
                     <textarea
                       placeholder={isPaid ? "Type your answer here to get AI feedback..." : "Upgrade to Premium to get AI feedback on your answers"}
