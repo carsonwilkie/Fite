@@ -2,11 +2,13 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-reac
 import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
 import { useNavigate } from "react-router-dom"
+import { useClerk } from "@clerk/clerk-react";
 
 function Navbar() {
   const { user } = useUser();
   const { isPaid } = usePaidStatus();
   const navigate = useNavigate();
+  const { openSignIn } = useClerk();
 
   const handleManageSubscription = async () => {
     const res = await fetch("/api/portal", {
@@ -21,6 +23,10 @@ function Navbar() {
   };
 
   const handleUpgrade = async () => {
+    if (!user?.id) {
+      openSignIn();
+      return;
+    }
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
