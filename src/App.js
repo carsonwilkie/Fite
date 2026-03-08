@@ -5,10 +5,14 @@ import Success from "./Success";
 import Navbar from "./Navbar";
 import ScrollToTop from "./ScrollToTop";
 import History from "./History";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 function App() {
   return (
     <BrowserRouter>
+      <Analytics />
+      <SpeedInsights />
       <ScrollToTop />
       <Navbar />
       <Routes>

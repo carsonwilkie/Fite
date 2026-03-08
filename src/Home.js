@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Analytics } from "@vercel/analytics/react";
 import usePaidStatus from "./usePaidStatus";
 import "./App.css";
 
@@ -151,7 +150,6 @@ function Home() {
       <p className="byline-bottom" style={{ textAlign: "center", fontSize: "10px", color: "#5a060d", fontStyle: "italic", marginTop: "4px", marginBottom: "12px", display: "none" }}>
         by Colgate's finest
       </p>
-      <Analytics />
     </div>
   );
 }
