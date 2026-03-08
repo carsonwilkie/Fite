@@ -116,8 +116,8 @@ function History() {
                         borderRadius: "8px",
                         padding: "16px",
                         marginBottom: "16px",
-                        boxShadow: "0 2px 8px rgba(10,36,99,0.10)",
-                        border: "1px solid #e8edf5",
+                        boxShadow: isExpanded ? "0 4px 20px rgba(10,36,99,0.25)" : "0 2px 8px rgba(10,36,99,0.10)",
+                        border: isExpanded ? "1px solid #4a6fa5" : "1px solid #e8edf5",
                         cursor: "pointer",
                       }}
                         onClick={() => setExpandedIndex(isExpanded ? null : globalIndex)}
@@ -140,7 +140,17 @@ function History() {
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
-                          <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0, fontWeight: "500" }}>
+                          <p style={{ 
+                            fontSize: "14px", 
+                            color: "#1a1a2e", 
+                            lineHeight: "1.6", 
+                            margin: 0, 
+                            fontWeight: "500",
+                            overflow: "hidden",
+                            display: "-webkit-box",
+                            WebkitLineClamp: isExpanded ? "unset" : 2,
+                            WebkitBoxOrient: "vertical",
+                          }}>
                             {entry.question}
                           </p>
                           <span style={{ fontSize: "12px", color: "#4a6fa5", flexShrink: 0 }}>
