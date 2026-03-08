@@ -303,3 +303,8 @@ img, span, button {
   width: 40px !important;
   height: 40px !important;
 }
+
+.history-answer .markdown p,
+.history-answer .markdown li {
+  font-size: 13px !important;
+}
