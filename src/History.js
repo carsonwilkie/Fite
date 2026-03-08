@@ -147,10 +147,8 @@ function History() {
                             {entry.answer && (
                                 <>
                                     <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>ANSWER</p>
-                                    <div style={{ fontSize: "13px", color: "#1a1a2e", lineHeight: "1.6" }}>
                                     <div className="history-answer">
                                         <ReactMarkdown className="markdown">{entry.answer}</ReactMarkdown>
-                                    </div>
                                     </div>
                                 </>
                                 )}
