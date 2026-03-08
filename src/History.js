@@ -137,6 +137,12 @@ function History() {
                               borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
                             }}>{entry.math}</span>
                           )}
+                          {entry.customPrompt && (
+                            <span style={{
+                                fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                                borderRadius: "20px", backgroundColor: "#c9a84c", color: "#ffffff"
+                            }}>"{entry.customPrompt}"</span>
+                          )}
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>

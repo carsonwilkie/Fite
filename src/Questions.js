@@ -80,6 +80,7 @@ function Questions() {
               category: decodeURIComponent(category),
               difficulty: decodeURIComponent(difficulty),
               math: decodeURIComponent(math),
+              customPrompt: customPrompt && decodeURIComponent(customPrompt) !== "undefined" ? decodeURIComponent(customPrompt) : null,
               timestamp: Date.now(),
             }
           }),
