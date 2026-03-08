@@ -8,7 +8,7 @@ const categories = [
   "Investment Banking",
   "Private Equity",
   "Asset Management",
-  "Accounting",
+  "Asset Finance", //Should be "Accounting"
   "Financial Modeling",
   "Valuation",
   "Sales and Trading",
