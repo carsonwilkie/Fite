@@ -74,6 +74,7 @@ function Questions() {
               feedback: data.feedback,
               category: decodeURIComponent(category),
               difficulty: decodeURIComponent(difficulty),
+              math: decodeURIComponent(math),
               timestamp: Date.now(),
             }
           }),
