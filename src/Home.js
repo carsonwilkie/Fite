@@ -13,6 +13,7 @@ const categories = [
   "Financial Modeling",
   "Valuation",
   "Sales and Trading",
+  "Asset Finance & Securitization",
 ];
 
 const difficulties = ["Easy", "Medium", "Hard"];
