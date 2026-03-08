@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { Analytics } from "@vercel/analytics/react";
@@ -22,6 +22,11 @@ function Questions() {
   const [feedback, setFeedback] = useState("");
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [graded, setGraded] = useState(false);
+  const answerRef = React.useRef(answer);
+  
+  useEffect(() => {
+    answerRef.current = answer;
+  }, [answer]);
 
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
@@ -69,7 +74,7 @@ function Questions() {
             userId: user.id,
             entry: {
               question,
-              answer,
+              answer: answerRef.current,
               userAnswer,
               feedback: data.feedback,
               category: decodeURIComponent(category),
