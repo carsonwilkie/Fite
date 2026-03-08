@@ -143,8 +143,24 @@ function History() {
                         {isExpanded && (
                           <div style={{ marginTop: "16px", borderTop: "1px solid #e8edf5", paddingTop: "16px" }}
                             onClick={(e) => e.stopPropagation()}>
-                            <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1.2px", margin: "0 0 8px 0" }}>ANSWER</p>
-                            <ReactMarkdown className="markdown">{entry.answer}</ReactMarkdown>
+                            {entry.answer && (
+                                <>
+                                    <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1.2px", margin: "0 0 8px 0" }}>ANSWER</p>
+                                    <ReactMarkdown className="markdown">{entry.answer}</ReactMarkdown>
+                                </>
+                                )}
+                                {entry.userAnswer && (
+                                    <div style={{ marginTop: "16px" }}>
+                                        <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1.2px", margin: "0 0 8px 0" }}>YOUR ANSWER</p>
+                                        <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.userAnswer}</p>
+                                    </div>
+                                )}
+                                {entry.feedback && (
+                                    <div style={{ marginTop: "16px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: "4px solid #0a2463" }}>
+                                        <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1.2px", margin: "0 0 8px 0" }}>FEEDBACK</p>
+                                        <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.feedback}</p>
+                                    </div>
+                                )}
                           </div>
                         )}
                       </div>
