@@ -48,6 +48,41 @@ function Questions() {
     }
   };
 
+  const handleGrade = async () => {
+    setLoadingFeedback(true);
+    try {
+      const res = await fetch("/api/grade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, userAnswer }),
+      });
+      const data = await res.json();
+      setFeedback(data.feedback);
+
+      if (user?.id) {
+        fetch("/api/history", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: user.id,
+            entry: {
+              question,
+              answer,
+              userAnswer,
+              feedback: data.feedback,
+              category: decodeURIComponent(category),
+              difficulty: decodeURIComponent(difficulty),
+              timestamp: Date.now(),
+            }
+          }),
+        });
+      }
+    } catch (error) {
+      console.log("Error:", error);
+    }
+    setLoadingFeedback(false);
+  };
+
   const getQuestion = async () => {
     setLoadingQuestion(true);
     setAnswer("");
@@ -84,25 +119,7 @@ function Questions() {
           body: JSON.stringify({ type: "answer", question: newQuestion, category, difficulty, math, customPrompt, userId: user?.id }),
         })
           .then((res) => res.json())
-          .then((data) => {
-            setAnswer(data.result);
-            if (user?.id) {
-              fetch("/api/history", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  userId: user.id,
-                  entry: {
-                    question: newQuestion,
-                    answer: data.result,
-                    category: decodeURIComponent(category),
-                    difficulty: decodeURIComponent(difficulty),
-                    timestamp: Date.now(),
-                  }
-                }),
-              });
-            }
-          });
+          .then((data) => { setAnswer(data.result); });
       } else {
         setQuestion("You've seen all recent questions in this category! Try a different category or check back tomorrow.");
       }
@@ -128,22 +145,6 @@ function Questions() {
       console.log("Error:", error);
     }
     setLoadingAnswer(false);
-  };
-
-  const handleGrade = async () => {
-    setLoadingFeedback(true);
-    try {
-      const res = await fetch("/api/grade", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, userAnswer }),
-      });
-      const data = await res.json();
-      setFeedback(data.feedback);
-    } catch (error) {
-      console.log("Error:", error);
-    }
-    setLoadingFeedback(false);
   };
 
   return (
