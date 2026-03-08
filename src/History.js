@@ -20,6 +20,7 @@ function History() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
+  const [selectedMath, setSelectedMath] = useState("");
 
   useEffect(() => {
     if (loading) return;
@@ -42,7 +43,8 @@ function History() {
       const matchesSearch = search === "" || entry.question.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = selectedCategory === "" || selectedCategory === "All" || entry.category === selectedCategory;
       const matchesDifficulty = selectedDifficulty === "" || entry.difficulty === selectedDifficulty;
-      return matchesSearch && matchesCategory && matchesDifficulty;
+      const matchesMath = selectedMath === "" || entry.math === selectedMath;
+      return matchesSearch && matchesCategory && matchesDifficulty && matchesMath;
     })
     .sort((a, b) => sortOrder === "newest" ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
 
@@ -176,6 +178,18 @@ function History() {
                       {sortOrder === "newest" ? "Newest ↓" : "Oldest ↑"}
                     </button>
                   </div>
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    {["With Math", "No Math"].map((m) => (
+                        <button
+                            key={m}
+                            onClick={() => setSelectedMath(selectedMath === m ? "" : m)}
+                            style={filterPillStyle(selectedMath === m)}
+                        >
+                            {m}
+                        </button>
+                    ))}
                 </div>
 
                 {(search || selectedCategory || selectedDifficulty) && (
