@@ -122,15 +122,7 @@ function History() {
                       }}
                         onClick={() => setExpandedIndex(isExpanded ? null : globalIndex)}
                       >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
-                          <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0, fontWeight: "500" }}>
-                            {entry.question}
-                          </p>
-                          <span style={{ fontSize: "12px", color: "#4a6fa5", flexShrink: 0 }}>
-                            {isExpanded ? "▲" : "▼"}
-                          </span>
-                        </div>
-                        <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                        <div style={{ display: "flex", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
                           <span style={{
                             fontSize: "11px", fontWeight: "700", padding: "2px 8px",
                             borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
@@ -139,31 +131,46 @@ function History() {
                             fontSize: "11px", fontWeight: "700", padding: "2px 8px",
                             borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
                           }}>{entry.difficulty}</span>
+                          {entry.math && (
+                            <span style={{
+                              fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                              borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
+                            }}>{entry.math}</span>
+                          )}
+                        </div>
+
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+                          <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0, fontWeight: "500" }}>
+                            {entry.question}
+                          </p>
+                          <span style={{ fontSize: "12px", color: "#4a6fa5", flexShrink: 0 }}>
+                            {isExpanded ? "▲" : "▼"}
+                          </span>
                         </div>
 
                         {isExpanded && (
                           <div style={{ marginTop: "16px", borderTop: "1px solid #e8edf5", paddingTop: "16px" }}
                             onClick={(e) => e.stopPropagation()}>
                             {entry.answer && (
-                                <>
-                                    <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>ANSWER</p>
-                                    <div className="history-answer">
-                                        <ReactMarkdown className="markdown">{entry.answer}</ReactMarkdown>
-                                    </div>
-                                </>
-                                )}
-                                {entry.userAnswer && (
-                                    <div style={{ marginTop: "16px" }}>
-                                        <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>YOUR ANSWER</p>
-                                        <p style={{ fontSize: "13px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.userAnswer}</p>
-                                    </div>
-                                )}
-                                {entry.feedback && (
-                                    <div style={{ marginTop: "16px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: "4px solid #0a2463" }}>
-                                        <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0" }}>FEEDBACK</p>
-                                        <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.feedback}</p>
-                                    </div>
-                                )}
+                              <>
+                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>ANSWER</p>
+                                <div className="history-answer">
+                                  <ReactMarkdown className="markdown">{entry.answer}</ReactMarkdown>
+                                </div>
+                              </>
+                            )}
+                            {entry.userAnswer && (
+                              <div style={{ marginTop: "16px" }}>
+                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>YOUR ANSWER</p>
+                                <p style={{ fontSize: "13px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.userAnswer}</p>
+                              </div>
+                            )}
+                            {entry.feedback && (
+                              <div style={{ marginTop: "16px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: "4px solid #0a2463" }}>
+                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0" }}>FEEDBACK</p>
+                                <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.feedback}</p>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

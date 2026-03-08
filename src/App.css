@@ -306,5 +306,11 @@ img, span, button {
 
 .history-answer .markdown p,
 .history-answer .markdown li {
-  font-size: 13px !important;
+  font-size: 12px !important;
+}
+
+.history-answer .markdown h1,
+.history-answer .markdown h2,
+.history-answer .markdown h3 {
+  font-size: 14px !important;
 }
