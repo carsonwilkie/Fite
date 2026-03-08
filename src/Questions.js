@@ -21,6 +21,28 @@ function Questions() {
   const [userAnswer, setUserAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
   const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [graded, setGraded] = useState(false);
+
+  useEffect(() => {
+    if (feedback && answer && question && user?.id) {
+      fetch("/api/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          entry: {
+            question,
+            answer,
+            userAnswer,
+            feedback,
+            category: decodeURIComponent(category),
+            difficulty: decodeURIComponent(difficulty),
+            timestamp: Date.now(),
+          }
+        }),
+      });
+    }
+  }, [feedback]);
 
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
@@ -58,25 +80,7 @@ function Questions() {
       });
       const data = await res.json();
       setFeedback(data.feedback);
-
-      if (user?.id) {
-        fetch("/api/history", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: user.id,
-            entry: {
-              question,
-              answer,
-              userAnswer,
-              feedback: data.feedback,
-              category: decodeURIComponent(category),
-              difficulty: decodeURIComponent(difficulty),
-              timestamp: Date.now(),
-            }
-          }),
-        });
-      }
+      setGraded(true);
     } catch (error) {
       console.log("Error:", error);
     }
@@ -90,6 +94,7 @@ function Questions() {
     setQuestion("");
     setUserAnswer("");
     setFeedback("");
+    setGraded(false);
     try {
       let newQuestion = null;
       let attempts = 0;
@@ -264,11 +269,11 @@ function Questions() {
                     {isPaid && (
                       <button
                         onClick={handleGrade}
-                        disabled={loadingFeedback || !userAnswer.trim()}
+                        disabled={loadingFeedback || !userAnswer.trim() || graded}
                         className="secondary-btn"
                         style={{ marginTop: "12px" }}
                       >
-                        {loadingFeedback ? "Grading..." : "Grade My Answer"}
+                        {loadingFeedback ? "Grading..." : graded ? "Graded ✓" : "Grade My Answer"}
                       </button>
                     )}
                   </div>
