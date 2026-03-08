@@ -42,7 +42,7 @@ function Questions() {
         }),
       });
     }
-  }, [feedback]);
+  }, [feedback, answer, question, userAnswer, category, difficulty, user]);
 
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
