@@ -223,7 +223,7 @@ body {
 
   .navbar-fixed {
     display: flex !important;
-    justify-content: space-between !important;
+    justify-content: flex-end !important;
     align-items: center !important;
     padding: 12px 24px !important;
     min-height: 60px !important;
