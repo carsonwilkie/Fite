@@ -43,7 +43,9 @@ function History() {
       const matchesSearch = search === "" || entry.question.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = selectedCategory === "" || selectedCategory === "All" || entry.category === selectedCategory;
       const matchesDifficulty = selectedDifficulty === "" || entry.difficulty === selectedDifficulty;
-      const matchesMath = selectedMath === "" || entry.math === selectedMath;
+      const matchesMath = selectedMath === "" || 
+        (selectedMath === "No Math" && (!entry.math || entry.math === "No Math")) ||
+        (selectedMath === "With Math" && entry.math === "With Math");
       return matchesSearch && matchesCategory && matchesDifficulty && matchesMath;
     })
     .sort((a, b) => sortOrder === "newest" ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
