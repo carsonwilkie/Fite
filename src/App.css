@@ -203,9 +203,13 @@ body {
   }
 
   .byline-fixed {
-    display: block !important;
+    display: none !important;
     font-size: 10px !important;
     flex-shrink: 0 !important;
+  }
+
+  .byline-bottom {
+    display: block !important;
   }
 
   .manage-sub-btn {

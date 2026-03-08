@@ -115,8 +115,9 @@ function History() {
                         backgroundColor: "#ffffff",
                         borderRadius: "8px",
                         padding: "16px",
-                        marginBottom: "12px",
-                        boxShadow: "0 1px 4px rgba(10,36,99,0.06)",
+                        marginBottom: "16px",
+                        boxShadow: "0 2px 8px rgba(10,36,99,0.10)",
+                        border: "1px solid #e8edf5",
                         cursor: "pointer",
                       }}
                         onClick={() => setExpandedIndex(isExpanded ? null : globalIndex)}
