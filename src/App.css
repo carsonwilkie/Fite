@@ -306,7 +306,8 @@ img, span, button {
 
 .history-answer * {
   font-size: 11px !important;
-  line-height: 1.5 !important;
+  line-height: 1.2 !important;
+  color: #1a1a2e !important;
 }
 
 .history-answer h1,
@@ -316,6 +317,7 @@ img, span, button {
   font-size: 14px !important;
   font-weight: 600 !important;
   margin: 4px 0 !important;
+  color: #0a2463 !important;
 }
 
 .history-answer .markdown p,
