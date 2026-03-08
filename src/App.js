@@ -4,6 +4,7 @@ import Questions from "./Questions";
 import Success from "./Success";
 import Navbar from "./Navbar";
 import ScrollToTop from "./ScrollToTop";
+import History from "./History";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/questions/:category/:difficulty/:math/:customPrompt" element={<Questions />} />
         <Route path="/questions/:category/:difficulty/:math" element={<Questions />} />
         <Route path="/success" element={<Success />} />
+        <Route path="/history" element={<History />} />
       </Routes>
     </BrowserRouter>
   );

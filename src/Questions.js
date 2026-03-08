@@ -84,7 +84,25 @@ function Questions() {
           body: JSON.stringify({ type: "answer", question: newQuestion, category, difficulty, math, customPrompt, userId: user?.id }),
         })
           .then((res) => res.json())
-          .then((data) => setAnswer(data.result));
+          .then((data) => {
+            setAnswer(data.result);
+            if (user?.id) {
+              fetch("/api/history", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  userId: user.id,
+                  entry: {
+                    question: newQuestion,
+                    answer: data.result,
+                    category: decodeURIComponent(category),
+                    difficulty: decodeURIComponent(difficulty),
+                    timestamp: Date.now(),
+                  }
+                }),
+              });
+            }
+          });
       } else {
         setQuestion("You've seen all recent questions in this category! Try a different category or check back tomorrow.");
       }

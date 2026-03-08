@@ -1,10 +1,12 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
+import { useNavigate } from "react-router-dom"
 
 function Navbar() {
   const { user } = useUser();
   const { isPaid } = usePaidStatus();
+  const navigate = useNavigate();
 
   const handleManageSubscription = async () => {
     const res = await fetch("/api/portal", {
@@ -46,13 +48,23 @@ function Navbar() {
         <SignedIn>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {isPaid ? (
-              <button onClick={handleManageSubscription} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
-                Manage Subscription
-              </button>
+              <>
+                <button onClick={() => navigate("/history")} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                  History
+                </button>
+                <button onClick={handleManageSubscription} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                  Manage Subscription
+                </button>
+              </>
             ) : (
-              <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
-                ⭐ Upgrade to Premium
-              </button>
+              <>
+                <button disabled className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.4, cursor: "not-allowed" }}>
+                  History
+                </button>
+                <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                  ⭐ Upgrade to Premium
+                </button>
+              </>
             )}
             <UserButton />
           </div>
