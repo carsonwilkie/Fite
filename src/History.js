@@ -43,7 +43,7 @@ function History() {
       const matchesSearch = search === "" || entry.question.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = selectedCategory === "" || selectedCategory === "All" || entry.category === selectedCategory;
       const matchesDifficulty = selectedDifficulty === "" || entry.difficulty === selectedDifficulty;
-      const matchesMath = selectedMath === "" || 
+      const matchesMath = selectedMath === "" ||
         (selectedMath === "No Math" && (!entry.math || entry.math === "No Math")) ||
         (selectedMath === "With Math" && entry.math === "With Math");
       return matchesSearch && matchesCategory && matchesDifficulty && matchesMath;
@@ -74,6 +74,21 @@ function History() {
     backgroundColor: active ? "#0a2463" : "#e8edf5",
     color: active ? "#ffffff" : "#4a6fa5",
   });
+
+  // Stats calculations
+  const totalQuestions = entries.length;
+  const gradedQuestions = entries.filter(e => e.feedback).length;
+  const categoryCounts = {};
+  entries.forEach(e => {
+    if (e.category) categoryCounts[e.category] = (categoryCounts[e.category] || 0) + 1;
+  });
+  const difficultyCounts = { Easy: 0, Medium: 0, Hard: 0 };
+  entries.forEach(e => {
+    if (e.difficulty && difficultyCounts[e.difficulty] !== undefined) {
+      difficultyCounts[e.difficulty]++;
+    }
+  });
+  const topCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
 
   return (
     <div style={styles.page} className="page-bg page-wrapper">
@@ -121,93 +136,147 @@ function History() {
             </div>
 
             {!loadingHistory && entries.length > 0 && (
-              <div style={{ marginBottom: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                <input
-                  type="text"
-                  placeholder="Search questions..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    borderRadius: "8px",
-                    border: "2px solid #e8edf5",
-                    fontSize: "14px",
-                    color: "#1a1a2e",
-                    fontFamily: "'Segoe UI', sans-serif",
-                    boxSizing: "border-box",
-                    outline: "none",
-                    backgroundColor: "#ffffff",
-                  }}
-                />
-
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
-                      style={filterPillStyle(selectedCategory === cat)}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
-                  {DIFFICULTIES.map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => setSelectedDifficulty(selectedDifficulty === d ? "" : d)}
-                      style={filterPillStyle(selectedDifficulty === d)}
-                    >
-                      {d}
-                    </button>
-                  ))}
-                  <div style={{ marginLeft: "auto" }}>
-                    <button
-                      onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: "700",
-                        padding: "4px 10px",
-                        borderRadius: "20px",
-                        cursor: "pointer",
-                        border: "none",
-                        backgroundColor: "#e8edf5",
-                        color: "#4a6fa5",
-                      }}
-                    >
-                      {sortOrder === "newest" ? "Newest ↓" : "Oldest ↑"}
-                    </button>
+              <>
+                {/* Stats Dashboard */}
+                <div style={{
+                  backgroundColor: "#f0f4f8",
+                  borderRadius: "10px",
+                  padding: "16px",
+                  marginBottom: "24px",
+                }}>
+                  <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1.2px", margin: "0 0 12px 0" }}>YOUR STATS</p>
+                  
+                  {/* Top row */}
+                  <div style={{ display: "flex", gap: "12px", marginBottom: "12px", flexWrap: "wrap" }}>
+                    <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center" }}>
+                      <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{totalQuestions}</p>
+                      <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Total Questions</p>
+                    </div>
+                    <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center" }}>
+                      <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{gradedQuestions}</p>
+                      <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Graded</p>
+                    </div>
+                    {topCategory && (
+                      <div style={{ flex: 2, minWidth: "120px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center" }}>
+                        <p style={{ fontSize: "16px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{topCategory[0]}</p>
+                        <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Top Category ({topCategory[1]})</p>
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                    {["With Math", "No Math"].map((m) => (
-                        <button
-                            key={m}
-                            onClick={() => setSelectedMath(selectedMath === m ? "" : m)}
-                            style={filterPillStyle(selectedMath === m)}
-                        >
-                            {m}
-                        </button>
+                  {/* Difficulty row */}
+                  <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                    {Object.entries(difficultyCounts).map(([diff, count]) => (
+                      <div key={diff} style={{ flex: 1, minWidth: "60px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px", textAlign: "center" }}>
+                        <p style={{ fontSize: "20px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{count}</p>
+                        <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>{diff}</p>
+                      </div>
                     ))}
+                  </div>
+
+                  {/* Category breakdown */}
+                  <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                    {Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
+                      <div key={cat} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0 }}>{cat}</p>
+                        <span style={{
+                          fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                          borderRadius: "20px", backgroundColor: "#e8edf5", color: "#0a2463"
+                        }}>{count}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                {(search || selectedCategory || selectedDifficulty) && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0 }}>
-                      {filteredEntries.length} result{filteredEntries.length !== 1 ? "s" : ""}
-                    </p>
-                    <button
-                      onClick={() => { setSearch(""); setSelectedCategory(""); setSelectedDifficulty(""); }}
-                      style={{ fontSize: "11px", color: "#4a6fa5", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", padding: 0 }}
-                    >
-                      Clear filters
-                    </button>
+                {/* Search and filters */}
+                <div style={{ marginBottom: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <input
+                    type="text"
+                    placeholder="Search questions..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      border: "2px solid #e8edf5",
+                      fontSize: "14px",
+                      color: "#1a1a2e",
+                      fontFamily: "'Segoe UI', sans-serif",
+                      boxSizing: "border-box",
+                      outline: "none",
+                      backgroundColor: "#ffffff",
+                    }}
+                  />
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
+                        style={filterPillStyle(selectedCategory === cat)}
+                      >
+                        {cat}
+                      </button>
+                    ))}
                   </div>
-                )}
-              </div>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
+                    {DIFFICULTIES.map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setSelectedDifficulty(selectedDifficulty === d ? "" : d)}
+                        style={filterPillStyle(selectedDifficulty === d)}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                    <div style={{ marginLeft: "auto" }}>
+                      <button
+                        onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          padding: "4px 10px",
+                          borderRadius: "20px",
+                          cursor: "pointer",
+                          border: "none",
+                          backgroundColor: "#e8edf5",
+                          color: "#4a6fa5",
+                        }}
+                      >
+                        {sortOrder === "newest" ? "Newest ↓" : "Oldest ↑"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    {["With Math", "No Math"].map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => setSelectedMath(selectedMath === m ? "" : m)}
+                        style={filterPillStyle(selectedMath === m)}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+
+                  {(search || selectedCategory || selectedDifficulty || selectedMath) && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0 }}>
+                        {filteredEntries.length} result{filteredEntries.length !== 1 ? "s" : ""}
+                      </p>
+                      <button
+                        onClick={() => { setSearch(""); setSelectedCategory(""); setSelectedDifficulty(""); setSelectedMath(""); }}
+                        style={{ fontSize: "11px", color: "#4a6fa5", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+                      >
+                        Clear filters
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {loadingHistory ? (
