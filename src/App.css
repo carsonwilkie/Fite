@@ -308,31 +308,14 @@ img, span, button {
   font-size: 11px !important;
   line-height: 1.2 !important;
   color: #1a1a2e !important;
+  margin: 1px 0 !important;
 }
 
 .history-answer h1,
 .history-answer h2,
 .history-answer h3,
 .history-answer h4 {
-  font-size: 14px !important;
+  font-size: 11px !important;
   font-weight: 600 !important;
-  margin: 4px 0 !important;
   color: #0a2463 !important;
-}
-
-.history-answer .markdown p,
-.history-answer .markdown li,
-.history-answer .markdown ul,
-.history-answer .markdown ol {
-  font-size: 12px !important;
-  line-height: 1.5 !important;
-  margin: 4px 0 !important;
-}
-
-.history-answer p,
-.history-answer li,
-.history-answer h1,
-.history-answer h2,
-.history-answer h3 {
-  margin: 1px 0 !important;
 }
