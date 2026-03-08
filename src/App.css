@@ -326,3 +326,11 @@ img, span, button {
   line-height: 1.5 !important;
   margin: 4px 0 !important;
 }
+
+.history-answer p,
+.history-answer li,
+.history-answer h1,
+.history-answer h2,
+.history-answer h3 {
+  margin: 1px 0 !important;
+}
