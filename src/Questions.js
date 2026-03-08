@@ -23,27 +23,6 @@ function Questions() {
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [graded, setGraded] = useState(false);
 
-  useEffect(() => {
-    if (feedback && answer && question && user?.id) {
-      fetch("/api/history", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          entry: {
-            question,
-            answer,
-            userAnswer,
-            feedback,
-            category: decodeURIComponent(category),
-            difficulty: decodeURIComponent(difficulty),
-            timestamp: Date.now(),
-          }
-        }),
-      });
-    }
-  }, [feedback, answer, question, userAnswer, category, difficulty, user]);
-
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
     history.push({ question: q, timestamp: Date.now() });
@@ -81,6 +60,25 @@ function Questions() {
       const data = await res.json();
       setFeedback(data.feedback);
       setGraded(true);
+
+      if (user?.id) {
+        await fetch("/api/history", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: user.id,
+            entry: {
+              question,
+              answer,
+              userAnswer,
+              feedback: data.feedback,
+              category: decodeURIComponent(category),
+              difficulty: decodeURIComponent(difficulty),
+              timestamp: Date.now(),
+            }
+          }),
+        });
+      }
     } catch (error) {
       console.log("Error:", error);
     }
@@ -309,6 +307,9 @@ function Questions() {
       </div>
       <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px", fontStyle: "italic" }}>
         For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
+      </p>
+      <p className="byline-bottom" style={{ textAlign: "center", fontSize: "10px", color: "#5a060d", fontStyle: "italic", marginTop: "4px", marginBottom: "12px", display: "none" }}>
+        by Colgate's finest
       </p>
       <Analytics />
     </div>
