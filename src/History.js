@@ -158,7 +158,7 @@ function History() {
                     </div>
                     {topCategory && (
                       <div style={{ flex: 2, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                        <p style={{ fontSize: "16px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{topCategory[0]}</p>
+                        <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{topCategory[0]}</p>
                         <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Top Category ({topCategory[1]})</p>
                       </div>
                     )}
