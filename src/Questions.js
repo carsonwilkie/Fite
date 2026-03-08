@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
+import { useClerk } from "@clerk/clerk-react";
 import "./App.css";
 
 function Questions() {
@@ -23,6 +24,7 @@ function Questions() {
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [graded, setGraded] = useState(false);
   const answerRef = React.useRef(answer);
+  const { openSignIn } = useClerk();
   
   useEffect(() => {
     answerRef.current = answer;
@@ -43,6 +45,10 @@ function Questions() {
   };
 
   const handleUpgrade = async () => {
+    if (!user?.id) {
+      openSignIn();
+      return;
+    }
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
