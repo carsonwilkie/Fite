@@ -6,6 +6,9 @@ import ReactMarkdown from "react-markdown";
 import usePaidStatus from "./usePaidStatus";
 import "./App.css";
 
+const CATEGORIES = ["All", "Investment Banking", "Private Equity", "Asset Management", "Accounting", "Financial Modeling", "Valuation", "Sales and Trading", "Asset Finance"];
+const DIFFICULTIES = ["Easy", "Medium", "Hard"];
+
 function History() {
   const navigate = useNavigate();
   const { user } = useUser();
@@ -13,6 +16,10 @@ function History() {
   const [entries, setEntries] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState(null);
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedDifficulty, setSelectedDifficulty] = useState("");
+  const [sortOrder, setSortOrder] = useState("newest");
 
   useEffect(() => {
     if (loading) return;
@@ -30,6 +37,15 @@ function History() {
       });
   }, [user, isPaid, loading, navigate]);
 
+  const filteredEntries = entries
+    .filter((entry) => {
+      const matchesSearch = search === "" || entry.question.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = selectedCategory === "" || selectedCategory === "All" || entry.category === selectedCategory;
+      const matchesDifficulty = selectedDifficulty === "" || entry.difficulty === selectedDifficulty;
+      return matchesSearch && matchesCategory && matchesDifficulty;
+    })
+    .sort((a, b) => sortOrder === "newest" ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
+
   const groupByDate = (entries) => {
     const groups = {};
     entries.forEach((entry) => {
@@ -42,7 +58,18 @@ function History() {
     return groups;
   };
 
-  const grouped = groupByDate(entries);
+  const grouped = groupByDate(filteredEntries);
+
+  const filterPillStyle = (active) => ({
+    fontSize: "11px",
+    fontWeight: "700",
+    padding: "4px 10px",
+    borderRadius: "20px",
+    cursor: "pointer",
+    border: "none",
+    backgroundColor: active ? "#0a2463" : "#e8edf5",
+    color: active ? "#ffffff" : "#4a6fa5",
+  });
 
   return (
     <div style={styles.page} className="page-bg page-wrapper">
@@ -89,10 +116,90 @@ function History() {
               <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#0a2463", margin: 0 }}>Question History</h2>
             </div>
 
+            {!loadingHistory && entries.length > 0 && (
+              <div style={{ marginBottom: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <input
+                  type="text"
+                  placeholder="Search questions..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    border: "2px solid #e8edf5",
+                    fontSize: "14px",
+                    color: "#1a1a2e",
+                    fontFamily: "'Segoe UI', sans-serif",
+                    boxSizing: "border-box",
+                    outline: "none",
+                    backgroundColor: "#ffffff",
+                  }}
+                />
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
+                      style={filterPillStyle(selectedCategory === cat)}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
+                  {DIFFICULTIES.map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setSelectedDifficulty(selectedDifficulty === d ? "" : d)}
+                      style={filterPillStyle(selectedDifficulty === d)}
+                    >
+                      {d}
+                    </button>
+                  ))}
+                  <div style={{ marginLeft: "auto" }}>
+                    <button
+                      onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: "700",
+                        padding: "4px 10px",
+                        borderRadius: "20px",
+                        cursor: "pointer",
+                        border: "none",
+                        backgroundColor: "#e8edf5",
+                        color: "#4a6fa5",
+                      }}
+                    >
+                      {sortOrder === "newest" ? "Newest ↓" : "Oldest ↑"}
+                    </button>
+                  </div>
+                </div>
+
+                {(search || selectedCategory || selectedDifficulty) && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0 }}>
+                      {filteredEntries.length} result{filteredEntries.length !== 1 ? "s" : ""}
+                    </p>
+                    <button
+                      onClick={() => { setSearch(""); setSelectedCategory(""); setSelectedDifficulty(""); }}
+                      style={{ fontSize: "11px", color: "#4a6fa5", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+                    >
+                      Clear filters
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {loadingHistory ? (
               <p style={{ color: "#4a6fa5", fontSize: "14px" }}>Loading history...</p>
             ) : entries.length === 0 ? (
               <p style={{ color: "#4a6fa5", fontSize: "14px" }}>No history yet — go answer some questions!</p>
+            ) : filteredEntries.length === 0 ? (
+              <p style={{ color: "#4a6fa5", fontSize: "14px" }}>No questions match your filters.</p>
             ) : (
               Object.entries(grouped).map(([date, dayEntries]) => (
                 <div key={date} style={{ marginBottom: "32px" }}>
@@ -139,18 +246,18 @@ function History() {
                           )}
                           {entry.customPrompt && (
                             <span style={{
-                                fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                                borderRadius: "20px", backgroundColor: "#c9a84c", color: "#ffffff"
+                              fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                              borderRadius: "20px", backgroundColor: "#c9a84c", color: "#ffffff"
                             }}>"{entry.customPrompt}"</span>
                           )}
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
-                          <p style={{ 
-                            fontSize: "14px", 
-                            color: "#1a1a2e", 
-                            lineHeight: "1.6", 
-                            margin: 0, 
+                          <p style={{
+                            fontSize: "14px",
+                            color: "#1a1a2e",
+                            lineHeight: "1.6",
+                            margin: 0,
                             fontWeight: "500",
                             overflow: "hidden",
                             display: "-webkit-box",
