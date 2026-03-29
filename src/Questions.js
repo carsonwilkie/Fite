@@ -40,6 +40,13 @@ function Questions() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
+  useEffect(() => {
+    if (interviewMode && timeLeft === 0 && userAnswer.trim() && !graded) {
+      handleGrade();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft]);
+
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setTimeLeft(INTERVIEW_TIME);
@@ -54,6 +61,11 @@ function Questions() {
   const stopTimer = () => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     setTimeLeft(null);
+  };
+
+  const freezeTimer = () => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    // intentionally does not null out timeLeft — preserves the remaining time for display
   };
 
   const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
@@ -89,6 +101,7 @@ function Questions() {
   };
 
   const handleGrade = async () => {
+    if (interviewMode && timeLeft !== null && timeLeft > 0) freezeTimer();
     setLoadingFeedback(true);
     try {
       const res = await fetch("/api/grade", {
@@ -310,21 +323,25 @@ function Questions() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "10px 16px",
-                backgroundColor: timeLeft === 0 ? "#fee2e2" : timeLeft < 30 ? "#fff7ed" : "#e8edf5",
+                backgroundColor: graded && timeLeft > 0 ? "#f0fdf4" : timeLeft === 0 ? "#fee2e2" : timeLeft < 30 ? "#fff7ed" : "#e8edf5",
                 borderRadius: "8px",
                 marginTop: "16px",
-                border: `1px solid ${timeLeft === 0 ? "#fca5a5" : timeLeft < 30 ? "#fed7aa" : "#d0d9e8"}`,
+                border: `1px solid ${graded && timeLeft > 0 ? "#86efac" : timeLeft === 0 ? "#fca5a5" : timeLeft < 30 ? "#fed7aa" : "#d0d9e8"}`,
               }}>
                 <span style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px" }}>
                   INTERVIEW MODE
                 </span>
                 <span style={{
-                  fontSize: "22px",
+                  fontSize: graded && timeLeft > 0 ? "14px" : "22px",
                   fontWeight: "700",
                   fontFamily: "monospace",
-                  color: timeLeft === 0 ? "#dc2626" : timeLeft < 30 ? "#d97706" : "#0a2463",
+                  color: graded && timeLeft > 0 ? "#16a34a" : timeLeft === 0 ? "#dc2626" : timeLeft < 30 ? "#d97706" : "#0a2463",
                 }}>
-                  {timeLeft === 0 ? "Time's up!" : formatTime(timeLeft)}
+                  {graded && timeLeft > 0
+                    ? `${formatTime(timeLeft)} remaining`
+                    : timeLeft === 0
+                    ? "Time's up!"
+                    : formatTime(timeLeft)}
                 </span>
               </div>
             )}
@@ -351,8 +368,8 @@ function Questions() {
                     <textarea
                       placeholder={isPaid ? "Type your answer here to get AI feedback..." : "Upgrade to Premium to get AI feedback on your answers"}
                       value={userAnswer}
-                      onChange={(e) => isPaid && setUserAnswer(e.target.value)}
-                      disabled={!isPaid}
+                      onChange={(e) => isPaid && !(interviewMode && (timeLeft === 0 || graded)) && setUserAnswer(e.target.value)}
+                      disabled={!isPaid || (interviewMode && (timeLeft === 0 || graded))}
                       style={{
                         width: "100%",
                         minHeight: "120px",
@@ -394,7 +411,7 @@ function Questions() {
                     ⭐ Upgrade for {price || "$3/month"}
                   </button>
                 ) : (
-                  <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed} className="secondary-btn">
+                  <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed || (interviewMode && timeLeft !== null && timeLeft > 0 && !graded)} className="secondary-btn">
                     {loadingAnswer ? "Loading..." : "Show Answer"}
                   </button>
                 )}
