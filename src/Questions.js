@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { Analytics } from "@vercel/analytics/react";
@@ -7,6 +7,8 @@ import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
 import { useClerk } from "@clerk/clerk-react";
 import "./App.css";
+
+const INTERVIEW_TIME = 120;
 
 function Questions() {
   const { category, difficulty, math, customPrompt } = useParams();
@@ -25,10 +27,36 @@ function Questions() {
   const [graded, setGraded] = useState(false);
   const answerRef = React.useRef(answer);
   const { openSignIn } = useClerk();
-  
+  const [questionsUsed, setQuestionsUsed] = useState(null);
+  const [interviewMode, setInterviewMode] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(null);
+  const timerRef = useRef(null);
+
   useEffect(() => {
     answerRef.current = answer;
   }, [answer]);
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
+
+  const startTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimeLeft(INTERVIEW_TIME);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) { clearInterval(timerRef.current); timerRef.current = null; return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    setTimeLeft(null);
+  };
+
+  const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 
   const saveQuestion = (q) => {
     const history = JSON.parse(localStorage.getItem("questionHistory") || "[]");
@@ -106,6 +134,7 @@ function Questions() {
     setUserAnswer("");
     setFeedback("");
     setGraded(false);
+    stopTimer();
     try {
       let newQuestion = null;
       let attempts = 0;
@@ -121,6 +150,7 @@ function Questions() {
           setLoadingQuestion(false);
           return;
         }
+        if (data.questionsUsed !== undefined) setQuestionsUsed(data.questionsUsed);
         if (!wasRecentlyAsked(data.result)) {
           newQuestion = data.result;
         }
@@ -129,6 +159,7 @@ function Questions() {
       if (newQuestion) {
         saveQuestion(newQuestion);
         setQuestion(newQuestion);
+        if (interviewMode) startTimer();
         fetch("/api/question", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -233,9 +264,70 @@ function Questions() {
               )}
             </div>
 
+            {isPaid && (
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+                <button
+                  onClick={() => { setInterviewMode(!interviewMode); stopTimer(); }}
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    letterSpacing: "0.6px",
+                    padding: "5px 12px",
+                    borderRadius: "20px",
+                    cursor: "pointer",
+                    border: "2px solid",
+                    borderColor: interviewMode ? "#0a2463" : "#e8edf5",
+                    backgroundColor: interviewMode ? "#0a2463" : "#ffffff",
+                    color: interviewMode ? "#ffffff" : "#4a6fa5",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  Interview Mode {interviewMode ? "ON" : "OFF"}
+                </button>
+              </div>
+            )}
+
             <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
               {loadingQuestion ? "Loading..." : "Get Question"}
             </button>
+
+            {!isPaid && questionsUsed !== null && (
+              <p style={{
+                fontSize: "12px",
+                color: questionsUsed >= 4 ? "#d97706" : "#4a6fa5",
+                margin: "8px 0 0 0",
+                textAlign: "center",
+                fontStyle: "italic",
+              }}>
+                {questionsUsed} of 5 free questions used today
+                {questionsUsed >= 4 && " — running low!"}
+              </p>
+            )}
+
+            {interviewMode && timeLeft !== null && question && !question.includes("Come back tomorrow") && (
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 16px",
+                backgroundColor: timeLeft === 0 ? "#fee2e2" : timeLeft < 30 ? "#fff7ed" : "#e8edf5",
+                borderRadius: "8px",
+                marginTop: "16px",
+                border: `1px solid ${timeLeft === 0 ? "#fca5a5" : timeLeft < 30 ? "#fed7aa" : "#d0d9e8"}`,
+              }}>
+                <span style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px" }}>
+                  INTERVIEW MODE
+                </span>
+                <span style={{
+                  fontSize: "22px",
+                  fontWeight: "700",
+                  fontFamily: "monospace",
+                  color: timeLeft === 0 ? "#dc2626" : timeLeft < 30 ? "#d97706" : "#0a2463",
+                }}>
+                  {timeLeft === 0 ? "Time's up!" : formatTime(timeLeft)}
+                </span>
+              </div>
+            )}
 
             {question && (
               <div style={styles.section}>

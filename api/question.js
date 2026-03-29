@@ -14,6 +14,8 @@ module.exports = async function handler(req, res) {
 
   const { type, question, category, difficulty, math, customPrompt, userId } = req.body;
 
+  let questionsUsed = null;
+
   // Check question limit for non-paid users
   if (type === "question") {
     const isPaid = userId ? await redis.get(`paid:${userId}`) : false;
@@ -27,7 +29,7 @@ module.exports = async function handler(req, res) {
         return res.status(403).json({ limitReached: true });
       }
 
-      await redis.incr(countKey);
+      questionsUsed = await redis.incr(countKey);
       await redis.expireat(countKey, Math.floor(new Date().setHours(23, 59, 59, 999) / 1000));
     }
   }
@@ -59,7 +61,7 @@ module.exports = async function handler(req, res) {
     });
 
     const text = completion.choices[0].message.content;
-    res.status(200).json({ result: text });
+    res.status(200).json({ result: text, ...(questionsUsed !== null && { questionsUsed, questionsLimit: 5 }) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
