@@ -30,6 +30,7 @@ function Questions() {
   const [questionsUsed, setQuestionsUsed] = useState(null);
   const [interviewMode, setInterviewMode] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [timerStarted, setTimerStarted] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -148,6 +149,7 @@ function Questions() {
     setFeedback("");
     setGraded(false);
     stopTimer();
+    setTimerStarted(false);
     try {
       let newQuestion = null;
       let attempts = 0;
@@ -172,7 +174,7 @@ function Questions() {
       if (newQuestion) {
         saveQuestion(newQuestion);
         setQuestion(newQuestion);
-        if (interviewMode) startTimer();
+        setTimerStarted(false);
         fetch("/api/question", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -279,7 +281,7 @@ function Questions() {
 
             <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
               <button
-                onClick={() => { if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); } }}
+                onClick={() => { if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); } }}
                 disabled={!isPaid}
                 title={!isPaid ? "Upgrade to Premium to use Interview Mode" : undefined}
                 style={{
@@ -317,32 +319,50 @@ function Questions() {
               </p>
             )}
 
-            {interviewMode && timeLeft !== null && question && !question.includes("Come back tomorrow") && (
+            {interviewMode && question && !question.includes("Come back tomorrow") && (
               <div style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "10px 16px",
-                backgroundColor: graded && timeLeft > 0 ? "#f0fdf4" : timeLeft === 0 ? "#fee2e2" : timeLeft < 30 ? "#fff7ed" : "#e8edf5",
+                backgroundColor: !timerStarted ? "#e8edf5" : graded && timeLeft > 0 ? "#f0fdf4" : timeLeft === 0 ? "#fee2e2" : timeLeft < 30 ? "#fff7ed" : "#e8edf5",
                 borderRadius: "8px",
                 marginTop: "16px",
-                border: `1px solid ${graded && timeLeft > 0 ? "#86efac" : timeLeft === 0 ? "#fca5a5" : timeLeft < 30 ? "#fed7aa" : "#d0d9e8"}`,
+                border: `1px solid ${!timerStarted ? "#d0d9e8" : graded && timeLeft > 0 ? "#86efac" : timeLeft === 0 ? "#fca5a5" : timeLeft < 30 ? "#fed7aa" : "#d0d9e8"}`,
               }}>
                 <span style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px" }}>
                   INTERVIEW MODE
                 </span>
-                <span style={{
-                  fontSize: "16px",
-                  fontWeight: "700",
-                  fontFamily: "monospace",
-                  color: graded && timeLeft > 0 ? "#16a34a" : timeLeft === 0 ? "#dc2626" : timeLeft < 30 ? "#d97706" : "#0a2463",
-                }}>
-                  {graded && timeLeft > 0
-                    ? `${formatTime(timeLeft)} remaining`
-                    : timeLeft === 0
-                    ? "Time's up!"
-                    : formatTime(timeLeft)}
-                </span>
+                {!timerStarted ? (
+                  <button
+                    onClick={() => { setTimerStarted(true); startTimer(); }}
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: "700",
+                      padding: "5px 14px",
+                      borderRadius: "20px",
+                      border: "none",
+                      backgroundColor: "#0a2463",
+                      color: "#ffffff",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Start Answering
+                  </button>
+                ) : (
+                  <span style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    fontFamily: "monospace",
+                    color: graded && timeLeft > 0 ? "#16a34a" : timeLeft === 0 ? "#dc2626" : timeLeft < 30 ? "#d97706" : "#0a2463",
+                  }}>
+                    {graded && timeLeft > 0
+                      ? `${formatTime(timeLeft)} remaining`
+                      : timeLeft === 0
+                      ? "Time's up!"
+                      : formatTime(timeLeft)}
+                  </span>
+                )}
               </div>
             )}
 
@@ -368,8 +388,8 @@ function Questions() {
                     <textarea
                       placeholder={isPaid ? "Type your answer here to get AI feedback..." : "Upgrade to Premium to get AI feedback on your answers"}
                       value={userAnswer}
-                      onChange={(e) => isPaid && !(interviewMode && (timeLeft === 0 || graded)) && setUserAnswer(e.target.value)}
-                      disabled={!isPaid || (interviewMode && (timeLeft === 0 || graded))}
+                      onChange={(e) => isPaid && !(interviewMode && (!timerStarted || timeLeft === 0 || graded)) && setUserAnswer(e.target.value)}
+                      disabled={!isPaid || (interviewMode && (!timerStarted || timeLeft === 0 || graded))}
                       style={{
                         width: "100%",
                         minHeight: "120px",
