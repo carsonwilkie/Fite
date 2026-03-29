@@ -342,7 +342,7 @@ function Questions() {
                       padding: "5px 14px",
                       borderRadius: "20px",
                       border: "none",
-                      backgroundColor: "#0a2463",
+                      backgroundColor: "#16a34a",
                       color: "#ffffff",
                       cursor: "pointer",
                     }}
