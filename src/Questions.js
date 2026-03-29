@@ -264,28 +264,29 @@ function Questions() {
               )}
             </div>
 
-            {isPaid && (
-              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
-                <button
-                  onClick={() => { setInterviewMode(!interviewMode); stopTimer(); }}
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: "700",
-                    letterSpacing: "0.6px",
-                    padding: "5px 12px",
-                    borderRadius: "20px",
-                    cursor: "pointer",
-                    border: "2px solid",
-                    borderColor: interviewMode ? "#0a2463" : "#e8edf5",
-                    backgroundColor: interviewMode ? "#0a2463" : "#ffffff",
-                    color: interviewMode ? "#ffffff" : "#4a6fa5",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  Interview Mode {interviewMode ? "ON" : "OFF"}
-                </button>
-              </div>
-            )}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+              <button
+                onClick={() => { if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); } }}
+                disabled={!isPaid}
+                title={!isPaid ? "Upgrade to Premium to use Interview Mode" : undefined}
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  letterSpacing: "0.6px",
+                  padding: "5px 12px",
+                  borderRadius: "20px",
+                  cursor: isPaid ? "pointer" : "not-allowed",
+                  border: "2px solid",
+                  borderColor: !isPaid ? "#e8edf5" : interviewMode ? "#0a2463" : "#e8edf5",
+                  backgroundColor: !isPaid ? "#f7f9fc" : interviewMode ? "#0a2463" : "#ffffff",
+                  color: !isPaid ? "#c0cad8" : interviewMode ? "#ffffff" : "#4a6fa5",
+                  transition: "all 0.2s",
+                  opacity: isPaid ? 1 : 0.6,
+                }}
+              >
+                Interview Mode {interviewMode ? "ON" : "OFF"}
+              </button>
+            </div>
 
             <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
               {loadingQuestion ? "Loading..." : "Get Question"}
@@ -300,7 +301,6 @@ function Questions() {
                 fontStyle: "italic",
               }}>
                 {questionsUsed} of 5 free questions used today
-                {questionsUsed >= 4 && " — running low!"}
               </p>
             )}
 
