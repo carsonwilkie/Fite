@@ -332,7 +332,7 @@ function Questions() {
                   INTERVIEW MODE
                 </span>
                 <span style={{
-                  fontSize: graded && timeLeft > 0 ? "14px" : "22px",
+                  fontSize: "16px",
                   fontWeight: "700",
                   fontFamily: "monospace",
                   color: graded && timeLeft > 0 ? "#16a34a" : timeLeft === 0 ? "#dc2626" : timeLeft < 30 ? "#d97706" : "#0a2463",
