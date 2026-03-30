@@ -27,8 +27,9 @@ function History() {
   const [scoreRange, setScoreRange] = useState(null);
   const [sliderPos, setSliderPos] = useState(null);
   const [openDates, setOpenDates] = useState({});
-  const [barTooltip, setBarTooltip] = useState(null);
+  const [barTooltip, setBarTooltip] = useState(null); // { i, entry, leftPx, barHeightPx }
   const tooltipTimerRef = useRef(null);
+  const chartAreaRef = useRef(null);
 
   useEffect(() => {
     if (loading) return;
@@ -49,6 +50,26 @@ function History() {
   const getDateStr = (timestamp) => new Date(timestamp).toLocaleDateString("en-US", {
     weekday: "long", year: "numeric", month: "long", day: "numeric"
   });
+
+  useEffect(() => {
+    if (search || selectedCategory || selectedDifficulty || selectedMath) {
+      const dates = {};
+      entries
+        .filter(entry => {
+          const matchesSearch = search === "" || entry.question.toLowerCase().includes(search.toLowerCase());
+          const matchesCategory = selectedCategory === "" || selectedCategory === "All" || entry.category === selectedCategory;
+          const matchesDifficulty = selectedDifficulty === "" || entry.difficulty === selectedDifficulty;
+          const matchesMath = selectedMath === "" ||
+            (selectedMath === "No Math" && (!entry.math || entry.math === "No Math")) ||
+            (selectedMath === "With Math" && entry.math === "With Math");
+          return matchesSearch && matchesCategory && matchesDifficulty && matchesMath;
+        })
+        .forEach(entry => { dates[getDateStr(entry.timestamp)] = true; });
+      setOpenDates(dates);
+    } else {
+      setOpenDates({});
+    }
+  }, [search, selectedCategory, selectedDifficulty, selectedMath, entries]);
 
   const filteredEntries = entries
     .filter((entry) => {
@@ -310,7 +331,7 @@ function History() {
                               {["10", "5", "0"].map(l => <span key={l} style={{ fontSize: "10px", color: "#4a6fa5" }}>{l}</span>)}
                             </div>
                             <div style={{ flex: 1, position: "relative" }}>
-                              <div style={{ height: "120px", position: "relative", borderBottom: "2px solid #d0d9e8", borderLeft: "2px solid #d0d9e8" }}>
+                              <div ref={chartAreaRef} style={{ height: "120px", position: "relative", borderBottom: "2px solid #d0d9e8", borderLeft: "2px solid #d0d9e8" }}>
                                 <div style={{ position: "absolute", top: 0, left: 0, right: 0, borderTop: "1px dashed #e8edf5" }} />
                                 <div style={{ position: "absolute", top: "50%", left: 0, right: 0, borderTop: "1px dashed #e8edf5" }} />
                                 <div style={{ display: "flex", alignItems: "flex-end", height: "100%", gap: "2px", padding: "0 4px" }}>
@@ -320,43 +341,47 @@ function History() {
                                     return (
                                       <div
                                         key={i}
-                                        style={{ flex: 1, minWidth: "4px", height: `${(entry.score / 10) * 100}%`, backgroundColor: entry.score >= 8 ? "#16a34a" : entry.score >= 5 ? "#d97706" : "#dc2626", borderRadius: "2px 2px 0 0", cursor: "pointer", transition: "opacity 0.15s", opacity: isHovered ? 0.7 : 1, position: "relative" }}
+                                        style={{ flex: 1, minWidth: "4px", height: `${(entry.score / 10) * 100}%`, backgroundColor: entry.score >= 8 ? "#16a34a" : entry.score >= 5 ? "#d97706" : "#dc2626", borderRadius: "2px 2px 0 0", cursor: "pointer", transition: "opacity 0.15s", opacity: isHovered ? 0.75 : 1 }}
                                         onClick={() => handleBarClick(entry, globalIndex)}
-                                        onMouseEnter={() => {
-                                          tooltipTimerRef.current = setTimeout(() => setBarTooltip({ i, entry }), 600);
+                                        onMouseEnter={(e) => {
+                                          const barRect = e.currentTarget.getBoundingClientRect();
+                                          const areaRect = chartAreaRef.current?.getBoundingClientRect();
+                                          const leftPx = barRect.left + barRect.width / 2 - (areaRect?.left ?? 0);
+                                          const barHeightPx = (entry.score / 10) * 120;
+                                          tooltipTimerRef.current = setTimeout(() => setBarTooltip({ i, entry, leftPx, barHeightPx }), 600);
                                         }}
                                         onMouseLeave={() => {
                                           clearTimeout(tooltipTimerRef.current);
                                           setBarTooltip(null);
                                         }}
-                                      >
-                                        {isHovered && (
-                                          <div style={{
-                                            position: "absolute",
-                                            bottom: "calc(100% + 6px)",
-                                            left: "50%",
-                                            transform: "translateX(-50%)",
-                                            backgroundColor: "#0a2463",
-                                            color: "#ffffff",
-                                            borderRadius: "6px",
-                                            padding: "8px 10px",
-                                            fontSize: "11px",
-                                            lineHeight: "1.5",
-                                            zIndex: 20,
-                                            pointerEvents: "none",
-                                            boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
-                                            minWidth: "140px",
-                                            maxWidth: "200px",
-                                          }}>
-                                            <p style={{ margin: "0 0 2px 0", fontWeight: "700", fontSize: "12px" }}>{entry.score}/10</p>
-                                            <p style={{ margin: "0 0 2px 0", opacity: 0.85 }}>{entry.category} · {entry.difficulty}</p>
-                                            <p style={{ margin: 0, opacity: 0.7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.question}</p>
-                                          </div>
-                                        )}
-                                      </div>
+                                      />
                                     );
                                   })}
                                 </div>
+                                {/* Tooltip rendered outside bars so it's never behind a sibling bar */}
+                                {barTooltip && (
+                                  <div style={{
+                                    position: "absolute",
+                                    bottom: barTooltip.barHeightPx + 8,
+                                    left: barTooltip.leftPx,
+                                    transform: "translateX(-50%)",
+                                    backgroundColor: "#0a2463",
+                                    color: "#ffffff",
+                                    borderRadius: "6px",
+                                    padding: "8px 10px",
+                                    fontSize: "11px",
+                                    lineHeight: "1.5",
+                                    zIndex: 100,
+                                    pointerEvents: "none",
+                                    boxShadow: "0 2px 10px rgba(0,0,0,0.35)",
+                                    minWidth: "140px",
+                                    maxWidth: "200px",
+                                  }}>
+                                    <p style={{ margin: "0 0 2px 0", fontWeight: "700", fontSize: "12px" }}>{barTooltip.entry.score}/10</p>
+                                    <p style={{ margin: "0 0 2px 0" }}>{barTooltip.entry.category} · {barTooltip.entry.difficulty}</p>
+                                    <p style={{ margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{barTooltip.entry.question}</p>
+                                  </div>
+                                )}
                               </div>
                               {/* X-axis label */}
                               <p style={{ fontSize: "10px", color: "#4a6fa5", margin: "4px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
