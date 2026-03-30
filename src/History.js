@@ -195,7 +195,7 @@ function History() {
               <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#0a2463", margin: 0 }}>Question History</h2>
             </div>
 
-            {!loadingHistory && entries.length > 0 && (
+            {!loadingHistory && (
               <>
                 {/* Stats — collapsible */}
                 <div style={{ borderRadius: "10px", marginBottom: "12px", overflow: "hidden", border: statsOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: statsOpen ? "0 6px 32px rgba(10,36,99,0.33)" : "none", transition: "box-shadow 0.2s, border-color 0.2s" }}>
@@ -208,39 +208,45 @@ function History() {
                   </button>
                   {statsOpen && (
                     <div style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
-                      <div style={{ display: "flex", gap: "12px", marginBottom: "12px", flexWrap: "wrap" }}>
-                        <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "2px solid #c8d4e8" }}>
-                          <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{totalQuestions}</p>
-                          <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Total Questions</p>
-                        </div>
-                        <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "2px solid #c8d4e8" }}>
-                          <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{gradedQuestions}</p>
-                          <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Graded</p>
-                        </div>
-                        {topCategory && (
-                          <div style={{ flex: 2, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "2px solid #c8d4e8" }}>
-                            <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{topCategory[0]}</p>
-                            <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Top Category ({topCategory[1]})</p>
+                      {entries.length === 0 ? (
+                        <p style={{ fontSize: "13px", color: "#4a6fa5", margin: 0, fontStyle: "italic" }}>No history yet — answer some questions to see your stats.</p>
+                      ) : (
+                        <>
+                          <div style={{ display: "flex", gap: "12px", marginBottom: "12px", flexWrap: "wrap" }}>
+                            <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "2px solid #c8d4e8" }}>
+                              <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{totalQuestions}</p>
+                              <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Total Questions</p>
+                            </div>
+                            <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "2px solid #c8d4e8" }}>
+                              <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{gradedQuestions}</p>
+                              <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Graded</p>
+                            </div>
+                            {topCategory && (
+                              <div style={{ flex: 2, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "2px solid #c8d4e8" }}>
+                                <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{topCategory[0]}</p>
+                                <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Top Category ({topCategory[1]})</p>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
-                        {Object.entries(difficultyCounts).map(([diff, count]) => (
-                          <div key={diff} style={{ flex: 1, minWidth: "60px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px", textAlign: "center", border: "2px solid #c8d4e8" }}>
-                            <p style={{ fontSize: "20px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{count}</p>
-                            <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>{diff}</p>
+                          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
+                            {Object.entries(difficultyCounts).map(([diff, count]) => (
+                              <div key={diff} style={{ flex: 1, minWidth: "60px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px", textAlign: "center", border: "2px solid #c8d4e8" }}>
+                                <p style={{ fontSize: "20px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{count}</p>
+                                <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>{diff}</p>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                        {Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
-                          <div key={cat} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>{cat}</p>
-                            <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
-                            <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#0a2463", flexShrink: 0 }}>{count}</span>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                            {Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
+                              <div key={cat} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>{cat}</p>
+                                <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
+                                <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#0a2463", flexShrink: 0 }}>{count}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
