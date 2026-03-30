@@ -364,7 +364,7 @@ img, span, button {
   padding: 4px 10px;
   border-radius: 20px;
   cursor: pointer;
-  border: 2px solid #e8edf5;
+  border: 2px solid #4a6fa5;
   background-color: #ffffff;
   color: #4a6fa5;
   font-family: 'Segoe UI', sans-serif;
@@ -372,7 +372,8 @@ img, span, button {
 }
 
 .timer-reset-btn:hover {
-  background-color: #e8edf5;
+  background-color: #4a6fa5;
+  color: #ffffff;
 }
 
 .timer-step-btn {
