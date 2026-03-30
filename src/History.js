@@ -303,7 +303,7 @@ function History() {
                                 {/* Slider */}
                                 <p style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0" }}>RANGE</p>
                                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                                  <span style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", flexShrink: 0 }}>2</span>
+                                  <span style={{ fontSize: "12px", fontWeight: "800", color: "#4a6fa5", flexShrink: 0 }}>2</span>
                                   <input
                                     type="range"
                                     min={2}
@@ -319,7 +319,7 @@ function History() {
                                     className="score-range-slider"
                                     style={{ background: `linear-gradient(to right, #0a2463 0%, #0a2463 ${fillPct}%, #e8edf5 ${fillPct}%, #e8edf5 100%)` }}
                                   />
-                                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", flexShrink: 0 }}>{sliderMax}</span>
+                                  <span style={{ fontSize: "12px", fontWeight: "800", color: "#4a6fa5", flexShrink: 0 }}>{sliderMax}</span>
                                 </div>
                                 <p style={{ fontSize: "12px", color: "#4a6fa5", margin: "0 0 16px 0", fontStyle: "italic" }}>
                                   {scoreRange === null || scoreRange >= sliderMax
