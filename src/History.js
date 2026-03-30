@@ -375,11 +375,11 @@ function History() {
                                     pointerEvents: "none",
                                     boxShadow: "0 2px 10px rgba(0,0,0,0.35)",
                                     minWidth: "140px",
-                                    maxWidth: "200px",
+                                    maxWidth: "280px",
                                   }}>
                                     <p style={{ margin: "0 0 2px 0", fontWeight: "700", fontSize: "12px" }}>{barTooltip.entry.score}/10</p>
-                                    <p style={{ margin: "0 0 2px 0" }}>{barTooltip.entry.category} · {barTooltip.entry.difficulty}</p>
-                                    <p style={{ margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{barTooltip.entry.question}</p>
+                                    <p style={{ margin: "0 0 4px 0" }}>{barTooltip.entry.category} · {barTooltip.entry.difficulty}</p>
+                                    <p style={{ margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 6, WebkitBoxOrient: "vertical" }}>{barTooltip.entry.question}</p>
                                   </div>
                                 )}
                               </div>
