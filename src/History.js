@@ -69,13 +69,13 @@ function History() {
 
   const grouped = groupByDate(filteredEntries);
 
-  const filterLabelStyle = { fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: 0 };
+  const filterLabelStyle = { fontSize: "10px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: 0 };
 
   const selectStyle = (active) => ({
-    padding: "8px 12px",
+    padding: "6px 10px",
     borderRadius: "8px",
-    border: `2px solid ${active ? "#0a2463" : "#e8edf5"}`,
-    fontSize: "13px",
+    border: "2px solid #e8edf5",
+    fontSize: "12px",
     fontWeight: "600",
     color: active ? "#0a2463" : "#4a6fa5",
     fontFamily: "'Segoe UI', sans-serif",
@@ -226,14 +226,14 @@ function History() {
                             <p style={{ fontSize: "22px", fontWeight: "700", color: averageScore >= 8 ? "#16a34a" : averageScore >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{averageScore} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
                           </div>
 
-                          {/* Range selector */}
-                          <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0" }}>RANGE</p>
-                          {(() => {
+                          {/* Range selector — only shown when 2+ scored entries */}
+                          {chartScoredEntries.length > 1 && (() => {
                             const sliderMax = chartScoredEntries.length;
                             const visualVal = sliderPos ?? sliderMax;
-                            const fillPct = sliderMax <= 1 ? 100 : ((visualVal - 1) / (sliderMax - 1)) * 100;
+                            const fillPct = ((visualVal - 1) / (sliderMax - 1)) * 100;
                             return (
                               <>
+                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0" }}>RANGE</p>
                                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
                                   <span style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", flexShrink: 0 }}>1</span>
                                   <input
@@ -262,8 +262,8 @@ function History() {
                             );
                           })()}
 
-                          {/* Range average */}
-                          {rangeAvg !== null && (
+                          {/* Range average — only shown when slider moved away from max */}
+                          {rangeAvg !== null && scoreRange !== null && (
                             <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
                               <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>
                                 {(() => { const n = scoreRange === null ? chartEntries.length : Math.min(scoreRange, chartEntries.length); return scoreRange === null ? `Average Across All ${n} Question${n === 1 ? "" : "s"}` : `Average Across Last ${n} Question${n === 1 ? "" : "s"}`; })()}
@@ -333,8 +333,8 @@ function History() {
                     <>
                       {/* Search & filter sub-section */}
                       <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 10px 0", paddingBottom: "8px", borderBottom: "2.5px solid #d0d9e8" }}>SEARCH & FILTER</p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "14px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
                           <p style={filterLabelStyle}>SEARCH QUESTIONS</p>
                           <input
                             type="text"
@@ -343,10 +343,10 @@ function History() {
                             onChange={(e) => setSearch(e.target.value)}
                             style={{
                               width: "100%",
-                              padding: "10px 14px",
+                              padding: "7px 10px",
                               borderRadius: "8px",
                               border: "2px solid #e8edf5",
-                              fontSize: "14px",
+                              fontSize: "12px",
                               color: "#1a1a2e",
                               fontFamily: "'Segoe UI', sans-serif",
                               boxSizing: "border-box",
@@ -355,7 +355,7 @@ function History() {
                             }}
                           />
                         </div>
-                        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                           <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 2, minWidth: "130px" }}>
                             <p style={filterLabelStyle}>CATEGORY</p>
                             <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} style={selectStyle(!!selectedCategory)}>
@@ -384,7 +384,7 @@ function History() {
                             <p style={filterLabelStyle}>SORT</p>
                             <button
                               onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
-                              style={{ fontSize: "13px", fontWeight: "600", padding: "8px 14px", borderRadius: "8px", cursor: "pointer", border: "2px solid #e8edf5", backgroundColor: "#ffffff", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif", whiteSpace: "nowrap", minWidth: "96px" }}
+                              style={{ fontSize: "12px", fontWeight: "600", padding: "6px 10px", borderRadius: "8px", cursor: "pointer", border: "2px solid #e8edf5", backgroundColor: "#ffffff", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif", whiteSpace: "nowrap", minWidth: "80px" }}
                             >
                               {sortOrder === "newest" ? "Newest ↓" : "Oldest ↑"}
                             </button>
