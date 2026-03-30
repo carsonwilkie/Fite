@@ -309,8 +309,9 @@ function History() {
                     <span style={{ fontSize: "12px", fontWeight: "700", color: "#ffffff", letterSpacing: "1.2px" }}>YOUR STATS</span>
                     <span style={{ fontSize: "11px", color: "#ffffff" }}>{statsOpen ? "▲" : "▼"}</span>
                   </button>
-                  {statsOpen && (
-                    <div className="collapsible-content" style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
+                  <div style={{ display: "grid", gridTemplateRows: statsOpen ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}>
+                    <div style={{ overflow: "hidden" }}>
+                    <div style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
                       {entries.length === 0 ? (
                         <p style={{ fontSize: "13px", color: "#4a6fa5", margin: 0, fontStyle: "italic" }}>No history yet — answer some questions to see your stats.</p>
                       ) : (
@@ -365,20 +366,22 @@ function History() {
                         </>
                       )}
                     </div>
-                  )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Score Analysis — collapsible */}
-                <div style={{ borderRadius: "10px", marginBottom: "12px", border: scoreOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: scoreOpen ? "0 6px 32px rgba(10,36,99,0.33)" : "none", transition: "box-shadow 0.2s, border-color 0.2s", overflow: scoreOpen ? "visible" : "hidden" }}>
+                <div style={{ borderRadius: "10px", marginBottom: "12px", border: scoreOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: scoreOpen ? "0 6px 32px rgba(10,36,99,0.33)" : "none", transition: "box-shadow 0.2s, border-color 0.2s", overflow: "hidden" }}>
                   <button
                     onClick={() => setScoreOpen(!scoreOpen)}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "14px 16px", backgroundColor: "#0a2463", border: "none", cursor: "pointer", borderRadius: scoreOpen ? "10px 10px 0 0" : "10px" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "14px 16px", backgroundColor: "#0a2463", border: "none", cursor: "pointer" }}
                   >
                     <span style={{ fontSize: "12px", fontWeight: "700", color: "#ffffff", letterSpacing: "1.2px" }}>SCORE ANALYSIS</span>
                     <span style={{ fontSize: "11px", color: "#ffffff" }}>{scoreOpen ? "▲" : "▼"}</span>
                   </button>
-                  {scoreOpen && (
-                    <div className="collapsible-content" style={{ backgroundColor: "#f0f4f8", padding: "16px", borderRadius: "0 0 10px 10px" }}>
+                  <div style={{ display: "grid", gridTemplateRows: scoreOpen ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}>
+                    <div style={{ overflow: "hidden" }}>
+                    <div style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
                       {scoredEntries.length === 0 ? (
                         <p style={{ fontSize: "13px", color: "#4a6fa5", margin: 0, fontStyle: "italic" }}>No graded answers yet — grade some questions to see your score analysis.</p>
                       ) : (
@@ -590,7 +593,8 @@ function History() {
                         </>
                       )}
                     </div>
-                  )}
+                    </div>
+                  </div>
                 </div>
               </>
             )}
@@ -604,8 +608,9 @@ function History() {
                 <span style={{ fontSize: "12px", fontWeight: "700", color: "#ffffff", letterSpacing: "1.2px" }}>BROWSE QUESTIONS</span>
                 <span style={{ fontSize: "11px", color: "#ffffff" }}>{questionsOpen ? "▲" : "▼"}</span>
               </button>
-              {questionsOpen && (
-                <div className="collapsible-content" style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
+              <div style={{ display: "grid", gridTemplateRows: questionsOpen ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}>
+                <div style={{ overflow: "hidden" }}>
+                <div style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
                   {loadingHistory ? (
                     <p style={{ color: "#4a6fa5", fontSize: "14px", margin: 0 }}>Loading history...</p>
                   ) : entries.length === 0 ? (
@@ -823,7 +828,8 @@ function History() {
                     </>
                   )}
                 </div>
-              )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
