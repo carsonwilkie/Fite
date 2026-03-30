@@ -205,7 +205,7 @@ function History() {
                 </div>
 
                 {/* Score Analysis — collapsible */}
-                <div style={{ borderRadius: "10px", marginBottom: "24px", overflow: "hidden", border: "1px solid #e8edf5" }}>
+                <div style={{ borderRadius: "10px", marginBottom: "12px", overflow: "hidden", border: "1px solid #e8edf5" }}>
                   <button
                     onClick={() => setScoreOpen(!scoreOpen)}
                     style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "14px 16px", backgroundColor: "#0a2463", border: "none", cursor: "pointer" }}
@@ -332,7 +332,7 @@ function History() {
                   ) : (
                     <>
                       {/* Search & filter sub-section */}
-                      <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1.2px", margin: "0 0 10px 0", paddingBottom: "8px", borderBottom: "1px solid #d0d9e8" }}>SEARCH & FILTER</p>
+                      <p style={{ fontSize: "12px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 10px 0", paddingBottom: "8px", borderBottom: "1px solid #d0d9e8" }}>SEARCH & FILTER</p>
                       <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                           <p style={filterLabelStyle}>SEARCH QUESTIONS</p>
@@ -406,16 +406,16 @@ function History() {
                       </div>
 
                       {/* Question history sub-section */}
-                      <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1.2px", margin: "0 0 12px 0", paddingBottom: "8px", borderBottom: "1px solid #d0d9e8" }}>QUESTION HISTORY</p>
+                      <p style={{ fontSize: "12px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 12px 0", paddingBottom: "8px", borderBottom: "1px solid #d0d9e8" }}>QUESTION HISTORY</p>
                       {filteredEntries.length === 0 ? (
                         <p style={{ color: "#4a6fa5", fontSize: "14px", margin: 0 }}>No questions match your filters.</p>
                       ) : (
                         Object.entries(grouped).map(([date, dayEntries]) => (
                           <div key={date} style={{ marginBottom: "32px" }}>
                             <p style={{
-                              fontSize: "12px",
+                              fontSize: "11px",
                               fontWeight: "700",
-                              color: "#0a2463",
+                              color: "#4a6fa5",
                               letterSpacing: "1.2px",
                               margin: "0 0 12px 0",
                               borderBottom: "2px solid #d0d9e8",
