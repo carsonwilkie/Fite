@@ -305,8 +305,8 @@ img, span, button {
 }
 
 @keyframes interview-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 111, 165, 0.2); }
-  50% { box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.15); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.2); }
+  50% { box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15); }
 }
 
 @keyframes interview-pulse-urgent {
@@ -320,6 +320,59 @@ img, span, button {
 
 .interview-bar-urgent {
   animation: interview-pulse-urgent 0.65s ease-in-out infinite;
+}
+
+.timer-pause-btn {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 2px solid #4a6fa5;
+  background-color: #ffffff;
+  color: #4a6fa5;
+  font-family: 'Segoe UI', sans-serif;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.timer-pause-btn:hover {
+  background-color: #4a6fa5;
+  color: #ffffff;
+}
+
+.timer-resume-btn {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 2px solid #16a34a;
+  background-color: #ffffff;
+  color: #16a34a;
+  font-family: 'Segoe UI', sans-serif;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.timer-resume-btn:hover {
+  background-color: #16a34a;
+  color: #ffffff;
+}
+
+.timer-reset-btn {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 2px solid #e8edf5;
+  background-color: #ffffff;
+  color: #4a6fa5;
+  font-family: 'Segoe UI', sans-serif;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.timer-reset-btn:hover {
+  background-color: #e8edf5;
 }
 
 .start-answering-btn {

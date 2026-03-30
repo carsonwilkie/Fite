@@ -428,14 +428,11 @@ function Questions() {
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <button
                       onClick={isPaused ? resumeTimer : pauseTimer}
-                      style={{ fontSize: "11px", fontWeight: "700", padding: "4px 10px", borderRadius: "20px", cursor: "pointer", border: "2px solid", borderColor: isPaused ? "#16a34a" : "#4a6fa5", backgroundColor: "#ffffff", color: isPaused ? "#16a34a" : "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}
+                      className={isPaused ? "timer-resume-btn" : "timer-pause-btn"}
                     >
                       {isPaused ? "Resume" : "Pause"}
                     </button>
-                    <button
-                      onClick={resetTimer}
-                      style={{ fontSize: "11px", fontWeight: "700", padding: "4px 10px", borderRadius: "20px", cursor: "pointer", border: "2px solid #e8edf5", backgroundColor: "#ffffff", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}
-                    >
+                    <button onClick={resetTimer} className="timer-reset-btn">
                       Reset
                     </button>
                     <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: timeLeft < 30 ? "#d97706" : "#0a2463", opacity: isPaused ? 0.5 : 1 }}>
