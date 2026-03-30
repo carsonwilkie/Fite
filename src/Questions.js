@@ -311,27 +311,20 @@ function Questions() {
             </div>
 
             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-              <span style={{
-                fontSize: "11px",
-                fontWeight: "700",
-                letterSpacing: "0.8px",
-                padding: "3px 8px",
-                borderRadius: "20px",
-                backgroundColor: isPaid ? "#c9a84c" : "#e8edf5",
-                color: isPaid ? "#ffffff" : "#4a6fa5",
-              }}>PREMIUM</span>
               <div style={{ position: "relative" }}>
-                <button
-                  onClick={() => {
-                    if (timerStarted) return;
-                    if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); }
-                    else { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); }
-                  }}
-                  className={`interview-mode-btn${!isPaid ? " interview-mode-btn-free" : interviewMode ? " interview-mode-btn-on" : ""}`}
-                  style={{ cursor: timerStarted ? "not-allowed" : undefined }}
-                >
-                  Interview Mode {interviewMode ? "ON" : "OFF"}
-                </button>
+                <div style={{ border: "2px solid #c9a84c", borderRadius: "24px", display: "inline-flex", padding: "2px" }}>
+                  <button
+                    onClick={() => {
+                      if (timerStarted) return;
+                      if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); }
+                      else { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); }
+                    }}
+                    className={`interview-mode-btn${!isPaid ? " interview-mode-btn-free" : interviewMode ? " interview-mode-btn-on" : ""}`}
+                    style={{ cursor: timerStarted ? "not-allowed" : undefined }}
+                  >
+                    Interview Mode {interviewMode ? "ON" : "OFF"}
+                  </button>
+                </div>
                 {showInterviewTooltip && (
                   <div style={{
                     position: "absolute",
