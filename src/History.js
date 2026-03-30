@@ -259,7 +259,7 @@ function History() {
                           {rangeAvg !== null && (
                             <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                               <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0 }}>
-                                {scoreRange === null ? `Average Across All ${chartEntries.length} questions` : `Average Across Last ${Math.min(scoreRange, chartEntries.length)} Questions`}
+                                {scoreRange === null ? `Average Across All ${chartEntries.length} Questions` : `Average Across Last ${Math.min(scoreRange, chartEntries.length)} Questions`}
                               </p>
                               <p style={{ fontSize: "22px", fontWeight: "700", color: rangeAvg >= 8 ? "#16a34a" : rangeAvg >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace" }}>{rangeAvg} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
                             </div>
