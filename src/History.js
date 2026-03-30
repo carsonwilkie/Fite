@@ -384,17 +384,21 @@ function History() {
                                     maxWidth: "280px",
                                   }}>
                                     <p style={{ margin: "0 0 2px 0", fontWeight: "700", fontSize: "12px" }}>{barTooltip.entry.score}/10</p>
-                                    <p style={{ margin: "0 0 4px 0" }}>{barTooltip.entry.category} · {barTooltip.entry.difficulty}</p>
+                                    <p style={{ margin: "0 0 4px 0" }}>{barTooltip.entry.category} · {barTooltip.entry.difficulty}{barTooltip.entry.math ? ` · ${barTooltip.entry.math}` : ""}</p>
                                     <p style={{ margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 6, WebkitBoxOrient: "vertical" }}>{barTooltip.entry.question}</p>
                                   </div>
                                 )}
                               </div>
                               {/* X-axis label */}
-                              <p style={{ fontSize: "10px", color: "#4a6fa5", margin: "4px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
-                                {scoreRange === null || scoreRange >= chartScoredEntries.length
-                                  ? `All ${chartScoredEntries.length} scored questions (oldest → newest)`
-                                  : `Last ${scoreRange} of ${chartScoredEntries.length} scored questions (oldest → newest)`}
-                              </p>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
+                                <span style={{ fontSize: "10px", color: "#4a6fa5", fontStyle: "italic" }}>(Oldest)</span>
+                                <span style={{ fontSize: "10px", color: "#4a6fa5", fontStyle: "italic", textAlign: "center" }}>
+                                  {scoreRange === null || scoreRange >= chartScoredEntries.length
+                                    ? `All ${chartScoredEntries.length} scored questions`
+                                    : `Last ${scoreRange} of ${chartScoredEntries.length} scored questions`}
+                                </span>
+                                <span style={{ fontSize: "10px", color: "#4a6fa5", fontStyle: "italic" }}>(Newest)</span>
+                              </div>
                             </div>
                           </div>
                         </>
