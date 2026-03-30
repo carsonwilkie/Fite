@@ -241,7 +241,7 @@ function History() {
                             const fillPct = ((visualVal - 1) / (sliderMax - 1)) * 100;
                             return (
                               <>
-                                <div style={{ borderTop: "2.5px solid #e8edf5", margin: "0 0 16px 0" }} />
+                                <div style={{ borderTop: "2.5px solid #b0bcc8", margin: "0 0 16px 0" }} />
 
                                 {/* Range average */}
                                 {rangeAvg !== null && (
@@ -285,7 +285,7 @@ function History() {
                           })()}
 
                           {/* Bar chart */}
-                          <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 8px 0" }}>SCORE HISTORY</p>
+                          <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1px", margin: "0 0 8px 0" }}>SCORE HISTORY</p>
                           <div style={{ display: "flex", gap: "8px", alignItems: "stretch" }}>
                             <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "flex-end", paddingBottom: "2px", flexShrink: 0 }}>
                               {["10", "5", "0"].map(l => <span key={l} style={{ fontSize: "10px", color: "#4a6fa5" }}>{l}</span>)}
@@ -415,7 +415,7 @@ function History() {
                         )}
                       </div>
 
-                      <div style={{ borderTop: "2.5px solid #d0d9e8", margin: "0 0 16px 0" }} />
+                      <div style={{ borderTop: "2.5px solid #b0bcc8", margin: "0 0 16px 0" }} />
                       {filteredEntries.length === 0 ? (
                         <p style={{ color: "#4a6fa5", fontSize: "14px", margin: 0 }}>No questions match your filters.</p>
                       ) : (
@@ -427,7 +427,7 @@ function History() {
                               color: "#0a2463",
                               letterSpacing: "1.2px",
                               margin: "0 0 12px 0",
-                              borderBottom: "1px solid #d0d9e8",
+                              borderBottom: "1.5px solid #d0d9e8",
                               paddingBottom: "8px",
                             }}>
                               {date.toUpperCase()}
