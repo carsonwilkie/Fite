@@ -69,13 +69,13 @@ function History() {
 
   const grouped = groupByDate(filteredEntries);
 
-  const filterLabelStyle = { fontSize: "12px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: 0 };
+  const filterLabelStyle = { fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: 0 };
 
   const selectStyle = (active) => ({
     padding: "6px 10px",
     borderRadius: "8px",
     border: "2px solid #e8edf5",
-    fontSize: "11px",
+    fontSize: "10px",
     fontWeight: "600",
     color: active ? "#0a2463" : "#4a6fa5",
     fontFamily: "'Segoe UI', sans-serif",
@@ -347,7 +347,7 @@ function History() {
                               padding: "7px 10px",
                               borderRadius: "8px",
                               border: "2px solid #e8edf5",
-                              fontSize: "11px",
+                              fontSize: "10px",
                               color: "#1a1a2e",
                               fontFamily: "'Segoe UI', sans-serif",
                               boxSizing: "border-box",
@@ -385,7 +385,7 @@ function History() {
                             <p style={filterLabelStyle}>SORT</p>
                             <button
                               onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
-                              style={{ fontSize: "11px", fontWeight: "600", padding: "6px 10px", borderRadius: "8px", cursor: "pointer", border: "2px solid #e8edf5", backgroundColor: "#ffffff", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif", whiteSpace: "nowrap", minWidth: "80px" }}
+                              style={{ fontSize: "10px", fontWeight: "600", padding: "6px 10px", borderRadius: "8px", cursor: "pointer", border: "2px solid #e8edf5", backgroundColor: "#ffffff", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif", whiteSpace: "nowrap", minWidth: "80px" }}
                             >
                               {sortOrder === "newest" ? "Newest ↓" : "Oldest ↑"}
                             </button>
