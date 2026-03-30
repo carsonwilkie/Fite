@@ -17,7 +17,12 @@ Question: ${question}
 
 Candidate's Answer: ${userAnswer}
 
-Give brief, direct written feedback on their answer. Cover: what they got right, what they missed or got wrong, and one specific suggestion to improve. Be concise — 3-5 sentences total. Do not give a score or grade. Write as if you are speaking directly to the candidate.`;
+Evaluate their answer and respond with ONLY a JSON object in this exact format, with no other text:
+{"score": <integer 1-10>, "feedback": "<feedback text>"}
+
+Score rubric: 1-2 fundamentally incorrect or off-topic, 3-4 significant gaps or inaccuracies, 5-6 covers basics but misses key details, 7-8 strong with minor gaps, 9-10 exceptional with full coverage and nuance.
+
+For the feedback: 3-5 sentences, direct. Cover what they got right, what they missed, and one improvement suggestion. Write directly to the candidate.`;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -25,8 +30,17 @@ Give brief, direct written feedback on their answer. Cover: what they got right,
       messages: [{ role: "user", content: prompt }],
     });
 
-    const feedback = completion.choices[0].message.content;
-    res.status(200).json({ feedback });
+    const text = completion.choices[0].message.content;
+    let score = null;
+    let feedback = text;
+    try {
+      const parsed = JSON.parse(text);
+      score = parsed.score;
+      feedback = parsed.feedback;
+    } catch (_) {
+      // fallback: treat full response as feedback, no score
+    }
+    res.status(200).json({ feedback, score });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

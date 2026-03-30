@@ -89,6 +89,10 @@ function History() {
     }
   });
   const topCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
+  const scoredEntries = entries.filter(e => e.score !== null && e.score !== undefined);
+  const averageScore = scoredEntries.length > 0
+    ? (scoredEntries.reduce((sum, e) => sum + e.score, 0) / scoredEntries.length).toFixed(1)
+    : null;
 
   return (
     <div style={styles.page} className="page-bg page-wrapper">
@@ -160,6 +164,12 @@ function History() {
                       <div style={{ flex: 2, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }}>
                         <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{topCategory[0]}</p>
                         <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Top Category ({topCategory[1]})</p>
+                      </div>
+                    )}
+                    {averageScore !== null && (
+                      <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                        <p style={{ fontSize: "24px", fontWeight: "700", color: averageScore >= 8 ? "#16a34a" : averageScore >= 5 ? "#d97706" : "#dc2626", margin: 0 }}>{averageScore}</p>
+                        <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Avg Score</p>
                       </div>
                     )}
                   </div>
@@ -334,6 +344,14 @@ function History() {
                               fontSize: "11px", fontWeight: "700", padding: "2px 8px",
                               borderRadius: "20px", backgroundColor: "#c9a84c", color: "#ffffff"
                             }}>"{entry.customPrompt}"</span>
+                          )}
+                          {entry.score !== null && entry.score !== undefined && (
+                            <span style={{
+                              fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                              borderRadius: "20px",
+                              backgroundColor: entry.score >= 8 ? "#dcfce7" : entry.score >= 5 ? "#fff7ed" : "#fee2e2",
+                              color: entry.score >= 8 ? "#16a34a" : entry.score >= 5 ? "#d97706" : "#dc2626",
+                            }}>{entry.score}/10</span>
                           )}
                         </div>
 

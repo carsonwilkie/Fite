@@ -23,6 +23,7 @@ function Questions() {
   const price = usePrice();
   const [userAnswer, setUserAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [score, setScore] = useState(null);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [graded, setGraded] = useState(false);
   const answerRef = React.useRef(answer);
@@ -113,6 +114,7 @@ function Questions() {
       });
       const data = await res.json();
       setFeedback(data.feedback);
+      setScore(data.score ?? null);
       setGraded(true);
 
       if (user?.id) {
@@ -126,6 +128,7 @@ function Questions() {
               answer: answerRef.current,
               userAnswer,
               feedback: data.feedback,
+              score: data.score ?? null,
               category: decodeURIComponent(category),
               difficulty: decodeURIComponent(difficulty),
               math: decodeURIComponent(math),
@@ -148,6 +151,7 @@ function Questions() {
     setQuestion("");
     setUserAnswer("");
     setFeedback("");
+    setScore(null);
     setGraded(false);
     stopTimer();
     setTimerStarted(false);
@@ -444,7 +448,40 @@ function Questions() {
                 )}
 
                 {feedback && (
-                  <div style={{ marginTop: "20px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: "4px solid #0a2463" }}>
+                  <div style={{
+                    marginTop: "20px",
+                    padding: "16px",
+                    backgroundColor: "#f0f4f8",
+                    borderRadius: "8px",
+                    borderLeft: `4px solid ${score !== null ? (score >= 8 ? "#16a34a" : score >= 5 ? "#d97706" : "#dc2626") : "#0a2463"}`,
+                  }}>
+                    {score !== null && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
+                        <div style={{
+                          width: "48px",
+                          height: "48px",
+                          borderRadius: "50%",
+                          backgroundColor: score >= 8 ? "#dcfce7" : score >= 5 ? "#fff7ed" : "#fee2e2",
+                          border: `2px solid ${score >= 8 ? "#16a34a" : score >= 5 ? "#d97706" : "#dc2626"}`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}>
+                          <span style={{
+                            fontSize: "18px",
+                            fontWeight: "700",
+                            color: score >= 8 ? "#16a34a" : score >= 5 ? "#d97706" : "#dc2626",
+                          }}>
+                            {score}
+                          </span>
+                        </div>
+                        <div>
+                          <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 2px 0" }}>SCORE</p>
+                          <p style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a2e", margin: 0 }}>{score} / 10</p>
+                        </div>
+                      </div>
+                    )}
                     <p style={{ ...styles.label, marginBottom: "8px" }}>FEEDBACK</p>
                     <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{feedback}</p>
                   </div>
