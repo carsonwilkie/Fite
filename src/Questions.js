@@ -31,6 +31,7 @@ function Questions() {
   const [interviewMode, setInterviewMode] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const [timerStarted, setTimerStarted] = useState(false);
+  const [showInterviewTooltip, setShowInterviewTooltip] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -279,9 +280,12 @@ function Questions() {
               )}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px", position: "relative" }}>
               <button
-                onClick={() => { if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); } }}
+                onClick={() => {
+                  if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); }
+                  else { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); }
+                }}
                 disabled={!isPaid}
                 title={!isPaid ? "Upgrade to Premium to use Interview Mode" : undefined}
                 style={{
@@ -301,6 +305,33 @@ function Questions() {
               >
                 Interview Mode {interviewMode ? "ON" : "OFF"}
               </button>
+              {showInterviewTooltip && (
+                <div style={{
+                  position: "absolute",
+                  top: "calc(100% + 8px)",
+                  right: 0,
+                  backgroundColor: "#1a1a2e",
+                  color: "#ffffff",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  whiteSpace: "nowrap",
+                  zIndex: 10,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                }}>
+                  Premium feature — upgrade to unlock
+                  <div style={{
+                    position: "absolute",
+                    top: "-5px",
+                    right: "16px",
+                    width: "10px",
+                    height: "10px",
+                    backgroundColor: "#1a1a2e",
+                    transform: "rotate(45deg)",
+                  }} />
+                </div>
+              )}
             </div>
 
             <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
