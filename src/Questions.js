@@ -326,9 +326,9 @@ function Questions() {
                     borderRadius: "20px",
                     cursor: timerStarted ? "not-allowed" : isPaid ? "pointer" : "not-allowed",
                     border: "2px solid",
-                    borderColor: !isPaid ? "#e8edf5" : interviewMode ? "#0a2463" : "#e8edf5",
-                    backgroundColor: !isPaid ? "#f7f9fc" : interviewMode ? "#0a2463" : "#ffffff",
-                    color: !isPaid ? "#c0cad8" : interviewMode ? "#ffffff" : "#4a6fa5",
+                    borderColor: !isPaid ? "#c9a84c" : interviewMode ? "#0a2463" : "#e8edf5",
+                    backgroundColor: !isPaid ? "#fdf8ee" : interviewMode ? "#0a2463" : "#ffffff",
+                    color: !isPaid ? "#c9a84c" : interviewMode ? "#ffffff" : "#4a6fa5",
                     transition: "all 0.2s",
                     opacity: isPaid ? 1 : 0.6,
                   }}

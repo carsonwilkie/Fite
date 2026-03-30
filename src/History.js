@@ -218,35 +218,48 @@ function History() {
                         <>
                           {/* Overall average */}
                           <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                            <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0 }}>Overall average</p>
+                            <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0 }}>Overall Average</p>
                             <p style={{ fontSize: "22px", fontWeight: "700", color: averageScore >= 8 ? "#16a34a" : averageScore >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace" }}>{averageScore} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
                           </div>
 
                           {/* Range selector */}
-                          <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 8px 0" }}>RANGE — tap to change</p>
-                          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "12px" }}>
-                            {[5, 10, 20, 50].map(n => (
-                              <button
-                                key={n}
-                                onClick={() => setScoreRange(scoreRange === n ? null : n)}
-                                style={{ fontSize: "11px", fontWeight: "700", padding: "4px 10px", borderRadius: "20px", cursor: "pointer", border: "none", backgroundColor: scoreRange === n ? "#0a2463" : "#e8edf5", color: scoreRange === n ? "#ffffff" : "#4a6fa5" }}
-                              >
-                                Last {n}
-                              </button>
-                            ))}
-                            <button
-                              onClick={() => setScoreRange(null)}
-                              style={{ fontSize: "11px", fontWeight: "700", padding: "4px 10px", borderRadius: "20px", cursor: "pointer", border: "none", backgroundColor: scoreRange === null ? "#0a2463" : "#e8edf5", color: scoreRange === null ? "#ffffff" : "#4a6fa5" }}
-                            >
-                              All
-                            </button>
-                          </div>
+                          <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0" }}>RANGE</p>
+                          {(() => {
+                            const sliderMax = chartScoredEntries.length;
+                            const sliderVal = scoreRange ?? sliderMax;
+                            const fillPct = sliderMax <= 1 ? 100 : ((sliderVal - 1) / (sliderMax - 1)) * 100;
+                            return (
+                              <>
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+                                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", flexShrink: 0 }}>1</span>
+                                  <input
+                                    type="range"
+                                    min={1}
+                                    max={sliderMax}
+                                    value={sliderVal}
+                                    onChange={(e) => {
+                                      const val = Number(e.target.value);
+                                      setScoreRange(val === sliderMax ? null : val);
+                                    }}
+                                    className="score-range-slider"
+                                    style={{ background: `linear-gradient(to right, #0a2463 0%, #0a2463 ${fillPct}%, #e8edf5 ${fillPct}%, #e8edf5 100%)` }}
+                                  />
+                                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", flexShrink: 0 }}>{sliderMax}</span>
+                                </div>
+                                <p style={{ fontSize: "12px", color: "#4a6fa5", margin: "0 0 16px 0", fontStyle: "italic" }}>
+                                  {scoreRange === null || scoreRange >= sliderMax
+                                    ? `Showing all ${sliderMax} scored questions`
+                                    : `Showing last ${scoreRange} of ${sliderMax} scored questions`}
+                                </p>
+                              </>
+                            );
+                          })()}
 
                           {/* Range average */}
                           {rangeAvg !== null && (
                             <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                               <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0 }}>
-                                {scoreRange === null ? `Avg across all ${chartEntries.length} questions` : `Avg across last ${Math.min(scoreRange, chartEntries.length)} questions`}
+                                {scoreRange === null ? `Average Across All ${chartEntries.length} questions` : `Average Across Last ${Math.min(scoreRange, chartEntries.length)} Questions`}
                               </p>
                               <p style={{ fontSize: "22px", fontWeight: "700", color: rangeAvg >= 8 ? "#16a34a" : rangeAvg >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace" }}>{rangeAvg} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
                             </div>
