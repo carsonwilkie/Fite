@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { useUser } from "@clerk/clerk-react";
@@ -26,6 +26,9 @@ function History() {
   const [questionsOpen, setQuestionsOpen] = useState(false);
   const [scoreRange, setScoreRange] = useState(null);
   const [sliderPos, setSliderPos] = useState(null);
+  const [openDates, setOpenDates] = useState({});
+  const [barTooltip, setBarTooltip] = useState(null);
+  const tooltipTimerRef = useRef(null);
 
   useEffect(() => {
     if (loading) return;
@@ -43,6 +46,10 @@ function History() {
       });
   }, [user, isPaid, loading, navigate]);
 
+  const getDateStr = (timestamp) => new Date(timestamp).toLocaleDateString("en-US", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric"
+  });
+
   const filteredEntries = entries
     .filter((entry) => {
       const matchesSearch = search === "" || entry.question.toLowerCase().includes(search.toLowerCase());
@@ -58,9 +65,7 @@ function History() {
   const groupByDate = (entries) => {
     const groups = {};
     entries.forEach((entry) => {
-      const date = new Date(entry.timestamp).toLocaleDateString("en-US", {
-        weekday: "long", year: "numeric", month: "long", day: "numeric"
-      });
+      const date = getDateStr(entry.timestamp);
       if (!groups[date]) groups[date] = [];
       groups[date].push(entry);
     });
@@ -108,6 +113,20 @@ function History() {
   const rangeAvg = chartEntries.length > 0
     ? (chartEntries.reduce((sum, e) => sum + e.score, 0) / chartEntries.length).toFixed(1)
     : null;
+
+  const handleBarClick = (entry, globalIndex) => {
+    const dateStr = getDateStr(entry.timestamp);
+    setQuestionsOpen(true);
+    setOpenDates(prev => ({ ...prev, [dateStr]: true }));
+    setExpandedIndex(globalIndex);
+    setStatsOpen(false);
+    setScoreOpen(false);
+    clearTimeout(tooltipTimerRef.current);
+    setBarTooltip(null);
+    setTimeout(() => {
+      document.getElementById(`entry-${globalIndex}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  };
 
   return (
     <div style={styles.page} className="page-bg page-wrapper">
@@ -206,16 +225,16 @@ function History() {
                 </div>
 
                 {/* Score Analysis — collapsible */}
-                <div style={{ borderRadius: "10px", marginBottom: "12px", overflow: "hidden", border: scoreOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: scoreOpen ? "0 6px 32px rgba(10,36,99,0.33)" : "none", transition: "box-shadow 0.2s, border-color 0.2s" }}>
+                <div style={{ borderRadius: "10px", marginBottom: "12px", border: scoreOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: scoreOpen ? "0 6px 32px rgba(10,36,99,0.33)" : "none", transition: "box-shadow 0.2s, border-color 0.2s", overflow: scoreOpen ? "visible" : "hidden" }}>
                   <button
                     onClick={() => setScoreOpen(!scoreOpen)}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "14px 16px", backgroundColor: "#0a2463", border: "none", cursor: "pointer" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "14px 16px", backgroundColor: "#0a2463", border: "none", cursor: "pointer", borderRadius: scoreOpen ? "10px 10px 0 0" : "10px" }}
                   >
                     <span style={{ fontSize: "12px", fontWeight: "700", color: "#ffffff", letterSpacing: "1.2px" }}>SCORE ANALYSIS</span>
                     <span style={{ fontSize: "11px", color: "#ffffff" }}>{scoreOpen ? "▲" : "▼"}</span>
                   </button>
                   {scoreOpen && (
-                    <div style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
+                    <div style={{ backgroundColor: "#f0f4f8", padding: "16px", borderRadius: "0 0 10px 10px" }}>
                       {scoredEntries.length === 0 ? (
                         <p style={{ fontSize: "13px", color: "#4a6fa5", margin: 0, fontStyle: "italic" }}>No graded answers yet — grade some questions to see your score analysis.</p>
                       ) : (
@@ -238,7 +257,7 @@ function History() {
                           {chartScoredEntries.length > 1 && (() => {
                             const sliderMax = chartScoredEntries.length;
                             const visualVal = sliderPos ?? sliderMax;
-                            const fillPct = ((visualVal - 1) / (sliderMax - 1)) * 100;
+                            const fillPct = ((visualVal - 2) / (sliderMax - 2)) * 100;
                             return (
                               <>
                                 <div style={{ borderTop: "2.5px solid #b0bcc8", margin: "0 0 16px 0" }} />
@@ -257,10 +276,10 @@ function History() {
                                 {/* Slider */}
                                 <p style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0" }}>RANGE</p>
                                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                                  <span style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", flexShrink: 0 }}>1</span>
+                                  <span style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", flexShrink: 0 }}>2</span>
                                   <input
                                     type="range"
-                                    min={1}
+                                    min={2}
                                     max={sliderMax}
                                     step={0.01}
                                     value={visualVal}
@@ -290,31 +309,61 @@ function History() {
                             <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "flex-end", paddingBottom: "2px", flexShrink: 0 }}>
                               {["10", "5", "0"].map(l => <span key={l} style={{ fontSize: "10px", color: "#4a6fa5" }}>{l}</span>)}
                             </div>
-                            <div style={{ flex: 1, height: "120px", position: "relative", borderBottom: "2px solid #d0d9e8", borderLeft: "2px solid #d0d9e8" }}>
-                              <div style={{ position: "absolute", top: 0, left: 0, right: 0, borderTop: "1px dashed #e8edf5" }} />
-                              <div style={{ position: "absolute", top: "50%", left: 0, right: 0, borderTop: "1px dashed #e8edf5" }} />
-                              <div style={{ display: "flex", alignItems: "flex-end", height: "100%", gap: "2px", padding: "0 4px" }}>
-                                {chartEntries.map((entry, i) => {
-                                  const globalIndex = entries.indexOf(entry);
-                                  return (
-                                    <div
-                                      key={i}
-                                      title={`${entry.score}/10 — click to view`}
-                                      onClick={() => {
-                                        setExpandedIndex(globalIndex);
-                                        setStatsOpen(false);
-                                        setScoreOpen(false);
-                                        setTimeout(() => {
-                                          document.getElementById(`entry-${globalIndex}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
-                                        }, 50);
-                                      }}
-                                      style={{ flex: 1, minWidth: "4px", height: `${(entry.score / 10) * 100}%`, backgroundColor: entry.score >= 8 ? "#16a34a" : entry.score >= 5 ? "#d97706" : "#dc2626", borderRadius: "2px 2px 0 0", cursor: "pointer", transition: "opacity 0.15s", }}
-                                      onMouseEnter={(e) => e.currentTarget.style.opacity = "0.7"}
-                                      onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
-                                    />
-                                  );
-                                })}
+                            <div style={{ flex: 1, position: "relative" }}>
+                              <div style={{ height: "120px", position: "relative", borderBottom: "2px solid #d0d9e8", borderLeft: "2px solid #d0d9e8" }}>
+                                <div style={{ position: "absolute", top: 0, left: 0, right: 0, borderTop: "1px dashed #e8edf5" }} />
+                                <div style={{ position: "absolute", top: "50%", left: 0, right: 0, borderTop: "1px dashed #e8edf5" }} />
+                                <div style={{ display: "flex", alignItems: "flex-end", height: "100%", gap: "2px", padding: "0 4px" }}>
+                                  {chartEntries.map((entry, i) => {
+                                    const globalIndex = entries.indexOf(entry);
+                                    const isHovered = barTooltip?.i === i;
+                                    return (
+                                      <div
+                                        key={i}
+                                        style={{ flex: 1, minWidth: "4px", height: `${(entry.score / 10) * 100}%`, backgroundColor: entry.score >= 8 ? "#16a34a" : entry.score >= 5 ? "#d97706" : "#dc2626", borderRadius: "2px 2px 0 0", cursor: "pointer", transition: "opacity 0.15s", opacity: isHovered ? 0.7 : 1, position: "relative" }}
+                                        onClick={() => handleBarClick(entry, globalIndex)}
+                                        onMouseEnter={() => {
+                                          tooltipTimerRef.current = setTimeout(() => setBarTooltip({ i, entry }), 600);
+                                        }}
+                                        onMouseLeave={() => {
+                                          clearTimeout(tooltipTimerRef.current);
+                                          setBarTooltip(null);
+                                        }}
+                                      >
+                                        {isHovered && (
+                                          <div style={{
+                                            position: "absolute",
+                                            bottom: "calc(100% + 6px)",
+                                            left: "50%",
+                                            transform: "translateX(-50%)",
+                                            backgroundColor: "#0a2463",
+                                            color: "#ffffff",
+                                            borderRadius: "6px",
+                                            padding: "8px 10px",
+                                            fontSize: "11px",
+                                            lineHeight: "1.5",
+                                            zIndex: 20,
+                                            pointerEvents: "none",
+                                            boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+                                            minWidth: "140px",
+                                            maxWidth: "200px",
+                                          }}>
+                                            <p style={{ margin: "0 0 2px 0", fontWeight: "700", fontSize: "12px" }}>{entry.score}/10</p>
+                                            <p style={{ margin: "0 0 2px 0", opacity: 0.85 }}>{entry.category} · {entry.difficulty}</p>
+                                            <p style={{ margin: 0, opacity: 0.7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.question}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
                               </div>
+                              {/* X-axis label */}
+                              <p style={{ fontSize: "10px", color: "#4a6fa5", margin: "4px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
+                                {scoreRange === null || scoreRange >= chartScoredEntries.length
+                                  ? `All ${chartScoredEntries.length} scored questions (oldest → newest)`
+                                  : `Last ${scoreRange} of ${chartScoredEntries.length} scored questions (oldest → newest)`}
+                              </p>
                             </div>
                           </div>
                         </>
@@ -419,114 +468,136 @@ function History() {
                       {filteredEntries.length === 0 ? (
                         <p style={{ color: "#4a6fa5", fontSize: "14px", margin: 0 }}>No questions match your filters.</p>
                       ) : (
-                        Object.entries(grouped).map(([date, dayEntries]) => (
-                          <div key={date} style={{ marginBottom: "32px" }}>
-                            <p style={{
-                              fontSize: "12px",
-                              fontWeight: "800",
-                              color: "#0a2463",
-                              letterSpacing: "1.2px",
-                              margin: "0 0 12px 0",
-                              borderBottom: "1.5px solid #d0d9e8",
-                              paddingBottom: "8px",
-                            }}>
-                              {date.toUpperCase()}
-                            </p>
-                  {dayEntries.map((entry, i) => {
-                    const globalIndex = entries.indexOf(entry);
-                    const isExpanded = expandedIndex === globalIndex;
-                    return (
-                      <div key={i} id={`entry-${globalIndex}`} style={{
-                        backgroundColor: "#ffffff",
-                        borderRadius: "8px",
-                        padding: "16px",
-                        marginBottom: "16px",
-                        boxShadow: isExpanded ? "0 4px 20px rgba(10,36,99,0.25)" : "0 2px 8px rgba(10,36,99,0.10)",
-                        border: isExpanded ? "1px solid #4a6fa5" : "1px solid #e8edf5",
-                        cursor: "pointer",
-                      }}
-                        onClick={() => setExpandedIndex(isExpanded ? null : globalIndex)}
-                      >
-                        <div style={{ display: "flex", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
-                          <span style={{
-                            fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                            borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
-                          }}>{entry.category}</span>
-                          <span style={{
-                            fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                            borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
-                          }}>{entry.difficulty}</span>
-                          {entry.math && (
-                            <span style={{
-                              fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                              borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
-                            }}>{entry.math}</span>
-                          )}
-                          {entry.customPrompt && (
-                            <span style={{
-                              fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                              borderRadius: "20px", backgroundColor: "#c9a84c", color: "#ffffff"
-                            }}>"{entry.customPrompt}"</span>
-                          )}
-                          {entry.score !== null && entry.score !== undefined && (
-                            <span style={{
-                              fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                              borderRadius: "20px",
-                              backgroundColor: entry.score >= 8 ? "#dcfce7" : entry.score >= 5 ? "#fff7ed" : "#fee2e2",
-                              color: entry.score >= 8 ? "#16a34a" : entry.score >= 5 ? "#d97706" : "#dc2626",
-                            }}>{entry.score}/10</span>
-                          )}
-                        </div>
+                        Object.entries(grouped).map(([date, dayEntries]) => {
+                          const dateOpen = !!openDates[date];
+                          return (
+                            <div key={date} style={{ marginBottom: "12px" }}>
+                              {/* Date header — collapsible */}
+                              <button
+                                onClick={() => setOpenDates(prev => ({ ...prev, [date]: !prev[date] }))}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  width: "100%",
+                                  background: "none",
+                                  border: "none",
+                                  borderBottom: "1.5px solid #d0d9e8",
+                                  paddingBottom: "8px",
+                                  marginBottom: dateOpen ? "12px" : "0",
+                                  cursor: "pointer",
+                                  padding: "0 0 8px 0",
+                                }}
+                              >
+                                <span style={{
+                                  fontSize: "12px",
+                                  fontWeight: "800",
+                                  color: "#0a2463",
+                                  letterSpacing: "1.2px",
+                                }}>
+                                  {date.toUpperCase()}
+                                </span>
+                                <span style={{ fontSize: "11px", color: "#4a6fa5", flexShrink: 0, marginLeft: "8px" }}>
+                                  {dayEntries.length} question{dayEntries.length !== 1 ? "s" : ""} {dateOpen ? "▲" : "▼"}
+                                </span>
+                              </button>
 
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
-                          <p style={{
-                            fontSize: "14px",
-                            color: "#1a1a2e",
-                            lineHeight: "1.6",
-                            margin: 0,
-                            fontWeight: "500",
-                            overflow: "hidden",
-                            display: "-webkit-box",
-                            WebkitLineClamp: isExpanded ? "unset" : 2,
-                            WebkitBoxOrient: "vertical",
-                          }}>
-                            {entry.question}
-                          </p>
-                          <span style={{ fontSize: "12px", color: "#4a6fa5", flexShrink: 0 }}>
-                            {isExpanded ? "▲" : "▼"}
-                          </span>
-                        </div>
+                              {dateOpen && dayEntries.map((entry, i) => {
+                                const globalIndex = entries.indexOf(entry);
+                                const isExpanded = expandedIndex === globalIndex;
+                                return (
+                                  <div key={i} id={`entry-${globalIndex}`} style={{
+                                    backgroundColor: "#ffffff",
+                                    borderRadius: "8px",
+                                    padding: "16px",
+                                    marginBottom: "16px",
+                                    boxShadow: isExpanded ? "0 4px 20px rgba(10,36,99,0.25)" : "0 2px 8px rgba(10,36,99,0.10)",
+                                    border: isExpanded ? "1px solid #4a6fa5" : "1px solid #e8edf5",
+                                    cursor: "pointer",
+                                  }}
+                                    onClick={() => setExpandedIndex(isExpanded ? null : globalIndex)}
+                                  >
+                                    <div style={{ display: "flex", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
+                                      <span style={{
+                                        fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                                        borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
+                                      }}>{entry.category}</span>
+                                      <span style={{
+                                        fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                                        borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
+                                      }}>{entry.difficulty}</span>
+                                      {entry.math && (
+                                        <span style={{
+                                          fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                                          borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
+                                        }}>{entry.math}</span>
+                                      )}
+                                      {entry.customPrompt && (
+                                        <span style={{
+                                          fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                                          borderRadius: "20px", backgroundColor: "#c9a84c", color: "#ffffff"
+                                        }}>"{entry.customPrompt}"</span>
+                                      )}
+                                      {entry.score !== null && entry.score !== undefined && (
+                                        <span style={{
+                                          fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                                          borderRadius: "20px",
+                                          backgroundColor: entry.score >= 8 ? "#dcfce7" : entry.score >= 5 ? "#fff7ed" : "#fee2e2",
+                                          color: entry.score >= 8 ? "#16a34a" : entry.score >= 5 ? "#d97706" : "#dc2626",
+                                        }}>{entry.score}/10</span>
+                                      )}
+                                    </div>
 
-                        {isExpanded && (
-                          <div style={{ marginTop: "16px", borderTop: "1px solid #e8edf5", paddingTop: "16px" }}
-                            onClick={(e) => e.stopPropagation()}>
-                            {entry.answer && (
-                              <>
-                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>ANSWER</p>
-                                <div className="history-answer">
-                                  <ReactMarkdown className="markdown">{entry.answer}</ReactMarkdown>
-                                </div>
-                              </>
-                            )}
-                            {entry.userAnswer && (
-                              <div style={{ marginTop: "16px" }}>
-                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>YOUR ANSWER</p>
-                                <p style={{ fontSize: "13px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.userAnswer}</p>
-                              </div>
-                            )}
-                            {entry.feedback && (
-                              <div style={{ marginTop: "16px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: "4px solid #0a2463" }}>
-                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0" }}>FEEDBACK</p>
-                                <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.feedback}</p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-                        ))
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+                                      <p style={{
+                                        fontSize: "14px",
+                                        color: "#1a1a2e",
+                                        lineHeight: "1.6",
+                                        margin: 0,
+                                        fontWeight: "500",
+                                        overflow: "hidden",
+                                        display: "-webkit-box",
+                                        WebkitLineClamp: isExpanded ? "unset" : 2,
+                                        WebkitBoxOrient: "vertical",
+                                      }}>
+                                        {entry.question}
+                                      </p>
+                                      <span style={{ fontSize: "12px", color: "#4a6fa5", flexShrink: 0 }}>
+                                        {isExpanded ? "▲" : "▼"}
+                                      </span>
+                                    </div>
+
+                                    {isExpanded && (
+                                      <div style={{ marginTop: "16px", borderTop: "1px solid #e8edf5", paddingTop: "16px" }}
+                                        onClick={(e) => e.stopPropagation()}>
+                                        {entry.answer && (
+                                          <>
+                                            <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>ANSWER</p>
+                                            <div className="history-answer">
+                                              <ReactMarkdown className="markdown">{entry.answer}</ReactMarkdown>
+                                            </div>
+                                          </>
+                                        )}
+                                        {entry.userAnswer && (
+                                          <div style={{ marginTop: "16px" }}>
+                                            <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>YOUR ANSWER</p>
+                                            <p style={{ fontSize: "13px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.userAnswer}</p>
+                                          </div>
+                                        )}
+                                        {entry.feedback && (
+                                          <div style={{ marginTop: "16px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: "4px solid #0a2463" }}>
+                                            <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0" }}>FEEDBACK</p>
+                                            <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.feedback}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })
                       )}
                     </>
                   )}
