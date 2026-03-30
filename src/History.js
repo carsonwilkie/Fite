@@ -266,7 +266,7 @@ function History() {
                           {rangeAvg !== null && (
                             <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
                               <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>
-                                {scoreRange === null ? `Average Across All ${chartEntries.length} Questions` : `Average Across Last ${Math.min(scoreRange, chartEntries.length)} Questions`}
+                                {(() => { const n = scoreRange === null ? chartEntries.length : Math.min(scoreRange, chartEntries.length); return scoreRange === null ? `Average Across All ${n} Question${n === 1 ? "" : "s"}` : `Average Across Last ${n} Question${n === 1 ? "" : "s"}`; })()}
                               </p>
                               <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
                               <p style={{ fontSize: "22px", fontWeight: "700", color: rangeAvg >= 8 ? "#16a34a" : rangeAvg >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{rangeAvg} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
@@ -384,7 +384,7 @@ function History() {
                             <p style={filterLabelStyle}>SORT</p>
                             <button
                               onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
-                              style={{ fontSize: "13px", fontWeight: "600", padding: "8px 14px", borderRadius: "8px", cursor: "pointer", border: "2px solid #e8edf5", backgroundColor: "#ffffff", color: "#0a2463", fontFamily: "'Segoe UI', sans-serif", whiteSpace: "nowrap", minWidth: "96px" }}
+                              style={{ fontSize: "13px", fontWeight: "600", padding: "8px 14px", borderRadius: "8px", cursor: "pointer", border: "2px solid #e8edf5", backgroundColor: "#ffffff", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif", whiteSpace: "nowrap", minWidth: "96px" }}
                             >
                               {sortOrder === "newest" ? "Newest ↓" : "Oldest ↑"}
                             </button>
@@ -418,7 +418,7 @@ function History() {
                               color: "#4a6fa5",
                               letterSpacing: "1.2px",
                               margin: "0 0 12px 0",
-                              borderBottom: "2px solid #d0d9e8",
+                              borderBottom: "20px solid #d0d9e8",
                               paddingBottom: "8px",
                             }}>
                               {date.toUpperCase()}
