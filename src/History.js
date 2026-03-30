@@ -332,7 +332,7 @@ function History() {
                   ) : (
                     <>
                       {/* Search & filter sub-section */}
-                      <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 10px 0", paddingBottom: "8px", borderBottom: "1px solid #d0d9e8" }}>SEARCH & FILTER</p>
+                      <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 10px 0", paddingBottom: "8px", borderBottom: "2.5px solid #d0d9e8" }}>SEARCH & FILTER</p>
                       <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                           <p style={filterLabelStyle}>SEARCH QUESTIONS</p>
@@ -406,7 +406,7 @@ function History() {
                       </div>
 
                       {/* Question history sub-section */}
-                      <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 12px 0", paddingBottom: "8px", borderBottom: "1px solid #d0d9e8" }}>QUESTION HISTORY</p>
+                      <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 12px 0", paddingBottom: "8px", borderBottom: "2.5px solid #d0d9e8" }}>QUESTION HISTORY</p>
                       {filteredEntries.length === 0 ? (
                         <p style={{ color: "#4a6fa5", fontSize: "14px", margin: 0 }}>No questions match your filters.</p>
                       ) : (
@@ -418,7 +418,7 @@ function History() {
                               color: "#4a6fa5",
                               letterSpacing: "1.2px",
                               margin: "0 0 12px 0",
-                              borderBottom: "20px solid #d0d9e8",
+                              borderBottom: "1px solid #d0d9e8",
                               paddingBottom: "8px",
                             }}>
                               {date.toUpperCase()}
