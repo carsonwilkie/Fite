@@ -288,6 +288,7 @@ function Questions() {
               <div style={{ position: "relative" }}>
                 <button
                   onClick={() => {
+                    if (timerStarted) return;
                     if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); }
                     else { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); }
                   }}
@@ -298,7 +299,7 @@ function Questions() {
                     letterSpacing: "0.6px",
                     padding: "5px 12px",
                     borderRadius: "20px",
-                    cursor: isPaid ? "pointer" : "not-allowed",
+                    cursor: timerStarted ? "not-allowed" : isPaid ? "pointer" : "not-allowed",
                     border: "2px solid",
                     borderColor: !isPaid ? "#e8edf5" : interviewMode ? "#0a2463" : "#e8edf5",
                     backgroundColor: !isPaid ? "#f7f9fc" : interviewMode ? "#0a2463" : "#ffffff",
@@ -492,7 +493,7 @@ function Questions() {
                     ⭐ Upgrade for {price || "$3/month"}
                   </button>
                 ) : (
-                  <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed || (interviewMode && timeLeft !== null && timeLeft > 0 && !graded)} className="secondary-btn">
+                  <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed || (interviewMode && !graded)} className="secondary-btn">
                     {loadingAnswer ? "Loading..." : "Show Answer"}
                   </button>
                 )}
