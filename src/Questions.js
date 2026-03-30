@@ -336,16 +336,7 @@ function Questions() {
                 {!timerStarted ? (
                   <button
                     onClick={() => { setTimerStarted(true); startTimer(); }}
-                    style={{
-                      fontSize: "12px",
-                      fontWeight: "700",
-                      padding: "5px 14px",
-                      borderRadius: "20px",
-                      border: "none",
-                      backgroundColor: "#16a34a",
-                      color: "#ffffff",
-                      cursor: "pointer",
-                    }}
+                    className="start-answering-btn"
                   >
                     Start Answering
                   </button>
