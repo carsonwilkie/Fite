@@ -312,19 +312,17 @@ function Questions() {
 
             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
               <div style={{ position: "relative" }}>
-                <div style={{ border: "2px solid #c9a84c", borderRadius: "24px", display: "inline-flex", padding: "2px" }}>
-                  <button
-                    onClick={() => {
-                      if (timerStarted) return;
-                      if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); }
-                      else { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); }
-                    }}
-                    className={`interview-mode-btn${!isPaid ? " interview-mode-btn-free" : interviewMode ? " interview-mode-btn-on" : ""}`}
-                    style={{ cursor: timerStarted ? "not-allowed" : undefined }}
-                  >
-                    Interview Mode {interviewMode ? "ON" : "OFF"}
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    if (timerStarted) return;
+                    if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); }
+                    else { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); }
+                  }}
+                  className={`interview-mode-btn${!isPaid ? " interview-mode-btn-free" : interviewMode ? " interview-mode-btn-on" : ""}`}
+                  style={{ cursor: timerStarted ? "not-allowed" : undefined }}
+                >
+                  Interview Mode {interviewMode ? "ON" : "OFF"}
+                </button>
                 {showInterviewTooltip && (
                   <div style={{
                     position: "absolute",
