@@ -150,7 +150,7 @@ function Questions() {
             entry: {
               question,
               answer: answerRef.current,
-              userAnswer,
+              userAnswer: userAnswer.trim() || "No answer was submitted.",
               feedback: data.feedback,
               score: data.score ?? null,
               category: decodeURIComponent(category),

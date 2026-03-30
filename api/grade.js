@@ -11,6 +11,10 @@ module.exports = async function handler(req, res) {
 
   const { question, userAnswer } = req.body;
 
+  if (!userAnswer || !userAnswer.trim()) {
+    return res.status(200).json({ feedback: "No answer was submitted before time ran out.", score: 0 });
+  }
+
   const prompt = `You are a finance interview coach. A candidate was asked the following interview question and gave the following answer.
 
 Question: ${question}
