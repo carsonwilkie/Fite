@@ -46,7 +46,7 @@ function Questions() {
   }, []);
 
   useEffect(() => {
-    if (interviewMode && timeLeft === 0 && userAnswer.trim() && !graded) {
+    if (interviewMode && timeLeft === 0 && !graded) {
       handleGrade();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -411,9 +411,13 @@ function Questions() {
                       Start Answering
                     </button>
                   </div>
+                ) : timeLeft === 0 ? (
+                  <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: "#dc2626" }}>
+                    Time's up!
+                  </span>
                 ) : graded ? (
-                  <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: timeLeft > 0 ? "#16a34a" : "#dc2626" }}>
-                    {timeLeft > 0 ? `${formatTime(timeLeft)} remaining` : "Time's up!"}
+                  <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: "#16a34a" }}>
+                    {formatTime(timeLeft)} remaining
                   </span>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>

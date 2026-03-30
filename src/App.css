@@ -469,7 +469,7 @@ img, span, button {
 .interview-mode-btn-on {
   background-color: #16a34a;
   color: #ffffff;
-  box-shadow: 0 0 10px rgba(22, 163, 74, 0.45);
+  box-shadow: 0 0 18px rgba(22, 163, 74, 0.7);
 }
 
 .interview-mode-btn-on:hover {

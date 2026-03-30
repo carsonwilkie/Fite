@@ -158,7 +158,7 @@ function History() {
             {!loadingHistory && entries.length > 0 && (
               <>
                 {/* Stats — collapsible */}
-                <div style={{ borderRadius: "10px", marginBottom: "12px", overflow: "hidden", border: statsOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: statsOpen ? "0 4px 20px rgba(10,36,99,0.12)" : "none", transition: "box-shadow 0.2s, border-color 0.2s" }}>
+                <div style={{ borderRadius: "10px", marginBottom: "12px", overflow: "hidden", border: statsOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: statsOpen ? "0 6px 32px rgba(10,36,99,0.22)" : "none", transition: "box-shadow 0.2s, border-color 0.2s" }}>
                   <button
                     onClick={() => setStatsOpen(!statsOpen)}
                     style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "14px 16px", backgroundColor: "#0a2463", border: "none", cursor: "pointer" }}
@@ -206,7 +206,7 @@ function History() {
                 </div>
 
                 {/* Score Analysis — collapsible */}
-                <div style={{ borderRadius: "10px", marginBottom: "12px", overflow: "hidden", border: scoreOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: scoreOpen ? "0 4px 20px rgba(10,36,99,0.12)" : "none", transition: "box-shadow 0.2s, border-color 0.2s" }}>
+                <div style={{ borderRadius: "10px", marginBottom: "12px", overflow: "hidden", border: scoreOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: scoreOpen ? "0 6px 32px rgba(10,36,99,0.22)" : "none", transition: "box-shadow 0.2s, border-color 0.2s" }}>
                   <button
                     onClick={() => setScoreOpen(!scoreOpen)}
                     style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "14px 16px", backgroundColor: "#0a2463", border: "none", cursor: "pointer" }}
@@ -326,7 +326,7 @@ function History() {
             )}
 
             {/* Browse Questions — collapsible */}
-            <div style={{ borderRadius: "10px", marginBottom: "12px", overflow: "hidden", border: questionsOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: questionsOpen ? "0 4px 20px rgba(10,36,99,0.12)" : "none", transition: "box-shadow 0.2s, border-color 0.2s" }}>
+            <div style={{ borderRadius: "10px", marginBottom: "12px", overflow: "hidden", border: questionsOpen ? "1px solid #9db8d9" : "1px solid #e8edf5", boxShadow: questionsOpen ? "0 6px 32px rgba(10,36,99,0.22)" : "none", transition: "box-shadow 0.2s, border-color 0.2s" }}>
               <button
                 onClick={() => setQuestionsOpen(!questionsOpen)}
                 style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "14px 16px", backgroundColor: "#0a2463", border: "none", cursor: "pointer" }}
