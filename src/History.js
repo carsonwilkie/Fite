@@ -392,7 +392,7 @@ function History() {
                               {/* X-axis label */}
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
                                 <span style={{ fontSize: "10px", color: "#4a6fa5" }}>Oldest</span>
-                                <span style={{ fontSize: "10px", color: "#4a6fa5", fontStyle: "italic", textAlign: "center" }}>
+                                <span style={{ fontSize: "11px", color: "#4a6fa5", fontStyle: "italic", textAlign: "center" }}>
                                   {scoreRange === null || scoreRange >= chartScoredEntries.length
                                     ? `All ${chartScoredEntries.length} scored questions`
                                     : `Last ${scoreRange} of ${chartScoredEntries.length} scored questions`}
