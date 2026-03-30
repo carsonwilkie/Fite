@@ -302,6 +302,7 @@ function History() {
 
                                 {/* Slider */}
                                 <p style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0" }}>RANGE</p>
+                                <div style={{ padding: "0 16px" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
                                   <span style={{ fontSize: "14px", fontWeight: "900", color: "#4a6fa5", flexShrink: 0 }}>2</span>
                                   <input
@@ -326,6 +327,7 @@ function History() {
                                     ? `Showing all ${sliderMax} scored questions`
                                     : `Showing last ${scoreRange} of ${sliderMax} scored questions`}
                                 </p>
+                                </div>
                               </>
                             );
                           })()}
