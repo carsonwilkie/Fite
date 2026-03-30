@@ -32,6 +32,8 @@ function Questions() {
   const [interviewMode, setInterviewMode] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const [timerStarted, setTimerStarted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [customTimeSec, setCustomTimeSec] = useState(INTERVIEW_TIME);
   const [showInterviewTooltip, setShowInterviewTooltip] = useState(false);
   const timerRef = useRef(null);
 
@@ -50,9 +52,7 @@ function Questions() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft]);
 
-  const startTimer = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    setTimeLeft(INTERVIEW_TIME);
+  const runInterval = () => {
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) { clearInterval(timerRef.current); timerRef.current = null; return 0; }
@@ -61,9 +61,33 @@ function Questions() {
     }, 1000);
   };
 
+  const startTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimeLeft(customTimeSec);
+    runInterval();
+  };
+
   const stopTimer = () => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     setTimeLeft(null);
+    setIsPaused(false);
+  };
+
+  const pauseTimer = () => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    setIsPaused(true);
+  };
+
+  const resumeTimer = () => {
+    setIsPaused(false);
+    runInterval();
+  };
+
+  const resetTimer = () => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    setTimeLeft(null);
+    setTimerStarted(false);
+    setIsPaused(false);
   };
 
   const freezeTimer = () => {
@@ -155,6 +179,7 @@ function Questions() {
     setGraded(false);
     stopTimer();
     setTimerStarted(false);
+    setIsPaused(false);
     try {
       let newQuestion = null;
       let attempts = 0;
@@ -358,39 +383,65 @@ function Questions() {
             )}
 
             {interviewMode && question && !question.includes("Come back tomorrow") && (
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "10px 16px",
-                backgroundColor: !timerStarted ? "#e8edf5" : graded && timeLeft > 0 ? "#f0fdf4" : timeLeft === 0 ? "#fee2e2" : timeLeft < 30 ? "#fff7ed" : "#e8edf5",
-                borderRadius: "8px",
-                marginTop: "16px",
-                border: `1px solid ${!timerStarted ? "#d0d9e8" : graded && timeLeft > 0 ? "#86efac" : timeLeft === 0 ? "#fca5a5" : timeLeft < 30 ? "#fed7aa" : "#d0d9e8"}`,
-              }}>
+              <div
+                className={timerStarted && !isPaused && !graded && timeLeft > 0 ? (timeLeft < 30 ? "interview-bar-urgent" : "interview-bar-pulsing") : ""}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: "8px",
+                  padding: "10px 16px",
+                  backgroundColor: !timerStarted ? "#e8edf5" : graded && timeLeft > 0 ? "#f0fdf4" : timeLeft === 0 ? "#fee2e2" : timeLeft < 30 ? "#fff7ed" : "#e8edf5",
+                  borderRadius: "8px",
+                  marginTop: "16px",
+                  border: `1px solid ${!timerStarted ? "#d0d9e8" : graded && timeLeft > 0 ? "#86efac" : timeLeft === 0 ? "#fca5a5" : timeLeft < 30 ? "#fed7aa" : "#d0d9e8"}`,
+                }}>
                 <span style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px" }}>
                   INTERVIEW MODE
                 </span>
+
                 {!timerStarted ? (
-                  <button
-                    onClick={() => { setTimerStarted(true); startTimer(); }}
-                    className="start-answering-btn"
-                  >
-                    Start Answering
-                  </button>
-                ) : (
-                  <span style={{
-                    fontSize: "16px",
-                    fontWeight: "700",
-                    fontFamily: "monospace",
-                    color: graded && timeLeft > 0 ? "#16a34a" : timeLeft === 0 ? "#dc2626" : timeLeft < 30 ? "#d97706" : "#0a2463",
-                  }}>
-                    {graded && timeLeft > 0
-                      ? `${formatTime(timeLeft)} remaining`
-                      : timeLeft === 0
-                      ? "Time's up!"
-                      : formatTime(timeLeft)}
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <button
+                        onClick={() => setCustomTimeSec(prev => Math.max(30, prev - 30))}
+                        style={{ width: "22px", height: "22px", borderRadius: "50%", border: "2px solid #4a6fa5", backgroundColor: "#ffffff", color: "#4a6fa5", fontSize: "14px", fontWeight: "700", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, lineHeight: 1 }}
+                      >−</button>
+                      <span style={{ fontSize: "15px", fontWeight: "700", fontFamily: "monospace", color: "#0a2463", minWidth: "38px", textAlign: "center" }}>
+                        {formatTime(customTimeSec)}
+                      </span>
+                      <button
+                        onClick={() => setCustomTimeSec(prev => Math.min(600, prev + 30))}
+                        style={{ width: "22px", height: "22px", borderRadius: "50%", border: "2px solid #4a6fa5", backgroundColor: "#ffffff", color: "#4a6fa5", fontSize: "14px", fontWeight: "700", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, lineHeight: 1 }}
+                      >+</button>
+                    </div>
+                    <button onClick={() => { setTimerStarted(true); startTimer(); }} className="start-answering-btn">
+                      Start Answering
+                    </button>
+                  </div>
+                ) : graded ? (
+                  <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: timeLeft > 0 ? "#16a34a" : "#dc2626" }}>
+                    {timeLeft > 0 ? `${formatTime(timeLeft)} remaining` : "Time's up!"}
                   </span>
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <button
+                      onClick={isPaused ? resumeTimer : pauseTimer}
+                      style={{ fontSize: "11px", fontWeight: "700", padding: "4px 10px", borderRadius: "20px", cursor: "pointer", border: "2px solid", borderColor: isPaused ? "#16a34a" : "#4a6fa5", backgroundColor: "#ffffff", color: isPaused ? "#16a34a" : "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}
+                    >
+                      {isPaused ? "Resume" : "Pause"}
+                    </button>
+                    <button
+                      onClick={resetTimer}
+                      style={{ fontSize: "11px", fontWeight: "700", padding: "4px 10px", borderRadius: "20px", cursor: "pointer", border: "2px solid #e8edf5", backgroundColor: "#ffffff", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}
+                    >
+                      Reset
+                    </button>
+                    <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: timeLeft < 30 ? "#d97706" : "#0a2463", opacity: isPaused ? 0.5 : 1 }}>
+                      {formatTime(timeLeft)}
+                    </span>
+                  </div>
                 )}
               </div>
             )}
