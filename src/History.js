@@ -71,6 +71,13 @@ function History() {
     }
   }, [search, selectedCategory, selectedDifficulty, selectedMath, entries]);
 
+  useEffect(() => {
+    if (!questionsOpen) {
+      setOpenDates({});
+      setExpandedIndex(null);
+    }
+  }, [questionsOpen]);
+
   const filteredEntries = entries
     .filter((entry) => {
       const matchesSearch = search === "" || entry.question.toLowerCase().includes(search.toLowerCase());
