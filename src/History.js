@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import usePaidStatus from "./usePaidStatus";
 import "./App.css";
 
-const CATEGORIES = ["All", "Investment Banking", "Private Equity", "Asset Management", "Accounting", "Financial Modeling", "Valuation", "Sales and Trading", "Asset Finance"];
+const CATEGORIES = ["All", "Investment Banking", "Private Equity", "Asset Management", "Accounting", "Financial Modeling", "Valuation", "Sales and Trading"];
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 
 function History() {
