@@ -293,7 +293,7 @@ function History() {
                                 {rangeAvg !== null && (
                                   <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px", border: "2px solid #c8d4e8" }}>
                                     <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                      {(() => { const n = scoreRange === null ? chartEntries.length : Math.min(scoreRange, chartEntries.length); return scoreRange === null ? `Average Across All ${n} Question${n === 1 ? "" : "s"}` : `Average Across Last ${n} Question${n === 1 ? "" : "s"}`; })()}
+                                      {(() => { const n = scoreRange === null ? chartEntries.length : Math.min(scoreRange, chartEntries.length); return scoreRange === null ? `Average → All ${n} Question${n === 1 ? "" : "s"}` : `Average → Last ${n} Question${n === 1 ? "" : "s"}`; })()}
                                     </p>
                                     <div style={{ flex: 1, minWidth: "8px", borderBottom: "2px dotted #b0bcc8" }} />
                                     <p style={{ fontSize: "22px", fontWeight: "700", color: rangeAvg >= 8 ? "#16a34a" : rangeAvg >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{rangeAvg} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
@@ -301,7 +301,7 @@ function History() {
                                 )}
 
                                 {/* Slider */}
-                                <p style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0" }}>RANGE</p>
+                                <p style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0", padding: "0 16px" }}>RANGE</p>
                                 <div style={{ padding: "0 16px" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
                                   <span style={{ fontSize: "14px", fontWeight: "900", color: "#4a6fa5", flexShrink: 0 }}>2</span>
