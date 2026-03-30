@@ -303,7 +303,7 @@ function History() {
                                 {/* Slider */}
                                 <p style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0" }}>RANGE</p>
                                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                                  <span style={{ fontSize: "13px", fontWeight: "900", color: "#4a6fa5", flexShrink: 0 }}>2</span>
+                                  <span style={{ fontSize: "30px", fontWeight: "900", color: "#4a6fa5", flexShrink: 0 }}>2</span>
                                   <input
                                     type="range"
                                     min={2}
