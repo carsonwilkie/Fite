@@ -280,57 +280,60 @@ function Questions() {
               )}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px", position: "relative" }}>
-              <button
-                onClick={() => {
-                  if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); }
-                  else { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); }
-                }}
-                title={!isPaid ? "Upgrade to Premium to use Interview Mode" : undefined}
-                style={{
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  letterSpacing: "0.6px",
-                  padding: "5px 12px",
-                  borderRadius: "20px",
-                  cursor: isPaid ? "pointer" : "not-allowed",
-                  border: "2px solid",
-                  borderColor: !isPaid ? "#e8edf5" : interviewMode ? "#0a2463" : "#e8edf5",
-                  backgroundColor: !isPaid ? "#f7f9fc" : interviewMode ? "#0a2463" : "#ffffff",
-                  color: !isPaid ? "#c0cad8" : interviewMode ? "#ffffff" : "#4a6fa5",
-                  transition: "all 0.2s",
-                  opacity: isPaid ? 1 : 0.6,
-                }}
-              >
-                Interview Mode {interviewMode ? "ON" : "OFF"}
-              </button>
-              {showInterviewTooltip && (
-                <div style={{
-                  position: "absolute",
-                  top: "calc(100% + 8px)",
-                  right: 0,
-                  backgroundColor: "#1a1a2e",
-                  color: "#ffffff",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  padding: "6px 12px",
-                  borderRadius: "8px",
-                  whiteSpace: "nowrap",
-                  zIndex: 10,
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                }}>
-                  Premium feature — upgrade to unlock
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+              <div style={{ position: "relative" }}>
+                <button
+                  onClick={() => {
+                    if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); }
+                    else { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); }
+                  }}
+                  title={!isPaid ? "Upgrade to Premium to use Interview Mode" : undefined}
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    letterSpacing: "0.6px",
+                    padding: "5px 12px",
+                    borderRadius: "20px",
+                    cursor: isPaid ? "pointer" : "not-allowed",
+                    border: "2px solid",
+                    borderColor: !isPaid ? "#e8edf5" : interviewMode ? "#0a2463" : "#e8edf5",
+                    backgroundColor: !isPaid ? "#f7f9fc" : interviewMode ? "#0a2463" : "#ffffff",
+                    color: !isPaid ? "#c0cad8" : interviewMode ? "#ffffff" : "#4a6fa5",
+                    transition: "all 0.2s",
+                    opacity: isPaid ? 1 : 0.6,
+                  }}
+                >
+                  Interview Mode {interviewMode ? "ON" : "OFF"}
+                </button>
+                {showInterviewTooltip && (
                   <div style={{
                     position: "absolute",
-                    top: "-5px",
-                    right: "16px",
-                    width: "10px",
-                    height: "10px",
+                    top: "calc(100% + 8px)",
+                    left: "50%",
+                    transform: "translateX(-50%)",
                     backgroundColor: "#1a1a2e",
-                    transform: "rotate(45deg)",
-                  }} />
-                </div>
-              )}
+                    color: "#ffffff",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    whiteSpace: "nowrap",
+                    zIndex: 10,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                  }}>
+                    Premium feature — upgrade to unlock
+                    <div style={{
+                      position: "absolute",
+                      top: "-5px",
+                      left: "50%",
+                      transform: "translateX(-50%) rotate(45deg)",
+                      width: "10px",
+                      height: "10px",
+                      backgroundColor: "#1a1a2e",
+                    }} />
+                  </div>
+                )}
+              </div>
             </div>
 
             <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
