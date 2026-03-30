@@ -310,7 +310,7 @@ function History() {
                     <span style={{ fontSize: "11px", color: "#ffffff" }}>{statsOpen ? "▲" : "▼"}</span>
                   </button>
                   {statsOpen && (
-                    <div style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
+                    <div className="collapsible-content" style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
                       {entries.length === 0 ? (
                         <p style={{ fontSize: "13px", color: "#4a6fa5", margin: 0, fontStyle: "italic" }}>No history yet — answer some questions to see your stats.</p>
                       ) : (
@@ -378,7 +378,7 @@ function History() {
                     <span style={{ fontSize: "11px", color: "#ffffff" }}>{scoreOpen ? "▲" : "▼"}</span>
                   </button>
                   {scoreOpen && (
-                    <div style={{ backgroundColor: "#f0f4f8", padding: "16px", borderRadius: "0 0 10px 10px" }}>
+                    <div className="collapsible-content" style={{ backgroundColor: "#f0f4f8", padding: "16px", borderRadius: "0 0 10px 10px" }}>
                       {scoredEntries.length === 0 ? (
                         <p style={{ fontSize: "13px", color: "#4a6fa5", margin: 0, fontStyle: "italic" }}>No graded answers yet — grade some questions to see your score analysis.</p>
                       ) : (
@@ -537,7 +537,7 @@ function History() {
                           <div style={{ borderTop: "2.5px solid #b0bcc8", margin: "16px 0 12px 0" }} />
                           {trendPct !== null && (
                             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                              <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>Score Trend</p>
+                              <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>Current Score Trend</p>
                               <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
                               <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", flexShrink: 0,
                                 backgroundColor: trendPct > 0 ? "#dcfce7" : trendPct < 0 ? "#fee2e2" : "#e8edf5",
@@ -558,7 +558,7 @@ function History() {
                           {avgScoreByCategory.length > 0 && (
                             <>
                               <div style={{ borderTop: "2.5px solid #b0bcc8", margin: "0 0 12px 0" }} />
-                              <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1px", margin: "0 0 8px 0" }}>BY CATEGORY</p>
+                              <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1px", margin: "0 0 8px 0" }}>AVERAGES BY CATEGORY</p>
                               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
                                 {avgScoreByCategory.map(({ cat, avg }) => (
                                   <div key={cat} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -575,7 +575,7 @@ function History() {
                           {avgScoreByDiff.length > 0 && (
                             <>
                               <div style={{ borderTop: "2.5px solid #b0bcc8", margin: "0 0 12px 0" }} />
-                              <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1px", margin: "0 0 8px 0" }}>BY DIFFICULTY</p>
+                              <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1px", margin: "0 0 8px 0" }}>AVERAGES BY DIFFICULTY</p>
                               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                                 {avgScoreByDiff.map(({ diff, avg }) => (
                                   <div key={diff} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -605,7 +605,7 @@ function History() {
                 <span style={{ fontSize: "11px", color: "#ffffff" }}>{questionsOpen ? "▲" : "▼"}</span>
               </button>
               {questionsOpen && (
-                <div style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
+                <div className="collapsible-content" style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
                   {loadingHistory ? (
                     <p style={{ color: "#4a6fa5", fontSize: "14px", margin: 0 }}>Loading history...</p>
                   ) : entries.length === 0 ? (
