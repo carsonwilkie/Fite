@@ -301,7 +301,7 @@ function History() {
                                 )}
 
                                 {/* Slider */}
-                                <p style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0", padding: "0 16px" }}>RANGE</p>
+                                <p style={{ fontSize: "11px", fontWeight: "600", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 10px 0", padding: "0 16px" }}>Toggle Average</p>
                                 <div style={{ padding: "0 16px" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
                                   <span style={{ fontSize: "14px", fontWeight: "900", color: "#4a6fa5", flexShrink: 0 }}>2</span>
