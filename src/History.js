@@ -158,10 +158,10 @@ function History() {
                 <div style={{ borderRadius: "10px", marginBottom: "12px", overflow: "hidden", border: "1px solid #e8edf5" }}>
                   <button
                     onClick={() => setStatsOpen(!statsOpen)}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 16px", backgroundColor: "#f0f4f8", border: "none", cursor: "pointer" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "14px 16px", backgroundColor: "#0a2463", border: "none", cursor: "pointer" }}
                   >
-                    <span style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1.2px" }}>YOUR STATS</span>
-                    <span style={{ fontSize: "11px", color: "#4a6fa5" }}>{statsOpen ? "▲" : "▼"}</span>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#ffffff", letterSpacing: "1.2px" }}>YOUR STATS</span>
+                    <span style={{ fontSize: "11px", color: "#ffffff" }}>{statsOpen ? "▲" : "▼"}</span>
                   </button>
                   {statsOpen && (
                     <div style={{ backgroundColor: "#f0f4f8", padding: "0 16px 16px 16px" }}>
@@ -191,9 +191,10 @@ function History() {
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                         {Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
-                          <div key={cat} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0 }}>{cat}</p>
-                            <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#0a2463" }}>{count}</span>
+                          <div key={cat} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>{cat}</p>
+                            <div style={{ flex: 1, borderBottom: "1px dotted #c8d0db" }} />
+                            <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#0a2463", flexShrink: 0 }}>{count}</span>
                           </div>
                         ))}
                       </div>
@@ -205,10 +206,10 @@ function History() {
                 <div style={{ borderRadius: "10px", marginBottom: "24px", overflow: "hidden", border: "1px solid #e8edf5" }}>
                   <button
                     onClick={() => setScoreOpen(!scoreOpen)}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 16px", backgroundColor: "#f0f4f8", border: "none", cursor: "pointer" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "14px 16px", backgroundColor: "#0a2463", border: "none", cursor: "pointer" }}
                   >
-                    <span style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1.2px" }}>SCORE ANALYSIS</span>
-                    <span style={{ fontSize: "11px", color: "#4a6fa5" }}>{scoreOpen ? "▲" : "▼"}</span>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#ffffff", letterSpacing: "1.2px" }}>SCORE ANALYSIS</span>
+                    <span style={{ fontSize: "11px", color: "#ffffff" }}>{scoreOpen ? "▲" : "▼"}</span>
                   </button>
                   {scoreOpen && (
                     <div style={{ backgroundColor: "#f0f4f8", padding: "0 16px 16px 16px" }}>
@@ -217,9 +218,10 @@ function History() {
                       ) : (
                         <>
                           {/* Overall average */}
-                          <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                            <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0 }}>Overall Average</p>
-                            <p style={{ fontSize: "22px", fontWeight: "700", color: averageScore >= 8 ? "#16a34a" : averageScore >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace" }}>{averageScore} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
+                          <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>Overall Average</p>
+                            <div style={{ flex: 1, borderBottom: "1px dotted #c8d0db" }} />
+                            <p style={{ fontSize: "22px", fontWeight: "700", color: averageScore >= 8 ? "#16a34a" : averageScore >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{averageScore} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
                           </div>
 
                           {/* Range selector */}
@@ -257,11 +259,12 @@ function History() {
 
                           {/* Range average */}
                           {rangeAvg !== null && (
-                            <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                              <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0 }}>
+                            <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+                              <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>
                                 {scoreRange === null ? `Average Across All ${chartEntries.length} Questions` : `Average Across Last ${Math.min(scoreRange, chartEntries.length)} Questions`}
                               </p>
-                              <p style={{ fontSize: "22px", fontWeight: "700", color: rangeAvg >= 8 ? "#16a34a" : rangeAvg >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace" }}>{rangeAvg} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
+                              <div style={{ flex: 1, borderBottom: "1px dotted #c8d0db" }} />
+                              <p style={{ fontSize: "22px", fontWeight: "700", color: rangeAvg >= 8 ? "#16a34a" : rangeAvg >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{rangeAvg} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
                             </div>
                           )}
 
@@ -292,7 +295,11 @@ function History() {
                 </div>
 
                 {/* Search and filters */}
-                <div style={{ marginBottom: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div style={{ borderRadius: "10px", marginBottom: "24px", overflow: "hidden", border: "1px solid #e8edf5" }}>
+                  <div style={{ padding: "14px 16px", backgroundColor: "#0a2463" }}>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#ffffff", letterSpacing: "1.2px" }}>SEARCH & FILTER</span>
+                  </div>
+                  <div style={{ backgroundColor: "#f0f4f8", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                     <p style={filterLabelStyle}>SEARCH QUESTIONS</p>
                     <input
@@ -393,6 +400,7 @@ function History() {
                       </button>
                     </div>
                   )}
+                  </div>
                 </div>
               </>
             )}
@@ -404,15 +412,21 @@ function History() {
             ) : filteredEntries.length === 0 ? (
               <p style={{ color: "#4a6fa5", fontSize: "14px" }}>No questions match your filters.</p>
             ) : (
-              Object.entries(grouped).map(([date, dayEntries]) => (
+              <>
+                <div style={{ borderRadius: "10px", marginBottom: "24px", overflow: "hidden", border: "1px solid #e8edf5" }}>
+                  <div style={{ padding: "14px 16px", backgroundColor: "#0a2463" }}>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#ffffff", letterSpacing: "1.2px" }}>QUESTION HISTORY</span>
+                  </div>
+                  <div style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
+              {Object.entries(grouped).map(([date, dayEntries]) => (
                 <div key={date} style={{ marginBottom: "32px" }}>
                   <p style={{
-                    fontSize: "11px",
+                    fontSize: "12px",
                     fontWeight: "700",
-                    color: "#4a6fa5",
+                    color: "#0a2463",
                     letterSpacing: "1.2px",
                     margin: "0 0 12px 0",
-                    borderBottom: "1px solid #e8edf5",
+                    borderBottom: "2px solid #d0d9e8",
                     paddingBottom: "8px",
                   }}>
                     {date.toUpperCase()}
@@ -511,7 +525,10 @@ function History() {
                     );
                   })}
                 </div>
-              ))
+              ))}
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
