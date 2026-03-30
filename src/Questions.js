@@ -404,17 +404,11 @@ function Questions() {
                 {!timerStarted ? (
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <button
-                        onClick={() => setCustomTimeSec(prev => Math.max(30, prev - 30))}
-                        style={{ width: "22px", height: "22px", borderRadius: "50%", border: "2px solid #4a6fa5", backgroundColor: "#ffffff", color: "#4a6fa5", fontSize: "14px", fontWeight: "700", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, lineHeight: 1 }}
-                      >−</button>
+                      <button onClick={() => setCustomTimeSec(prev => Math.max(30, prev - 30))} className="timer-step-btn">−</button>
                       <span style={{ fontSize: "15px", fontWeight: "700", fontFamily: "monospace", color: "#0a2463", minWidth: "38px", textAlign: "center" }}>
                         {formatTime(customTimeSec)}
                       </span>
-                      <button
-                        onClick={() => setCustomTimeSec(prev => Math.min(600, prev + 30))}
-                        style={{ width: "22px", height: "22px", borderRadius: "50%", border: "2px solid #4a6fa5", backgroundColor: "#ffffff", color: "#4a6fa5", fontSize: "14px", fontWeight: "700", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, lineHeight: 1 }}
-                      >+</button>
+                      <button onClick={() => setCustomTimeSec(prev => Math.min(600, prev + 30))} className="timer-step-btn">+</button>
                     </div>
                     <button onClick={() => { setTimerStarted(true); startTimer(); }} className="start-answering-btn">
                       Start Answering
