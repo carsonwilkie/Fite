@@ -135,6 +135,28 @@ function History() {
     ? (chartEntries.reduce((sum, e) => sum + e.score, 0) / chartEntries.length).toFixed(1)
     : null;
 
+  const getScoreColor = (score) => {
+    const s = Math.max(0, Math.min(10, Number(score)));
+    if (s <= 5) {
+      const t = s / 5;
+      return `rgb(${Math.round(220 + 14 * t)},${Math.round(38 + 141 * t)},${Math.round(38 - 30 * t)})`;
+    } else {
+      const t = (s - 5) / 5;
+      return `rgb(${Math.round(234 - 212 * t)},${Math.round(179 - 16 * t)},${Math.round(8 + 66 * t)})`;
+    }
+  };
+
+  const getScoreBg = (score) => {
+    const s = Math.max(0, Math.min(10, Number(score)));
+    if (s <= 5) {
+      const t = s / 5;
+      return `rgb(254,${Math.round(226 + 23 * t)},${Math.round(226 - 31 * t)})`;
+    } else {
+      const t = (s - 5) / 5;
+      return `rgb(${Math.round(254 - 34 * t)},${Math.round(249 + 3 * t)},${Math.round(195 + 36 * t)})`;
+    }
+  };
+
   const handleBarClick = (entry, globalIndex) => {
     const dateStr = getDateStr(entry.timestamp);
     setQuestionsOpen(true);
@@ -270,7 +292,7 @@ function History() {
                           <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px", border: "2px solid #c8d4e8" }}>
                             <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>Overall Average</p>
                             <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
-                            <p style={{ fontSize: "22px", fontWeight: "700", color: averageScore >= 8 ? "#16a34a" : averageScore >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{averageScore} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
+                            <p style={{ fontSize: "22px", fontWeight: "700", color: getScoreColor(averageScore), margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{averageScore} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
                           </div>
 
                           {/* Prompt to grade more when only 1 scored entry */}
@@ -296,7 +318,7 @@ function History() {
                                       {(() => { const n = scoreRange === null ? chartEntries.length : Math.min(scoreRange, chartEntries.length); return scoreRange === null ? `Average → All ${n} Question${n === 1 ? "" : "s"}` : `Average → Last ${n} Question${n === 1 ? "" : "s"}`; })()}
                                     </p>
                                     <div style={{ flex: 1, minWidth: "8px", borderBottom: "2px dotted #b0bcc8" }} />
-                                    <p style={{ fontSize: "22px", fontWeight: "700", color: rangeAvg >= 8 ? "#16a34a" : rangeAvg >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{rangeAvg} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
+                                    <p style={{ fontSize: "22px", fontWeight: "700", color: getScoreColor(rangeAvg), margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{rangeAvg} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
                                   </div>
                                 )}
 
@@ -349,7 +371,7 @@ function History() {
                                     return (
                                       <div
                                         key={i}
-                                        style={{ flex: 1, minWidth: "4px", height: `${(entry.score / 10) * 100}%`, backgroundColor: entry.score >= 8 ? "#16a34a" : entry.score >= 5 ? "#d97706" : "#dc2626", borderRadius: "2px 2px 0 0", cursor: "pointer", transition: "opacity 0.15s", opacity: isHovered ? 0.75 : 1 }}
+                                        style={{ flex: 1, minWidth: "4px", height: `${(entry.score / 10) * 100}%`, backgroundColor: getScoreColor(entry.score), borderRadius: "2px 2px 0 0", cursor: "pointer", transition: "opacity 0.15s", opacity: isHovered ? 0.75 : 1 }}
                                         onClick={() => handleBarClick(entry, globalIndex)}
                                         onMouseEnter={(e) => {
                                           const barRect = e.currentTarget.getBoundingClientRect();
@@ -579,8 +601,8 @@ function History() {
                                         <span style={{
                                           fontSize: "11px", fontWeight: "700", padding: "2px 8px",
                                           borderRadius: "20px",
-                                          backgroundColor: entry.score >= 8 ? "#dcfce7" : entry.score >= 5 ? "#fff7ed" : "#fee2e2",
-                                          color: entry.score >= 8 ? "#16a34a" : entry.score >= 5 ? "#d97706" : "#dc2626",
+                                          backgroundColor: getScoreBg(entry.score),
+                                          color: getScoreColor(entry.score),
                                         }}>{entry.score}/10</span>
                                       )}
                                     </div>
