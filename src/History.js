@@ -263,8 +263,8 @@ function History() {
                             );
                           })()}
 
-                          {/* Range average — only shown when slider moved away from max */}
-                          {rangeAvg !== null && scoreRange !== null && (
+                          {/* Range average — shown alongside slider when 2+ scored entries */}
+                          {chartScoredEntries.length > 1 && rangeAvg !== null && (
                             <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
                               <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>
                                 {(() => { const n = scoreRange === null ? chartEntries.length : Math.min(scoreRange, chartEntries.length); return scoreRange === null ? `Average Across All ${n} Question${n === 1 ? "" : "s"}` : `Average Across Last ${n} Question${n === 1 ? "" : "s"}`; })()}
