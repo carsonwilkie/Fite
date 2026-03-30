@@ -45,11 +45,19 @@ function Navbar() {
       </div>
       <div style={{ pointerEvents: "auto" }}>
         <SignedOut>
-          <SignInButton mode="modal">
-            <button className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
-              Sign In
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button disabled className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.5, cursor: "not-allowed" }}>
+              History
             </button>
-          </SignInButton>
+            <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+              ⭐ Upgrade to Premium
+            </button>
+            <SignInButton mode="modal">
+              <button className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                Sign In
+              </button>
+            </SignInButton>
+          </div>
         </SignedOut>
         <SignedIn>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>

@@ -126,12 +126,13 @@ function History() {
             <img
               src="/Fite_Logo_Premium.png"
               alt="logo"
-              style={{ height: "64px", width: "64px" }}
+              style={{ height: "64px", width: "64px", cursor: "pointer" }}
               className="logo-img-mobile"
+              onClick={() => navigate("/")}
             />
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <h1 style={styles.logo} className="logo-mobile">Fite Finance</h1>
+                <h1 style={{ ...styles.logo, cursor: "pointer" }} className="logo-mobile" onClick={() => navigate("/")}>Fite Finance</h1>
                 <span style={{
                   fontSize: "11px",
                   fontWeight: "700",
