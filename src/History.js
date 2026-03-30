@@ -266,10 +266,10 @@ function History() {
                           {/* Range average — shown alongside slider when 2+ scored entries */}
                           {chartScoredEntries.length > 1 && rangeAvg !== null && (
                             <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
-                              <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>
+                              <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                 {(() => { const n = scoreRange === null ? chartEntries.length : Math.min(scoreRange, chartEntries.length); return scoreRange === null ? `Average Across All ${n} Question${n === 1 ? "" : "s"}` : `Average Across Last ${n} Question${n === 1 ? "" : "s"}`; })()}
                               </p>
-                              <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
+                              <div style={{ flex: 1, minWidth: "8px", borderBottom: "2px dotted #b0bcc8" }} />
                               <p style={{ fontSize: "22px", fontWeight: "700", color: rangeAvg >= 8 ? "#16a34a" : rangeAvg >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{rangeAvg} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
                             </div>
                           )}
@@ -333,7 +333,6 @@ function History() {
                   ) : (
                     <>
                       {/* Search & filter sub-section */}
-                      <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 10px 0", paddingBottom: "8px", borderBottom: "2.5px solid #d0d9e8" }}>SEARCH & FILTER</p>
                       <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "14px" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
                           <p style={filterLabelStyle}>SEARCH QUESTIONS</p>
@@ -407,19 +406,18 @@ function History() {
                       </div>
 
                       {/* Question history sub-section */}
-                      <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 12px 0", paddingBottom: "8px", borderBottom: "2.5px solid #d0d9e8" }}>QUESTION HISTORY</p>
                       {filteredEntries.length === 0 ? (
                         <p style={{ color: "#4a6fa5", fontSize: "14px", margin: 0 }}>No questions match your filters.</p>
                       ) : (
                         Object.entries(grouped).map(([date, dayEntries]) => (
                           <div key={date} style={{ marginBottom: "32px" }}>
                             <p style={{
-                              fontSize: "11px",
-                              fontWeight: "700",
-                              color: "#4a6fa5",
+                              fontSize: "12px",
+                              fontWeight: "800",
+                              color: "#0a2463",
                               letterSpacing: "1.2px",
                               margin: "0 0 12px 0",
-                              borderBottom: "1px solid #d0d9e8",
+                              borderBottom: "2.5px solid #d0d9e8",
                               paddingBottom: "8px",
                             }}>
                               {date.toUpperCase()}
