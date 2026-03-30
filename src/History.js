@@ -64,15 +64,20 @@ function History() {
 
   const grouped = groupByDate(filteredEntries);
 
-  const filterPillStyle = (active) => ({
-    fontSize: "11px",
-    fontWeight: "700",
-    padding: "4px 10px",
-    borderRadius: "20px",
+  const filterLabelStyle = { fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: 0 };
+
+  const selectStyle = (active) => ({
+    padding: "8px 12px",
+    borderRadius: "8px",
+    border: `2px solid ${active ? "#0a2463" : "#e8edf5"}`,
+    fontSize: "13px",
+    fontWeight: "600",
+    color: active ? "#0a2463" : "#4a6fa5",
+    fontFamily: "'Segoe UI', sans-serif",
+    backgroundColor: "#ffffff",
     cursor: "pointer",
-    border: "none",
-    backgroundColor: active ? "#0a2463" : "#e8edf5",
-    color: active ? "#ffffff" : "#4a6fa5",
+    outline: "none",
+    width: "100%",
   });
 
   // Stats calculations
@@ -219,57 +224,68 @@ function History() {
                     }}
                   />
 
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                    {CATEGORIES.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
-                        style={filterPillStyle(selectedCategory === cat)}
+                  <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 2, minWidth: "130px" }}>
+                      <p style={filterLabelStyle}>CATEGORY</p>
+                      <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        style={selectStyle(!!selectedCategory)}
                       >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
+                        <option value="">All</option>
+                        {CATEGORIES.filter(c => c !== "All").map((cat) => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    </div>
 
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
-                    {DIFFICULTIES.map((d) => (
-                      <button
-                        key={d}
-                        onClick={() => setSelectedDifficulty(selectedDifficulty === d ? "" : d)}
-                        style={filterPillStyle(selectedDifficulty === d)}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: "100px" }}>
+                      <p style={filterLabelStyle}>DIFFICULTY</p>
+                      <select
+                        value={selectedDifficulty}
+                        onChange={(e) => setSelectedDifficulty(e.target.value)}
+                        style={selectStyle(!!selectedDifficulty)}
                       >
-                        {d}
-                      </button>
-                    ))}
-                    <div style={{ marginLeft: "auto" }}>
+                        <option value="">Any</option>
+                        {DIFFICULTIES.map((d) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: "100px" }}>
+                      <p style={filterLabelStyle}>MATH</p>
+                      <select
+                        value={selectedMath}
+                        onChange={(e) => setSelectedMath(e.target.value)}
+                        style={selectStyle(!!selectedMath)}
+                      >
+                        <option value="">Any</option>
+                        <option value="With Math">With Math</option>
+                        <option value="No Math">No Math</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <p style={filterLabelStyle}>SORT</p>
                       <button
                         onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
                         style={{
-                          fontSize: "11px",
-                          fontWeight: "700",
-                          padding: "4px 10px",
-                          borderRadius: "20px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          padding: "8px 14px",
+                          borderRadius: "8px",
                           cursor: "pointer",
-                          border: "none",
-                          backgroundColor: "#e8edf5",
-                          color: "#4a6fa5",
+                          border: "2px solid #e8edf5",
+                          backgroundColor: "#ffffff",
+                          color: "#0a2463",
+                          fontFamily: "'Segoe UI', sans-serif",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {sortOrder === "newest" ? "Newest ↓" : "Oldest ↑"}
                       </button>
                     </div>
-                  </div>
-
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                    {["With Math", "No Math"].map((m) => (
-                      <button
-                        key={m}
-                        onClick={() => setSelectedMath(selectedMath === m ? "" : m)}
-                        style={filterPillStyle(selectedMath === m)}
-                      >
-                        {m}
-                      </button>
-                    ))}
                   </div>
 
                   {(search || selectedCategory || selectedDifficulty || selectedMath) && (
