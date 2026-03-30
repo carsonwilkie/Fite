@@ -350,12 +350,11 @@ img, span, button {
   background-color: #ffffff;
   color: #16a34a;
   font-family: 'Segoe UI', sans-serif;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s;
 }
 
 .timer-resume-btn:hover {
-  background-color: #16a34a;
-  color: #ffffff;
+  background-color: #dcfce7;
 }
 
 .timer-reset-btn {
@@ -440,12 +439,11 @@ img, span, button {
   background-color: #f0fdf4;
   color: #16a34a;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s;
 }
 
 .start-answering-btn:hover {
-  background-color: #16a34a;
-  color: #ffffff;
+  background-color: #dcfce7;
 }
 
 .interview-mode-btn {
@@ -458,22 +456,21 @@ img, span, button {
   background-color: #f0fdf4;
   color: #16a34a;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+  min-width: 148px;
+  transition: background-color 0.2s;
 }
 
 .interview-mode-btn:hover {
-  background-color: #16a34a;
-  color: #ffffff;
+  background-color: #dcfce7;
 }
 
 .interview-mode-btn-on {
   background-color: #16a34a;
   color: #ffffff;
-  box-shadow: 0 0 14px rgba(22, 163, 74, 0.85);
 }
 
 .interview-mode-btn-on:hover {
-  background-color: #41ac68;
+  background-color: #22c55e;
   color: #ffffff;
 }
 
