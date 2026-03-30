@@ -309,7 +309,16 @@ function Questions() {
               )}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+              <span style={{
+                fontSize: "11px",
+                fontWeight: "700",
+                letterSpacing: "0.8px",
+                padding: "3px 8px",
+                borderRadius: "20px",
+                backgroundColor: isPaid ? "#c9a84c" : "#e8edf5",
+                color: isPaid ? "#ffffff" : "#4a6fa5",
+              }}>PREMIUM</span>
               <div style={{ position: "relative" }}>
                 <button
                   onClick={() => {
@@ -317,21 +326,8 @@ function Questions() {
                     if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); }
                     else { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); }
                   }}
-                  title={!isPaid ? "Upgrade to Premium to use Interview Mode" : undefined}
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: "700",
-                    letterSpacing: "0.6px",
-                    padding: "5px 12px",
-                    borderRadius: "20px",
-                    cursor: timerStarted ? "not-allowed" : isPaid ? "pointer" : "not-allowed",
-                    border: "2px solid",
-                    borderColor: !isPaid ? "#c9a84c" : interviewMode ? "#0a2463" : "#e8edf5",
-                    backgroundColor: !isPaid ? "#fdf8ee" : interviewMode ? "#0a2463" : "#ffffff",
-                    color: !isPaid ? "#c9a84c" : interviewMode ? "#ffffff" : "#4a6fa5",
-                    transition: "all 0.2s",
-                    opacity: isPaid ? 1 : 0.6,
-                  }}
+                  className={`interview-mode-btn${!isPaid ? " interview-mode-btn-free" : interviewMode ? " interview-mode-btn-on" : ""}`}
+                  style={{ cursor: timerStarted ? "not-allowed" : undefined }}
                 >
                   Interview Mode {interviewMode ? "ON" : "OFF"}
                 </button>

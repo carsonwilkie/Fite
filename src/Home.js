@@ -22,6 +22,7 @@ function Home() {
   const [difficulty, setDifficulty] = useState(() => sessionStorage.getItem("difficulty") || "");
   const [math, setMath] = useState(() => sessionStorage.getItem("math") || "");
   const [customPrompt, setCustomPrompt] = useState("");
+  const [showCustomTooltip, setShowCustomTooltip] = useState(false);
 
   return (
     <div style={styles.page} className="page-bg page-wrapper">
@@ -117,26 +118,62 @@ function Home() {
                 }}>PREMIUM</span>
                 Custom question descriptor (optional):
               </p>
-              <input
-                type="text"
-                placeholder={isPaid ? 'e.g. "LBO modeling" or "merger consequences"' : "Upgrade to Premium to use this feature"}
-                value={customPrompt}
-                onChange={(e) => { if (isPaid) { setCustomPrompt(e.target.value); }}}
-                disabled={!isPaid}
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  border: "2px solid #e8edf5",
-                  fontSize: "14px",
-                  color: isPaid ? "#1a1a2e" : "#a0aec0",
-                  fontFamily: "'Segoe UI', sans-serif",
-                  boxSizing: "border-box",
-                  outline: "none",
-                  backgroundColor: isPaid ? "#ffffff" : "#f7f9fc",
-                  cursor: isPaid ? "text" : "not-allowed",
-                }}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type="text"
+                  placeholder={isPaid ? 'e.g. "LBO modeling" or "merger consequences"' : "Upgrade to Premium to use this feature"}
+                  value={customPrompt}
+                  onChange={(e) => { if (isPaid) { setCustomPrompt(e.target.value); }}}
+                  disabled={!isPaid}
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    borderRadius: "8px",
+                    border: "2px solid #e8edf5",
+                    fontSize: "14px",
+                    color: isPaid ? "#1a1a2e" : "#a0aec0",
+                    fontFamily: "'Segoe UI', sans-serif",
+                    boxSizing: "border-box",
+                    outline: "none",
+                    backgroundColor: isPaid ? "#ffffff" : "#f7f9fc",
+                    cursor: isPaid ? "text" : "not-allowed",
+                  }}
+                />
+                {!isPaid && (
+                  <div
+                    style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, cursor: "not-allowed" }}
+                    onClick={() => { setShowCustomTooltip(true); setTimeout(() => setShowCustomTooltip(false), 2500); }}
+                  />
+                )}
+                {showCustomTooltip && (
+                  <div style={{
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    backgroundColor: "#1a1a2e",
+                    color: "#ffffff",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    whiteSpace: "nowrap",
+                    zIndex: 10,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                  }}>
+                    Premium feature — upgrade to unlock
+                    <div style={{
+                      position: "absolute",
+                      top: "-5px",
+                      left: "50%",
+                      transform: "translateX(-50%) rotate(45deg)",
+                      width: "10px",
+                      height: "10px",
+                      backgroundColor: "#1a1a2e",
+                    }} />
+                  </div>
+                )}
+              </div>
               <p style={{ fontSize: "12px", fontStyle: "italic", color: "#4a6fa5", margin: "6px 0 0 0" }}>
                 Tailor your questions to your specific needs. Add a descriptor, then select a category.
               </p>
