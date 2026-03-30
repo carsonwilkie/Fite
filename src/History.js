@@ -142,6 +142,80 @@ function History() {
     ? (chartEntries.reduce((sum, e) => sum + e.score, 0) / chartEntries.length).toFixed(1)
     : null;
 
+  // Avg per day
+  const sortedByTime = [...entries].sort((a, b) => a.timestamp - b.timestamp);
+  const daySpan = entries.length > 1
+    ? Math.max(1, Math.round((sortedByTime[sortedByTime.length - 1].timestamp - sortedByTime[0].timestamp) / (1000 * 60 * 60 * 24)) + 1)
+    : 1;
+  const avgPerDay = entries.length > 0 ? (entries.length / daySpan).toFixed(1) : 0;
+
+  // Streak calculations
+  const toKey = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const dateSet = new Set(entries.map(e => toKey(new Date(e.timestamp))));
+  const sortedDates = [...dateSet].sort();
+  let longestStreak = sortedDates.length > 0 ? 1 : 0;
+  let streakRun = 1;
+  for (let i = 1; i < sortedDates.length; i++) {
+    const diff = Math.round((new Date(sortedDates[i]) - new Date(sortedDates[i-1])) / 86400000);
+    if (diff === 1) { streakRun++; longestStreak = Math.max(longestStreak, streakRun); }
+    else { streakRun = 1; }
+  }
+  const todayD = new Date(); todayD.setHours(0,0,0,0);
+  const yesterdayD = new Date(todayD); yesterdayD.setDate(yesterdayD.getDate() - 1);
+  let currentStreak = 0;
+  if (dateSet.has(toKey(todayD)) || dateSet.has(toKey(yesterdayD))) {
+    const startD = dateSet.has(toKey(todayD)) ? new Date(todayD) : new Date(yesterdayD);
+    for (let i = 0; ; i++) {
+      const d = new Date(startD); d.setDate(d.getDate() - i);
+      if (dateSet.has(toKey(d))) { currentStreak++; } else { break; }
+    }
+  }
+
+  // Top difficulty (for highlight)
+  const topDifficulty = Object.entries(difficultyCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+  // Best / worst score
+  const bestScore = scoredEntries.length > 0 ? Math.max(...scoredEntries.map(e => e.score)) : null;
+  const worstScore = scoredEntries.length > 0 ? Math.min(...scoredEntries.map(e => e.score)) : null;
+
+  // Score trend (last N vs prior N, N = min(5, floor(total/2)))
+  const trendN = Math.min(5, Math.floor(chartScoredEntries.length / 2));
+  const trendAvailable = trendN >= 1 && chartScoredEntries.length >= 4;
+  const recentForTrend = chartScoredEntries.slice(-trendN);
+  const priorForTrend = chartScoredEntries.slice(-trendN * 2, -trendN);
+  const recentTrendAvg = trendAvailable ? recentForTrend.reduce((s, e) => s + e.score, 0) / recentForTrend.length : null;
+  const priorTrendAvg = trendAvailable ? priorForTrend.reduce((s, e) => s + e.score, 0) / priorForTrend.length : null;
+  const trendPct = trendAvailable && priorTrendAvg > 0
+    ? Math.round(((recentTrendAvg - priorTrendAvg) / priorTrendAvg) * 100)
+    : null;
+
+  // Personal best score streak (≥7)
+  let personalBestStreak = 0;
+  let pbRun = 0;
+  chartScoredEntries.forEach(e => {
+    if (e.score >= 7) { pbRun++; personalBestStreak = Math.max(personalBestStreak, pbRun); }
+    else { pbRun = 0; }
+  });
+
+  // Avg score by category
+  const scoreByCategory = {};
+  scoredEntries.forEach(e => {
+    if (e.category) {
+      if (!scoreByCategory[e.category]) scoreByCategory[e.category] = [];
+      scoreByCategory[e.category].push(e.score);
+    }
+  });
+  const avgScoreByCategory = Object.entries(scoreByCategory)
+    .map(([cat, scores]) => ({ cat, avg: (scores.reduce((s, v) => s + v, 0) / scores.length).toFixed(1) }))
+    .sort((a, b) => b.avg - a.avg);
+
+  // Avg score by difficulty
+  const scoreByDiff = { Easy: [], Medium: [], Hard: [] };
+  scoredEntries.forEach(e => { if (e.difficulty && scoreByDiff[e.difficulty]) scoreByDiff[e.difficulty].push(e.score); });
+  const avgScoreByDiff = ["Easy", "Medium", "Hard"]
+    .filter(d => scoreByDiff[d].length > 0)
+    .map(d => ({ diff: d, avg: (scoreByDiff[d].reduce((s, v) => s + v, 0) / scoreByDiff[d].length).toFixed(1) }));
+
   const getScoreColor = (score) => {
     const s = Math.max(0, Math.min(10, Number(score)));
     if (s <= 5) {
@@ -259,11 +333,25 @@ function History() {
                           </div>
                           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
                             {Object.entries(difficultyCounts).map(([diff, count]) => (
-                              <div key={diff} style={{ flex: 1, minWidth: "60px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px", textAlign: "center", border: "2px solid #c8d4e8" }}>
-                                <p style={{ fontSize: "20px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{count}</p>
+                              <div key={diff} style={{ flex: 1, minWidth: "60px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px", textAlign: "center", border: diff === topDifficulty && count > 0 ? "2px solid #c9a84c" : "2px solid #c8d4e8" }}>
+                                <p style={{ fontSize: "20px", fontWeight: "700", color: diff === topDifficulty && count > 0 ? "#c9a84c" : "#0a2463", margin: 0 }}>{count}</p>
                                 <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>{diff}</p>
                               </div>
                             ))}
+                          </div>
+                          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
+                            <div style={{ flex: 1, minWidth: "60px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px", textAlign: "center", border: "2px solid #c8d4e8" }}>
+                              <p style={{ fontSize: "20px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{avgPerDay}</p>
+                              <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Avg / Day</p>
+                            </div>
+                            <div style={{ flex: 1, minWidth: "60px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px", textAlign: "center", border: "2px solid #c8d4e8" }}>
+                              <p style={{ fontSize: "20px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{currentStreak}</p>
+                              <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Current Streak 🔥</p>
+                            </div>
+                            <div style={{ flex: 1, minWidth: "60px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px", textAlign: "center", border: "2px solid #c8d4e8" }}>
+                              <p style={{ fontSize: "20px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{longestStreak}</p>
+                              <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Best Streak</p>
+                            </div>
                           </div>
                           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                             {Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
@@ -296,10 +384,22 @@ function History() {
                       ) : (
                         <>
                           {/* Overall average */}
-                          <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px", border: "2px solid #c8d4e8" }}>
+                          <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px", border: "2px solid #c8d4e8" }}>
                             <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>Overall Average</p>
                             <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
                             <p style={{ fontSize: "22px", fontWeight: "700", color: getScoreColor(averageScore), margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{averageScore} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
+                          </div>
+
+                          {/* Best / Worst score */}
+                          <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
+                            <div style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px 16px", border: "2px solid #c8d4e8", textAlign: "center" }}>
+                              <p style={{ fontSize: "20px", fontWeight: "700", color: getScoreColor(bestScore), margin: 0, fontFamily: "monospace" }}>{bestScore}</p>
+                              <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Best Score</p>
+                            </div>
+                            <div style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px 16px", border: "2px solid #c8d4e8", textAlign: "center" }}>
+                              <p style={{ fontSize: "20px", fontWeight: "700", color: getScoreColor(worstScore), margin: 0, fontFamily: "monospace" }}>{worstScore}</p>
+                              <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Worst Score</p>
+                            </div>
                           </div>
 
                           {/* Prompt to grade more when only 1 scored entry */}
@@ -432,6 +532,61 @@ function History() {
                               </div>
                             </div>
                           </div>
+
+                          {/* Trend + personal best streak */}
+                          <div style={{ borderTop: "2.5px solid #b0bcc8", margin: "16px 0 12px 0" }} />
+                          {trendPct !== null && (
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                              <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>Score Trend</p>
+                              <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
+                              <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", flexShrink: 0,
+                                backgroundColor: trendPct > 0 ? "#dcfce7" : trendPct < 0 ? "#fee2e2" : "#e8edf5",
+                                color: trendPct > 0 ? "#16a34a" : trendPct < 0 ? "#dc2626" : "#4a6fa5" }}>
+                                {trendPct > 0 ? `↑ +${trendPct}%` : trendPct < 0 ? `↓ ${trendPct}%` : "→ steady"} vs prev {trendN}
+                              </span>
+                            </div>
+                          )}
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+                            <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>Best Streak (≥7)</p>
+                            <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
+                            <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#0a2463", flexShrink: 0 }}>
+                              {personalBestStreak} in a row
+                            </span>
+                          </div>
+
+                          {/* By Category */}
+                          {avgScoreByCategory.length > 0 && (
+                            <>
+                              <div style={{ borderTop: "2.5px solid #b0bcc8", margin: "0 0 12px 0" }} />
+                              <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1px", margin: "0 0 8px 0" }}>BY CATEGORY</p>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
+                                {avgScoreByCategory.map(({ cat, avg }) => (
+                                  <div key={cat} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                    <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>{cat}</p>
+                                    <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
+                                    <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: getScoreBg(avg), color: getScoreColor(avg), flexShrink: 0 }}>{avg} / 10</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
+
+                          {/* By Difficulty */}
+                          {avgScoreByDiff.length > 0 && (
+                            <>
+                              <div style={{ borderTop: "2.5px solid #b0bcc8", margin: "0 0 12px 0" }} />
+                              <p style={{ fontSize: "12px", fontWeight: "800", color: "#0a2463", letterSpacing: "1px", margin: "0 0 8px 0" }}>BY DIFFICULTY</p>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                                {avgScoreByDiff.map(({ diff, avg }) => (
+                                  <div key={diff} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                    <p style={{ fontSize: "12px", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>{diff}</p>
+                                    <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
+                                    <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: getScoreBg(avg), color: getScoreColor(avg), flexShrink: 0 }}>{avg} / 10</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </>
                       )}
                     </div>
