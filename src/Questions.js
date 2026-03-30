@@ -286,7 +286,6 @@ function Questions() {
                   if (isPaid) { setInterviewMode(!interviewMode); stopTimer(); setTimerStarted(false); }
                   else { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); }
                 }}
-                disabled={!isPaid}
                 title={!isPaid ? "Upgrade to Premium to use Interview Mode" : undefined}
                 style={{
                   fontSize: "11px",
