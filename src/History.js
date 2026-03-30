@@ -23,7 +23,7 @@ function History() {
   const [selectedMath, setSelectedMath] = useState("");
   const [statsOpen, setStatsOpen] = useState(false);
   const [scoreOpen, setScoreOpen] = useState(false);
-  const [questionsOpen, setQuestionsOpen] = useState(true);
+  const [questionsOpen, setQuestionsOpen] = useState(false);
   const [scoreRange, setScoreRange] = useState(null);
   const [sliderPos, setSliderPos] = useState(null);
 
@@ -169,16 +169,16 @@ function History() {
                   {statsOpen && (
                     <div style={{ backgroundColor: "#f0f4f8", padding: "16px" }}>
                       <div style={{ display: "flex", gap: "12px", marginBottom: "12px", flexWrap: "wrap" }}>
-                        <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "1px solid #c8d4e8" }}>
+                        <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "2px solid #c8d4e8" }}>
                           <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{totalQuestions}</p>
                           <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Total Questions</p>
                         </div>
-                        <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "1px solid #c8d4e8" }}>
+                        <div style={{ flex: 1, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "2px solid #c8d4e8" }}>
                           <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{gradedQuestions}</p>
                           <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Graded</p>
                         </div>
                         {topCategory && (
-                          <div style={{ flex: 2, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "1px solid #c8d4e8" }}>
+                          <div style={{ flex: 2, minWidth: "80px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px", textAlign: "center", border: "2px solid #c8d4e8" }}>
                             <p style={{ fontSize: "24px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{topCategory[0]}</p>
                             <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>Top Category ({topCategory[1]})</p>
                           </div>
@@ -186,7 +186,7 @@ function History() {
                       </div>
                       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
                         {Object.entries(difficultyCounts).map(([diff, count]) => (
-                          <div key={diff} style={{ flex: 1, minWidth: "60px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px", textAlign: "center", border: "1px solid #c8d4e8" }}>
+                          <div key={diff} style={{ flex: 1, minWidth: "60px", backgroundColor: "#ffffff", borderRadius: "8px", padding: "10px", textAlign: "center", border: "2px solid #c8d4e8" }}>
                             <p style={{ fontSize: "20px", fontWeight: "700", color: "#0a2463", margin: 0 }}>{count}</p>
                             <p style={{ fontSize: "11px", color: "#4a6fa5", margin: "4px 0 0 0" }}>{diff}</p>
                           </div>
@@ -221,7 +221,7 @@ function History() {
                       ) : (
                         <>
                           {/* Overall average */}
-                          <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px", border: "1px solid #c8d4e8" }}>
+                          <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px", border: "2px solid #c8d4e8" }}>
                             <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, flexShrink: 0 }}>Overall Average</p>
                             <div style={{ flex: 1, borderBottom: "2px dotted #b0bcc8" }} />
                             <p style={{ fontSize: "22px", fontWeight: "700", color: averageScore >= 8 ? "#16a34a" : averageScore >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{averageScore} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
@@ -245,7 +245,7 @@ function History() {
 
                                 {/* Range average */}
                                 {rangeAvg !== null && (
-                                  <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px", border: "1px solid #c8d4e8" }}>
+                                  <div style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "12px 16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px", border: "2px solid #c8d4e8" }}>
                                     <p style={{ fontSize: "13px", fontWeight: "600", color: "#4a6fa5", margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                       {(() => { const n = scoreRange === null ? chartEntries.length : Math.min(scoreRange, chartEntries.length); return scoreRange === null ? `Average Across All ${n} Question${n === 1 ? "" : "s"}` : `Average Across Last ${n} Question${n === 1 ? "" : "s"}`; })()}
                                     </p>
