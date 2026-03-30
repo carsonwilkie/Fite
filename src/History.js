@@ -227,6 +227,13 @@ function History() {
                             <p style={{ fontSize: "22px", fontWeight: "700", color: averageScore >= 8 ? "#16a34a" : averageScore >= 5 ? "#d97706" : "#dc2626", margin: 0, fontFamily: "monospace", flexShrink: 0 }}>{averageScore} <span style={{ fontSize: "13px", color: "#4a6fa5", fontFamily: "'Segoe UI', sans-serif" }}>/ 10</span></p>
                           </div>
 
+                          {/* Prompt to grade more when only 1 scored entry */}
+                          {chartScoredEntries.length === 1 && (
+                            <p style={{ fontSize: "12px", color: "#4a6fa5", margin: "0 0 8px 0", fontStyle: "italic" }}>
+                              Grade more questions to unlock range analysis and score trends.
+                            </p>
+                          )}
+
                           {/* Range section — only shown when 2+ scored entries */}
                           {chartScoredEntries.length > 1 && (() => {
                             const sliderMax = chartScoredEntries.length;
