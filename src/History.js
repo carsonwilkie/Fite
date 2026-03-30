@@ -276,7 +276,7 @@ function History() {
                           {/* Prompt to grade more when only 1 scored entry */}
                           {chartScoredEntries.length === 1 && (
                             <p style={{ fontSize: "12px", color: "#4a6fa5", margin: "0 0 8px 0", fontStyle: "italic" }}>
-                              Grade more questions to unlock range analysis and score trends.
+                              Grade more questions to unlock score analysis.
                             </p>
                           )}
 
