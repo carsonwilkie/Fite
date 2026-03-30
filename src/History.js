@@ -205,24 +205,27 @@ function History() {
 
                 {/* Search and filters */}
                 <div style={{ marginBottom: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                  <input
-                    type="text"
-                    placeholder="Search questions..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "8px",
-                      border: "2px solid #e8edf5",
-                      fontSize: "14px",
-                      color: "#1a1a2e",
-                      fontFamily: "'Segoe UI', sans-serif",
-                      boxSizing: "border-box",
-                      outline: "none",
-                      backgroundColor: "#ffffff",
-                    }}
-                  />
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <p style={filterLabelStyle}>SEARCH QUESTIONS</p>
+                    <input
+                      type="text"
+                      placeholder="e.g. walk me through a DCF..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "2px solid #e8edf5",
+                        fontSize: "14px",
+                        color: "#1a1a2e",
+                        fontFamily: "'Segoe UI', sans-serif",
+                        boxSizing: "border-box",
+                        outline: "none",
+                        backgroundColor: "#ffffff",
+                      }}
+                    />
+                  </div>
 
                   <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 2, minWidth: "130px" }}>
@@ -281,6 +284,7 @@ function History() {
                           color: "#0a2463",
                           fontFamily: "'Segoe UI', sans-serif",
                           whiteSpace: "nowrap",
+                          minWidth: "96px",
                         }}
                       >
                         {sortOrder === "newest" ? "Newest ↓" : "Oldest ↑"}
