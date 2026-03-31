@@ -643,7 +643,7 @@ function Questions() {
 
                 {/* Completed steps (read-only) */}
                 {interviewUserAnswers.map((ans, i) => (
-                  <div key={i} style={{ marginBottom: "20px", borderTop: i > 0 ? "1px solid #e8edf5" : "none", paddingTop: i > 0 ? "20px" : "0" }}>
+                  <div key={i} style={{ marginBottom: "20px", borderTop: i > 0 ? "2.5px solid #e8edf5" : "none", paddingTop: i > 0 ? "20px" : "0" }}>
                     <div style={{ borderLeft: "3px solid #0a2463", paddingLeft: "14px", marginBottom: "10px" }}>
                       <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 6px 0" }}>QUESTION {i + 1}</p>
                       <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0, fontWeight: "500" }}>{interviewSession.questions[i].question}</p>
