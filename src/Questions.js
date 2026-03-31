@@ -732,8 +732,8 @@ function Questions() {
                             <span style={{ fontSize: "20px", fontWeight: "700", color: getScoreColor(interviewOverallScore) }}>{interviewOverallScore}</span>
                           </div>
                           <div>
-                            <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 2px 0" }}>OVERALL SCORE</p>
-                            <p style={{ fontSize: "15px", fontWeight: "600", color: "#1a1a2e", margin: 0 }}>{interviewOverallScore} / 10 — average across {INTERVIEW_QUESTIONS} questions</p>
+                            <p style={{ fontSize: "15px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 2px 0" }}>OVERALL SCORE</p>
+                            <p style={{ fontSize: "11px", fontWeight: "600", color: "#1a1a2e", margin: 0 }}>{interviewOverallScore} / 10 — average across {INTERVIEW_QUESTIONS} questions</p>
                           </div>
                         </div>
                       )}
