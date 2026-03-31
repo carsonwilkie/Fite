@@ -365,7 +365,7 @@ img, span, button {
   background-color: #ecfeff;
   color: #0e7490;
   cursor: pointer;
-  min-width: 148px;
+  min-width: 100px;
   transition: background-color 0.2s;
 }
 

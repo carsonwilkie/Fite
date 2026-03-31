@@ -672,7 +672,7 @@ function Questions() {
 
                 {/* Current question input */}
                 {!interviewComplete && (
-                  <div style={{ borderTop: interviewUserAnswers.length > 0 ? "1px solid #e8edf5" : "none", paddingTop: interviewUserAnswers.length > 0 ? "20px" : "0" }}>
+                  <div style={{ borderTop: interviewUserAnswers.length > 0 ? "2.5px solid #e8edf5" : "none", paddingTop: interviewUserAnswers.length > 0 ? "20px" : "0" }}>
                     <div style={{ borderLeft: "3px solid #4a6fa5", paddingLeft: "14px", marginBottom: "14px" }}>
                       <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 6px 0" }}>QUESTION {interviewStep + 1}</p>
                       <p style={{ fontSize: "15px", color: "#1a1a2e", lineHeight: "1.6", margin: 0, fontWeight: "500" }}>{interviewSession.questions[interviewStep].question}</p>
