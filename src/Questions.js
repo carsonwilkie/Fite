@@ -48,6 +48,7 @@ function Questions() {
   const [interviewSession, setInterviewSession] = useState(null); // { scenario, questions: [{question, idealAnswer}] }
   const [interviewStep, setInterviewStep] = useState(0);
   const [interviewUserAnswers, setInterviewUserAnswers] = useState([]); // string per step
+  const [interviewTimesLeft, setInterviewTimesLeft] = useState([]); // time remaining at submission per step (null if timer off)
   const [interviewResponses, setInterviewResponses] = useState([]); // { score, onTrack, response } per step
   const [interviewCurrentAnswer, setInterviewCurrentAnswer] = useState("");
   const [loadingInterviewGenerate, setLoadingInterviewGenerate] = useState(false);
@@ -261,6 +262,7 @@ function Questions() {
     setInterviewStep(0);
     setInterviewUserAnswers([]);
     setInterviewResponses([]);
+    setInterviewTimesLeft([]);
     setInterviewCurrentAnswer("");
     setInterviewComplete(false);
     setInterviewDebrief(null);
@@ -312,8 +314,10 @@ function Questions() {
 
       const newAnswers = [...interviewUserAnswers, submittedAnswer.trim() || "No answer was submitted."];
       const newResponses = [...interviewResponses, data];
+      const newTimesLeft = [...interviewTimesLeft, timerOn ? interviewTimeLeft : null];
       setInterviewUserAnswers(newAnswers);
       setInterviewResponses(newResponses);
+      setInterviewTimesLeft(newTimesLeft);
       setInterviewCurrentAnswer("");
       stopInterviewTimer();
 
@@ -648,6 +652,15 @@ function Questions() {
                       <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 6px 0" }}>QUESTION {i + 1}</p>
                       <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0, fontWeight: "500" }}>{interviewSession.questions[i].question}</p>
                     </div>
+                    {interviewTimesLeft[i] !== null && interviewTimesLeft[i] !== undefined && (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 14px", borderRadius: "8px", marginBottom: "8px", backgroundColor: interviewTimesLeft[i] === 0 ? "#fee2e2" : interviewTimesLeft[i] < 30 ? "#fff7ed" : "#e8f4f8", border: `1px solid ${interviewTimesLeft[i] === 0 ? "#fca5a5" : interviewTimesLeft[i] < 30 ? "#fed7aa" : "#a8d4e0"}` }}>
+                        <span style={{ fontSize: "11px", fontWeight: "700", color: "#0e7490", letterSpacing: "1px" }}>TIMER — Q{i + 1}</span>
+                        {interviewTimesLeft[i] === 0
+                          ? <span style={{ fontSize: "13px", fontWeight: "700", fontFamily: "monospace", color: "#dc2626" }}>Time's up!</span>
+                          : <span style={{ fontSize: "13px", fontWeight: "700", fontFamily: "monospace", color: interviewTimesLeft[i] < 30 ? "#d97706" : "#0e7490" }}>{formatTime(interviewTimesLeft[i])} left</span>
+                        }
+                      </div>
+                    )}
                     <div style={{ backgroundColor: "#f7f9fc", borderRadius: "8px", padding: "12px 14px", marginBottom: "8px", border: "1px solid #e8edf5" }}>
                       <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 4px 0" }}>YOUR ANSWER</p>
                       <p style={{ fontSize: "13px", color: "#1a1a2e", lineHeight: "1.5", margin: 0 }}>{ans}</p>
