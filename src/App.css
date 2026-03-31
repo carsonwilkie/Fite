@@ -329,12 +329,71 @@ img, span, button {
   50% { box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.25); }
 }
 
+@keyframes timer-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(14, 116, 144, 0.2); }
+  50% { box-shadow: 0 0 0 4px rgba(14, 116, 144, 0.15); }
+}
+
+@keyframes timer-pulse-urgent {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.35); }
+  50% { box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.25); }
+}
+
 .interview-bar-pulsing {
   animation: interview-pulse 1.5s ease-in-out infinite;
 }
 
 .interview-bar-urgent {
   animation: interview-pulse-urgent 0.65s ease-in-out infinite;
+}
+
+.timer-bar-pulsing {
+  animation: timer-pulse 1.5s ease-in-out infinite;
+}
+
+.timer-bar-urgent {
+  animation: timer-pulse-urgent 0.65s ease-in-out infinite;
+}
+
+.timer-mode-btn {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 2px solid #0e7490;
+  background-color: #ecfeff;
+  color: #0e7490;
+  cursor: pointer;
+  min-width: 148px;
+  transition: background-color 0.2s;
+}
+
+.timer-mode-btn:hover {
+  background-color: #cffafe;
+}
+
+.timer-mode-btn-on {
+  background-color: #0e7490;
+  color: #ffffff;
+}
+
+.timer-mode-btn-on:hover {
+  background-color: #0891b2;
+  color: #ffffff;
+}
+
+.timer-mode-btn-free {
+  border-color: #a5d8e0;
+  background-color: #ecfeff;
+  color: #a5d8e0;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.timer-mode-btn.timer-mode-btn-free:hover {
+  background-color: #ecfeff;
+  color: #a5d8e0;
 }
 
 .timer-pause-btn {
@@ -361,15 +420,15 @@ img, span, button {
   padding: 4px 10px;
   border-radius: 20px;
   cursor: pointer;
-  border: 2px solid #16a34a;
+  border: 2px solid #0e7490;
   background-color: #ffffff;
-  color: #16a34a;
+  color: #0e7490;
   font-family: 'Segoe UI', sans-serif;
   transition: background-color 0.2s;
 }
 
 .timer-resume-btn:hover {
-  background-color: #dcfce7;
+  background-color: #cffafe;
 }
 
 .timer-reset-btn {
@@ -450,15 +509,15 @@ img, span, button {
   font-weight: 700;
   padding: 5px 14px;
   border-radius: 20px;
-  border: 2px solid #16a34a;
-  background-color: #f0fdf4;
-  color: #16a34a;
+  border: 2px solid #0e7490;
+  background-color: #ecfeff;
+  color: #0e7490;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .start-answering-btn:hover {
-  background-color: #dcfce7;
+  background-color: #cffafe;
 }
 
 .interview-mode-btn {

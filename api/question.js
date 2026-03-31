@@ -1,5 +1,6 @@
 const OpenAI = require("openai");
 const { Redis } = require("@upstash/redis");
+const { CATEGORIES } = require("./constants");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -37,7 +38,7 @@ module.exports = async function handler(req, res) {
   const categoryText =
     category && category !== "All"
       ? `in the field of ${category}`
-      : "across any finance field including investment banking, private equity, asset management, accounting, financial modeling, valuation, or sales and trading";
+      : `across any finance field including ${CATEGORIES.map(c => c.toLowerCase()).join(", ")}`;
 
   const difficultyText = difficulty ? `at a ${difficulty} difficulty level` : "";
   

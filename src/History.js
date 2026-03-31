@@ -4,9 +4,8 @@ import { Analytics } from "@vercel/analytics/react";
 import { useUser } from "@clerk/clerk-react";
 import ReactMarkdown from "react-markdown";
 import usePaidStatus from "./usePaidStatus";
+import { CATEGORIES } from "./constants";
 import "./App.css";
-
-const CATEGORIES = ["All", "Investment Banking", "Private Equity", "Asset Management", "Accounting", "Financial Modeling", "Valuation", "Sales and Trading"];
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 
 function History() {
@@ -56,7 +55,8 @@ function History() {
       const dates = {};
       entries
         .filter(entry => {
-          const matchesSearch = search === "" || entry.question.toLowerCase().includes(search.toLowerCase());
+          const searchText = entry.type === "interview" ? (entry.scenario || "") : (entry.question || "");
+          const matchesSearch = search === "" || searchText.toLowerCase().includes(search.toLowerCase());
           const matchesCategory = selectedCategory === "" || selectedCategory === "All" || entry.category === selectedCategory;
           const matchesDifficulty = selectedDifficulty === "" || entry.difficulty === selectedDifficulty;
           const matchesMath = selectedMath === "" ||
@@ -80,7 +80,8 @@ function History() {
 
   const filteredEntries = entries
     .filter((entry) => {
-      const matchesSearch = search === "" || entry.question.toLowerCase().includes(search.toLowerCase());
+      const searchText = entry.type === "interview" ? (entry.scenario || "") : (entry.question || "");
+      const matchesSearch = search === "" || searchText.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = selectedCategory === "" || selectedCategory === "All" || entry.category === selectedCategory;
       const matchesDifficulty = selectedDifficulty === "" || entry.difficulty === selectedDifficulty;
       const matchesMath = selectedMath === "" ||
@@ -731,6 +732,7 @@ function History() {
                               {dateOpen && dayEntries.map((entry, i) => {
                                 const globalIndex = entries.indexOf(entry);
                                 const isExpanded = expandedIndex === globalIndex;
+                                const isInterview = entry.type === "interview";
                                 return (
                                   <div key={i} id={`entry-${globalIndex}`} style={{
                                     backgroundColor: "#ffffff",
@@ -744,77 +746,86 @@ function History() {
                                     onClick={() => setExpandedIndex(isExpanded ? null : globalIndex)}
                                   >
                                     <div style={{ display: "flex", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
-                                      <span style={{
-                                        fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                                        borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
-                                      }}>{entry.category}</span>
-                                      <span style={{
-                                        fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                                        borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
-                                      }}>{entry.difficulty}</span>
+                                      {isInterview && (
+                                        <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: "#0a2463", color: "#ffffff" }}>INTERVIEW</span>
+                                      )}
+                                      <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5" }}>{entry.category}</span>
+                                      <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5" }}>{entry.difficulty}</span>
                                       {entry.math && (
-                                        <span style={{
-                                          fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                                          borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5"
-                                        }}>{entry.math}</span>
+                                        <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5" }}>{entry.math}</span>
                                       )}
                                       {entry.customPrompt && (
-                                        <span style={{
-                                          fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                                          borderRadius: "20px", backgroundColor: "#c9a84c", color: "#ffffff"
-                                        }}>"{entry.customPrompt}"</span>
+                                        <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: "#c9a84c", color: "#ffffff" }}>"{entry.customPrompt}"</span>
                                       )}
                                       {entry.score !== null && entry.score !== undefined && (
-                                        <span style={{
-                                          fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                                          borderRadius: "20px",
-                                          backgroundColor: getScoreBg(entry.score),
-                                          color: getScoreColor(entry.score),
-                                        }}>{entry.score}/10</span>
+                                        <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px", backgroundColor: getScoreBg(entry.score), color: getScoreColor(entry.score) }}>{entry.score}/10</span>
                                       )}
                                     </div>
 
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
-                                      <p style={{
-                                        fontSize: "14px",
-                                        color: "#1a1a2e",
-                                        lineHeight: "1.6",
-                                        margin: 0,
-                                        fontWeight: "500",
-                                        overflow: "hidden",
-                                        display: "-webkit-box",
-                                        WebkitLineClamp: isExpanded ? "unset" : 2,
-                                        WebkitBoxOrient: "vertical",
-                                      }}>
-                                        {entry.question}
+                                      <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0, fontWeight: "500", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: isExpanded ? "unset" : 2, WebkitBoxOrient: "vertical" }}>
+                                        {isInterview ? entry.scenario : entry.question}
                                       </p>
-                                      <span style={{ fontSize: "12px", color: "#4a6fa5", flexShrink: 0 }}>
-                                        {isExpanded ? "▲" : "▼"}
-                                      </span>
+                                      <span style={{ fontSize: "12px", color: "#4a6fa5", flexShrink: 0 }}>{isExpanded ? "▲" : "▼"}</span>
                                     </div>
 
                                     {isExpanded && (
-                                      <div style={{ marginTop: "16px", borderTop: "1px solid #e8edf5", paddingTop: "16px" }}
-                                        onClick={(e) => e.stopPropagation()}>
-                                        {entry.answer && (
+                                      <div style={{ marginTop: "16px", borderTop: "1px solid #e8edf5", paddingTop: "16px" }} onClick={(e) => e.stopPropagation()}>
+                                        {isInterview ? (
+                                          /* Interview entry expanded view */
                                           <>
-                                            <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>ANSWER</p>
-                                            <div className="history-answer">
-                                              <ReactMarkdown className="markdown">{entry.answer}</ReactMarkdown>
-                                            </div>
+                                            {entry.questions && entry.questions.map((q, qi) => (
+                                              <div key={qi} style={{ marginBottom: "16px", paddingBottom: "16px", borderBottom: qi < entry.questions.length - 1 ? "1px solid #e8edf5" : "none" }}>
+                                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 4px 0" }}>
+                                                  Q{qi + 1}
+                                                  {q.score !== null && q.score !== undefined && (
+                                                    <span style={{ marginLeft: "8px", padding: "1px 6px", borderRadius: "10px", backgroundColor: getScoreBg(q.score), color: getScoreColor(q.score) }}>{q.score}/10</span>
+                                                  )}
+                                                </p>
+                                                <p style={{ fontSize: "13px", color: "#1a1a2e", fontWeight: "500", margin: "0 0 8px 0", lineHeight: "1.5" }}>{q.question}</p>
+                                                <div className="history-answer" style={{ backgroundColor: "#f7f9fc", borderRadius: "6px", padding: "8px 10px", marginBottom: "6px", border: "1px solid #e8edf5" }}>
+                                                  <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 3px 0" }}>YOUR ANSWER</p>
+                                                  <p style={{ fontSize: "11px", color: "#1a1a2e", lineHeight: "1.4", margin: 0 }}>{q.userAnswer || "No answer was submitted."}</p>
+                                                </div>
+                                                {q.idealAnswer && (
+                                                  <div style={{ backgroundColor: "#e8edf5", borderRadius: "6px", padding: "8px 10px", marginBottom: "6px", border: "1px solid #c8d4e8" }}>
+                                                    <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1px", margin: "0 0 3px 0" }}>IDEAL ANSWER</p>
+                                                    <p style={{ fontSize: "11px", color: "#1a1a2e", lineHeight: "1.4", margin: 0 }}>{q.idealAnswer}</p>
+                                                  </div>
+                                                )}
+                                                {q.feedback && (
+                                                  <div style={{ backgroundColor: "#f0f4f8", borderRadius: "6px", padding: "8px 10px", borderLeft: "3px solid #0a2463" }}>
+                                                    <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1px", margin: "0 0 3px 0" }}>INTERVIEWER</p>
+                                                    <p style={{ fontSize: "11px", color: "#1a1a2e", lineHeight: "1.4", margin: 0 }}>{q.feedback}</p>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            ))}
                                           </>
-                                        )}
-                                        {entry.userAnswer && (
-                                          <div style={{ marginTop: "16px" }}>
-                                            <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>YOUR ANSWER</p>
-                                            <p style={{ fontSize: "13px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.userAnswer}</p>
-                                          </div>
-                                        )}
-                                        {entry.feedback && (
-                                          <div style={{ marginTop: "16px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: "4px solid #0a2463" }}>
-                                            <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0" }}>FEEDBACK</p>
-                                            <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.feedback}</p>
-                                          </div>
+                                        ) : (
+                                          /* Regular entry expanded view */
+                                          <>
+                                            {entry.answer && (
+                                              <>
+                                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>ANSWER</p>
+                                                <div className="history-answer">
+                                                  <ReactMarkdown className="markdown">{entry.answer}</ReactMarkdown>
+                                                </div>
+                                              </>
+                                            )}
+                                            {entry.userAnswer && (
+                                              <div style={{ marginTop: "16px" }}>
+                                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0", borderBottom: "1px solid #e8edf5", paddingBottom: "6px" }}>YOUR ANSWER</p>
+                                                <p style={{ fontSize: "13px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.userAnswer}</p>
+                                              </div>
+                                            )}
+                                            {entry.feedback && (
+                                              <div style={{ marginTop: "16px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: "4px solid #0a2463" }}>
+                                                <p style={{ fontSize: "11px", fontWeight: "700", color: "#0a2463", letterSpacing: "1.2px", margin: "0 0 8px 0" }}>FEEDBACK</p>
+                                                <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{entry.feedback}</p>
+                                              </div>
+                                            )}
+                                          </>
                                         )}
                                       </div>
                                     )}
@@ -858,13 +869,22 @@ const styles = {
   },
   container: { width: "100%" },
   logo: {
-    fontSize: "32px", fontWeight: "700", color: "#0a2463",
-    margin: "0 0 6px 0", cursor: "default",
+    fontSize: "32px", 
+    fontWeight: "700", 
+    color: "#0a2463",
+    margin: "0 0 6px 0", 
+    cursor: "default",
   },
-  tagline: { fontSize: "15px", color: "#4a6fa5", margin: 0, cursor: "default" },
+  tagline: { 
+    fontSize: "15px", 
+    color: "#4a6fa5", 
+    margin: 0, 
+    cursor: "default" },
   card: {
-    backgroundColor: "#ffffff", borderRadius: "12px",
-    padding: "36px", boxShadow: "0 2px 16px rgba(10, 36, 99, 0.08)",
+    backgroundColor: "#ffffff", 
+    borderRadius: "12px",
+    padding: "36px", 
+    boxShadow: "0 2px 16px rgba(10, 36, 99, 0.08)",
   },
 };
 

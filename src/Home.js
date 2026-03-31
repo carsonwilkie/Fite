@@ -1,18 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import usePaidStatus from "./usePaidStatus";
+import { CATEGORIES as categories } from "./constants";
 import "./App.css";
-
-const categories = [
-  "All",
-  "Investment Banking",
-  "Private Equity",
-  "Asset Management",
-  "Accounting", //Should be "Accounting"
-  "Financial Modeling",
-  "Valuation",
-  "Sales and Trading",
-];
 
 const difficulties = ["Easy", "Medium", "Hard"];
 
