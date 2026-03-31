@@ -3,12 +3,16 @@ import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
 import { useNavigate } from "react-router-dom"
 import { useClerk } from "@clerk/clerk-react";
+import { useState } from "react";
 
 function Navbar() {
   const { user } = useUser();
   const { isPaid } = usePaidStatus();
   const navigate = useNavigate();
   const { openSignIn } = useClerk();
+  const [showHistoryTooltip, setShowHistoryTooltip] = useState(false);
+
+  const showTooltip = () => { setShowHistoryTooltip(true); setTimeout(() => setShowHistoryTooltip(false), 2500); };
 
   const handleManageSubscription = async () => {
     const res = await fetch("/api/portal", {
@@ -46,9 +50,17 @@ function Navbar() {
       <div style={{ pointerEvents: "auto" }}>
         <SignedOut>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <button disabled className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.5, cursor: "not-allowed" }}>
-              History
-            </button>
+            <div style={{ position: "relative" }}>
+              <button onClick={showTooltip} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.5, cursor: "not-allowed" }}>
+                History
+              </button>
+              {showHistoryTooltip && (
+                <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", backgroundColor: "#1a1a2e", color: "#ffffff", fontSize: "12px", fontWeight: "600", padding: "6px 12px", borderRadius: "8px", whiteSpace: "nowrap", zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
+                  Premium feature — upgrade to unlock
+                  <div style={{ position: "absolute", top: "-5px", left: "50%", transform: "translateX(-50%) rotate(45deg)", width: "10px", height: "10px", backgroundColor: "#1a1a2e" }} />
+                </div>
+              )}
+            </div>
             <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
               ⭐ Upgrade to Premium
             </button>
@@ -72,9 +84,17 @@ function Navbar() {
               </>
             ) : (
               <>
-                <button disabled className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.5, cursor: "not-allowed" }}>
-                  History
-                </button>
+                <div style={{ position: "relative" }}>
+                  <button onClick={showTooltip} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.5, cursor: "not-allowed" }}>
+                    History
+                  </button>
+                  {showHistoryTooltip && (
+                    <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", backgroundColor: "#1a1a2e", color: "#ffffff", fontSize: "12px", fontWeight: "600", padding: "6px 12px", borderRadius: "8px", whiteSpace: "nowrap", zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
+                      Premium feature — upgrade to unlock
+                      <div style={{ position: "absolute", top: "-5px", left: "50%", transform: "translateX(-50%) rotate(45deg)", width: "10px", height: "10px", backgroundColor: "#1a1a2e" }} />
+                    </div>
+                  )}
+                </div>
                 <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
                   ⭐ Upgrade to Premium
                 </button>

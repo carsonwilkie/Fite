@@ -189,7 +189,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
-    padding: "20px 20px 40px 20px",
+    padding: "80px 20px 40px 20px",
     fontFamily: "'Segoe UI', sans-serif",
   },
   container: {
