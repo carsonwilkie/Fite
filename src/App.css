@@ -560,6 +560,22 @@ img, span, button {
   background-color: #cffafe;
 }
 
+.interview-mode-wrapper::after {
+  content: "BETA";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 8px;
+  font-weight: 800;
+  color: #ffffff;
+  background-color: #dc2626;
+  letter-spacing: 0.8px;
+  padding: 1px 5px;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .interview-mode-btn {
   font-size: 11px;
   font-weight: 700;
