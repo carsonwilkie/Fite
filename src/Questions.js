@@ -395,7 +395,8 @@ function Questions() {
   const getScoreColor = (s) => s >= 8 ? "#16a34a" : s >= 5 ? "#d97706" : "#dc2626";
   const getScoreBg = (s) => s >= 8 ? "#dcfce7" : s >= 5 ? "#fff7ed" : "#fee2e2";
 
-  const canToggleInterviewMode = !question && !interviewSession;
+  const isPolling = loadingQuestion || loadingInterviewGenerate;
+  const canToggleInterviewMode = !question && !interviewSession && !isPolling;
 
   return (
     <div style={styles.page} className="page-bg page-wrapper">
@@ -446,12 +447,12 @@ function Questions() {
                 <button
                   onClick={() => {
                     if (!isPaid) { setShowTimerTooltip(true); setTimeout(() => setShowTimerTooltip(false), 2500); return; }
-                    if (interviewSession && interviewTimerStarted) return;
+                    if (isPolling || (interviewSession && interviewTimerStarted)) return;
                     if (timerOn) { setTimerOn(false); stopTimer(); setTimerStarted(false); }
                     else { setTimerOn(true); }
                   }}
                   className={`timer-mode-btn${!isPaid ? " timer-mode-btn-free" : timerOn ? " timer-mode-btn-on" : ""}`}
-                  style={{ cursor: (interviewSession && interviewTimerStarted) ? "not-allowed" : undefined, opacity: (interviewSession && interviewTimerStarted) ? 0.5 : 1 }}
+                  style={{ cursor: (isPolling || (interviewSession && interviewTimerStarted)) ? "not-allowed" : undefined, opacity: (isPolling || (interviewSession && interviewTimerStarted)) ? 0.5 : 1 }}
                 >
                   Timer {timerOn ? "ON" : "OFF"}
                 </button>
@@ -678,6 +679,7 @@ function Questions() {
                     </div>
 
                     {/* Per-question timer bar */}
+                    {timerOn && (
                     <div
                       className={interviewTimerStarted && !interviewTimerPaused && interviewTimeLeft > 0 ? (interviewTimeLeft < 30 ? "timer-bar-urgent" : "timer-bar-pulsing") : ""}
                       style={{
@@ -707,12 +709,13 @@ function Questions() {
                         </div>
                       )}
                     </div>
+                    )}
 
                     <textarea
                       placeholder="Type your response..."
                       value={interviewCurrentAnswer}
                       onChange={(e) => !loadingInterviewRespond && setInterviewCurrentAnswer(e.target.value)}
-                      disabled={loadingInterviewRespond || interviewTimeLeft === 0}
+                      disabled={loadingInterviewRespond || interviewTimeLeft === 0 || (timerOn && !interviewTimerStarted)}
                       style={{
                         width: "100%", minHeight: "120px", padding: "12px 16px", borderRadius: "8px",
                         border: "2px solid #e8edf5", fontSize: "14px", color: "#1a1a2e",
