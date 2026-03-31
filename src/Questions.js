@@ -446,12 +446,12 @@ function Questions() {
                 <button
                   onClick={() => {
                     if (!isPaid) { setShowTimerTooltip(true); setTimeout(() => setShowTimerTooltip(false), 2500); return; }
-                    if (interviewSession) return;
+                    if (interviewSession && interviewTimerStarted) return;
                     if (timerOn) { setTimerOn(false); stopTimer(); setTimerStarted(false); }
                     else { setTimerOn(true); }
                   }}
                   className={`timer-mode-btn${!isPaid ? " timer-mode-btn-free" : timerOn ? " timer-mode-btn-on" : ""}`}
-                  style={{ cursor: interviewSession ? "not-allowed" : undefined, opacity: interviewSession ? 0.5 : 1 }}
+                  style={{ cursor: (interviewSession && interviewTimerStarted) ? "not-allowed" : undefined, opacity: (interviewSession && interviewTimerStarted) ? 0.5 : 1 }}
                 >
                   Timer {timerOn ? "ON" : "OFF"}
                 </button>
@@ -507,7 +507,7 @@ function Questions() {
             {!interviewModeOn && (
               <>
                 {/* Timer bar */}
-                {timerOn && (
+                {timerOn && question && !question.includes("Come back tomorrow") && (
                   <div
                     className={timerStarted && !isPaused && !graded && timeLeft > 0 ? (timeLeft < 30 ? "timer-bar-urgent" : "timer-bar-pulsing") : ""}
                     style={{
@@ -563,7 +563,7 @@ function Questions() {
                           }}
                         />
                         {isPaid && (
-                          <button onClick={handleGrade} disabled={loadingFeedback || !userAnswer.trim() || graded} className="secondary-btn" style={{ marginTop: "12px" }}>
+                          <button onClick={handleGrade} disabled={loadingFeedback || !userAnswer.trim() || graded || (timerOn && !timerStarted)} className="secondary-btn" style={{ marginTop: "12px" }}>
                             {loadingFeedback ? "Grading..." : graded ? "Graded ✓" : "Grade My Answer"}
                           </button>
                         )}
