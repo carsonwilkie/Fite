@@ -472,6 +472,7 @@ function Questions() {
               <div style={{ position: "relative" }}>
                 <button
                   onClick={() => {
+                    if (isPolling) return;
                     if (!canToggleInterviewMode && !interviewModeOn) return;
                     if (!isPaid) { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); return; }
                     if (interviewModeOn) {
@@ -488,7 +489,7 @@ function Questions() {
                     } else { setInterviewModeOn(true); }
                   }}
                   className={`interview-mode-btn${!isPaid ? " interview-mode-btn-free" : interviewModeOn ? " interview-mode-btn-on" : ""}`}
-                  style={{ cursor: (!canToggleInterviewMode && !interviewModeOn) ? "not-allowed" : undefined, opacity: (!canToggleInterviewMode && !interviewModeOn) ? 0.5 : 1 }}
+                  style={{ cursor: (isPolling || (!canToggleInterviewMode && !interviewModeOn)) ? "not-allowed" : undefined, opacity: (isPolling || (!canToggleInterviewMode && !interviewModeOn)) ? 0.5 : 1 }}
                 >
                   Interview Mode {interviewModeOn ? "ON" : "OFF"}
                 </button>
