@@ -782,7 +782,7 @@ function Questions() {
             )}
             {loadingInterviewGenerate && (
               <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "16px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
-                Building your interview scenario...
+                Building your one off interview scenario...
               </p>
             )}
           </div>
