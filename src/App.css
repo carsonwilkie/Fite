@@ -402,16 +402,15 @@ img, span, button {
   padding: 4px 10px;
   border-radius: 20px;
   cursor: pointer;
-  border: 2px solid #4a6fa5;
+  border: 2px solid #0e7490;
   background-color: #ffffff;
-  color: #4a6fa5;
+  color: #0e7490;
   font-family: 'Segoe UI', sans-serif;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s;
 }
 
 .timer-pause-btn:hover {
-  background-color: #4a6fa5;
-  color: #ffffff;
+  background-color: #cffafe;
 }
 
 .timer-resume-btn {

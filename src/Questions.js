@@ -94,7 +94,7 @@ function Questions() {
   const stopTimer = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } setTimeLeft(null); setIsPaused(false); };
   const pauseTimer = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } setIsPaused(true); };
   const resumeTimer = () => { setIsPaused(false); runInterval(); };
-  const resetTimer = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } setTimeLeft(null); setTimerStarted(false); setIsPaused(false); };
+
   const freezeTimer = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } };
 
   // --- Interview question timer helpers ---
@@ -395,7 +395,6 @@ function Questions() {
   const getScoreColor = (s) => s >= 8 ? "#16a34a" : s >= 5 ? "#d97706" : "#dc2626";
   const getScoreBg = (s) => s >= 8 ? "#dcfce7" : s >= 5 ? "#fff7ed" : "#fee2e2";
 
-  const canToggleTimer = !question && !interviewSession;
   const canToggleInterviewMode = !question && !interviewSession;
 
   return (
@@ -446,13 +445,13 @@ function Questions() {
               <div style={{ position: "relative" }}>
                 <button
                   onClick={() => {
-                    if (!canToggleTimer && !timerOn) return;
                     if (!isPaid) { setShowTimerTooltip(true); setTimeout(() => setShowTimerTooltip(false), 2500); return; }
+                    if (interviewSession) return;
                     if (timerOn) { setTimerOn(false); stopTimer(); setTimerStarted(false); }
-                    else { setTimerOn(true); if (interviewModeOn) setInterviewModeOn(false); }
+                    else { setTimerOn(true); }
                   }}
                   className={`timer-mode-btn${!isPaid ? " timer-mode-btn-free" : timerOn ? " timer-mode-btn-on" : ""}`}
-                  style={{ cursor: (!canToggleTimer && !timerOn) ? "not-allowed" : undefined, opacity: (!canToggleTimer && !timerOn) ? 0.5 : 1 }}
+                  style={{ cursor: interviewSession ? "not-allowed" : undefined, opacity: interviewSession ? 0.5 : 1 }}
                 >
                   Timer {timerOn ? "ON" : "OFF"}
                 </button>
@@ -471,7 +470,7 @@ function Questions() {
                     if (!canToggleInterviewMode && !interviewModeOn) return;
                     if (!isPaid) { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); return; }
                     if (interviewModeOn) { setInterviewModeOn(false); }
-                    else { setInterviewModeOn(true); if (timerOn) { setTimerOn(false); stopTimer(); setTimerStarted(false); } }
+                    else { setInterviewModeOn(true); }
                   }}
                   className={`interview-mode-btn${!isPaid ? " interview-mode-btn-free" : interviewModeOn ? " interview-mode-btn-on" : ""}`}
                   style={{ cursor: (!canToggleInterviewMode && !interviewModeOn) ? "not-allowed" : undefined, opacity: (!canToggleInterviewMode && !interviewModeOn) ? 0.5 : 1 }}
@@ -508,7 +507,7 @@ function Questions() {
             {!interviewModeOn && (
               <>
                 {/* Timer bar */}
-                {timerOn && question && !question.includes("Come back tomorrow") && (
+                {timerOn && (
                   <div
                     className={timerStarted && !isPaused && !graded && timeLeft > 0 ? (timeLeft < 30 ? "timer-bar-urgent" : "timer-bar-pulsing") : ""}
                     style={{
@@ -534,7 +533,6 @@ function Questions() {
                     ) : (
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <button onClick={isPaused ? resumeTimer : pauseTimer} className={isPaused ? "timer-resume-btn" : "timer-pause-btn"}>{isPaused ? "Resume" : "Pause"}</button>
-                        <button onClick={resetTimer} className="timer-reset-btn">Reset</button>
                         <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: timeLeft < 30 ? "#d97706" : "#0e7490", opacity: isPaused ? 0.5 : 1 }}>{formatTime(timeLeft)}</span>
                       </div>
                     )}
