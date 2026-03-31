@@ -249,7 +249,7 @@ function History() {
     clearTimeout(tooltipTimerRef.current);
     setBarTooltip(null);
     setTimeout(() => {
-      document.getElementById(`entry-${globalIndex}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById(`entry-${globalIndex}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
   };
 
