@@ -50,6 +50,9 @@ function Navbar() {
       <div style={{ pointerEvents: "auto" }}>
         <SignedOut>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+              ⭐ Upgrade to Premium
+            </button>
             <div style={{ position: "relative" }}>
               <button onClick={showTooltip} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.5, cursor: "not-allowed" }}>
                 History
@@ -61,9 +64,6 @@ function Navbar() {
                 </div>
               )}
             </div>
-            <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
-              ⭐ Upgrade to Premium
-            </button>
             <SignInButton mode="modal">
               <button className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
                 Sign In
@@ -84,6 +84,9 @@ function Navbar() {
               </>
             ) : (
               <>
+                <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                  ⭐ Upgrade to Premium
+                </button>
                 <div style={{ position: "relative" }}>
                   <button onClick={showTooltip} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px", opacity: 0.5, cursor: "not-allowed" }}>
                     History
@@ -95,9 +98,6 @@ function Navbar() {
                     </div>
                   )}
                 </div>
-                <button onClick={handleUpgrade} className="upgrade-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
-                  ⭐ Upgrade to Premium
-                </button>
               </>
             )}
             <UserButton />
