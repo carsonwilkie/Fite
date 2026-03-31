@@ -548,7 +548,7 @@ function Questions() {
                       <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: "#0e7490" }}>{formatTime(timeLeft)} remaining</span>
                     ) : (
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <button onClick={isPaused ? resumeTimer : pauseTimer} className={isPaused ? "timer-resume-btn" : "timer-pause-btn"}>{isPaused ? "Resume" : "Pause"}</button>
+                        <button onClick={isPaused ? resumeTimer : pauseTimer} disabled={loadingAnswer || loadingFeedback} className={isPaused ? "timer-resume-btn" : "timer-pause-btn"}>{isPaused ? "Resume" : "Pause"}</button>
                         <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: timeLeft < 30 ? "#d97706" : "#0e7490", opacity: isPaused ? 0.5 : 1 }}>{formatTime(timeLeft)}</span>
                       </div>
                     )}
@@ -718,7 +718,7 @@ function Questions() {
                         <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: "#dc2626" }}>Time's up!</span>
                       ) : (
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <button onClick={interviewTimerPaused ? resumeInterviewTimer : pauseInterviewTimer} className={interviewTimerPaused ? "timer-resume-btn" : "timer-pause-btn"}>{interviewTimerPaused ? "Resume" : "Pause"}</button>
+                          <button onClick={interviewTimerPaused ? resumeInterviewTimer : pauseInterviewTimer} disabled={loadingInterviewRespond} className={interviewTimerPaused ? "timer-resume-btn" : "timer-pause-btn"}>{interviewTimerPaused ? "Resume" : "Pause"}</button>
                           <span style={{ fontSize: "16px", fontWeight: "700", fontFamily: "monospace", color: interviewTimeLeft < 30 ? "#d97706" : "#0e7490", opacity: interviewTimerPaused ? 0.5 : 1 }}>{formatTime(interviewTimeLeft)}</span>
                         </div>
                       )}
