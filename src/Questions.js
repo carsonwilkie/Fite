@@ -469,8 +469,18 @@ function Questions() {
                   onClick={() => {
                     if (!canToggleInterviewMode && !interviewModeOn) return;
                     if (!isPaid) { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); return; }
-                    if (interviewModeOn) { setInterviewModeOn(false); }
-                    else { setInterviewModeOn(true); }
+                    if (interviewModeOn) {
+                      setInterviewModeOn(false);
+                      setInterviewSession(null);
+                      setInterviewStep(0);
+                      setInterviewUserAnswers([]);
+                      setInterviewResponses([]);
+                      setInterviewCurrentAnswer("");
+                      setInterviewComplete(false);
+                      setInterviewDebrief(null);
+                      setInterviewAnswersRevealed(false);
+                      stopInterviewTimer();
+                    } else { setInterviewModeOn(true); }
                   }}
                   className={`interview-mode-btn${!isPaid ? " interview-mode-btn-free" : interviewModeOn ? " interview-mode-btn-on" : ""}`}
                   style={{ cursor: (!canToggleInterviewMode && !interviewModeOn) ? "not-allowed" : undefined, opacity: (!canToggleInterviewMode && !interviewModeOn) ? 0.5 : 1 }}
@@ -492,8 +502,8 @@ function Questions() {
                 {loadingQuestion ? "Loading..." : "Get Question"}
               </button>
             ) : (
-              <button onClick={generateInterview} disabled={loadingInterviewGenerate || !!interviewSession} className="primary-btn">
-                {loadingInterviewGenerate ? "Generating..." : interviewSession ? "Interview Generated" : "Generate Interview"}
+              <button onClick={generateInterview} disabled={loadingInterviewGenerate} className="primary-btn">
+                {loadingInterviewGenerate ? "Generating..." : interviewSession ? "Generate New Interview" : "Generate Interview"}
               </button>
             )}
 
@@ -632,7 +642,7 @@ function Questions() {
 
                 {/* Completed steps (read-only) */}
                 {interviewUserAnswers.map((ans, i) => (
-                  <div key={i} style={{ marginBottom: "20px" }}>
+                  <div key={i} style={{ marginBottom: "20px", borderTop: i > 0 ? "1px solid #e8edf5" : "none", paddingTop: i > 0 ? "20px" : "0" }}>
                     <div style={{ borderLeft: "3px solid #0a2463", paddingLeft: "14px", marginBottom: "10px" }}>
                       <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 6px 0" }}>QUESTION {i + 1}</p>
                       <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0, fontWeight: "500" }}>{interviewSession.questions[i].question}</p>
