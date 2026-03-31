@@ -469,7 +469,8 @@ function Questions() {
               </div>
 
               {/* Interview Mode button */}
-              <div style={{ position: "relative" }}>
+              <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: "3px" }}>
+                <span style={{ fontSize: "9px", fontWeight: "800", color: "#dc2626", letterSpacing: "1.5px", textTransform: "uppercase" }}>Beta</span>
                 <button
                   onClick={() => {
                     if (isPolling) return;
