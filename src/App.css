@@ -577,8 +577,12 @@ img, span, button {
   position: relative;
   overflow: hidden;
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 16px rgba(22, 163, 74, 0.4), inset 0 1px 0 rgba(255,255,255,0.25);
-  transition: filter 0.2s, box-shadow 0.2s, transform 0.2s;
+  inset: 0 1px 0 rgba(255,255,255,0.25);
+  transition: transform 0.2s;
+}
+
+.generate-interview-btn:not(.generate-interview-btn-free) {
+  animation: gib-glow 3.7s ease-in-out infinite, gib-shimmer 5.3s ease-in-out infinite;
 }
 
 .generate-interview-btn::before {
@@ -588,24 +592,49 @@ img, span, button {
   left: -80%;
   width: 55%;
   height: 200%;
-  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.35) 50%, transparent 80%);
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.38) 50%, transparent 80%);
   transform: skewX(-15deg);
   pointer-events: none;
+}
+
+.generate-interview-btn:not(.generate-interview-btn-free)::before {
+  animation: gib-sweep 9s ease-in-out infinite;
+}
+
+.generate-interview-btn:not(:disabled):hover {
+  animation: none;
+  filter: brightness(1.12);
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25), 0 0 32px rgba(22, 163, 74, 0.7), inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
 .generate-interview-btn:not(:disabled):hover::before {
   animation: shine-once 0.45s ease-out forwards;
 }
 
-.generate-interview-btn:not(:disabled):hover {
-  filter: brightness(1.1);
-  transform: scale(1.02);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25), 0 0 28px rgba(22, 163, 74, 0.65), inset 0 1px 0 rgba(255,255,255,0.25);
-}
-
 .generate-interview-btn:not(:disabled):active {
   transform: scale(1.01) translateY(1px);
   filter: brightness(0.95);
+}
+
+@keyframes gib-glow {
+  0%   { box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 8px  rgba(22,163,74,0.2),  inset 0 1px 0 rgba(255,255,255,0.25); }
+  28%  { box-shadow: 0 2px 12px rgba(0,0,0,0.25), 0 0 30px rgba(22,163,74,0.65), 0 0 52px rgba(74,222,128,0.2), inset 0 1px 0 rgba(255,255,255,0.3); }
+  52%  { box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 11px rgba(22,163,74,0.28), inset 0 1px 0 rgba(255,255,255,0.25); }
+  81%  { box-shadow: 0 2px 10px rgba(0,0,0,0.22), 0 0 22px rgba(74,222,128,0.5), 0 0 38px rgba(22,163,74,0.18), inset 0 1px 0 rgba(255,255,255,0.28); }
+  100% { box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 8px  rgba(22,163,74,0.2),  inset 0 1px 0 rgba(255,255,255,0.25); }
+}
+
+@keyframes gib-shimmer {
+  0%, 100% { filter: brightness(1); }
+  41%      { filter: brightness(1.07); }
+  73%      { filter: brightness(0.96); }
+}
+
+@keyframes gib-sweep {
+  0%, 68%, 100% { left: -80%; opacity: 0; }
+  70%           { left: -80%; opacity: 0.8; }
+  84%           { left: 130%; opacity: 0; }
 }
 
 .generate-interview-btn-free {

@@ -499,7 +499,7 @@ function Questions() {
             {!interviewModeOn ? (
               <>
                 <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
-                  {loadingQuestion ? "Loading..." : "Get Question"}
+                  {loadingQuestion ? "Loading..." : question && !question.includes("Come back tomorrow") ? "Get New Question" : "Get Question"}
                 </button>
                 <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "10px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
                   {loadingQuestion
