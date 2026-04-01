@@ -548,8 +548,8 @@ img, span, button {
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 40px;
-  height: 22px;
+  width: 30px;
+  height: 16px;
   border-radius: 999px;
   cursor: pointer;
   z-index: 2;
