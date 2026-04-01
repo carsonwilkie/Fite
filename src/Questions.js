@@ -627,7 +627,7 @@ function Questions() {
                     )}
 
                     {question.includes("Come back tomorrow") ? (
-                      <button className="upgrade-btn" onClick={handleUpgrade} style={{ width: "100%", display: "block", marginTop: "16px" }}>⭐ Upgrade for {price || "$3/month"}</button>
+                      <button className="upgrade-btn upgrade-btn-offset" onClick={handleUpgrade} style={{ width: "100%", display: "block", marginTop: "16px" }}>⭐ Upgrade for {price || "$3/month"}</button>
                     ) : (
                       <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed || (timerOn && !graded)} className="secondary-btn">
                         {loadingAnswer ? "Loading..." : "Show Answer"}

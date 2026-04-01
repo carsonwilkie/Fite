@@ -208,6 +208,11 @@ body {
   filter: brightness(0.95);
 }
 
+.upgrade-btn-offset::before {
+  animation-delay: 1.5s;
+}
+
+
 .manage-sub-btn {
   font-size: 12px !important;
   padding: 8px 14px !important;
