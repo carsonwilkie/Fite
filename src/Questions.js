@@ -516,8 +516,8 @@ function Questions() {
                       generateInterview();
                     }}
                     disabled={loadingInterviewGenerate}
-                    // className={`generate-interview-btn${!isPaid ? " generate-interview-btn-free" : ""}`}
-                    className={`generate-interview-btn`}
+                    className={`generate-interview-btn${!isPaid ? " generate-interview-btn-free" : ""}`}
+                    // className={`generate-interview-btn`}
                   >
                     {loadingInterviewGenerate ? "Generating..." : interviewSession ? "Generate New Interview" : "Generate Interview"}
                   </button>
