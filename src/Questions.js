@@ -504,13 +504,27 @@ function Questions() {
 
             {/* Get Question / Generate Interview button */}
             {!interviewModeOn ? (
-              <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
-                {loadingQuestion ? "Loading..." : "Get Question"}
-              </button>
+              <>
+                <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
+                  {loadingQuestion ? "Loading..." : "Get Question"}
+                </button>
+                <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "10px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
+                  {loadingQuestion
+                    ? "Crafting a question just for you..."
+                    : "Generates a realistic finance interview question based on your selected topic and difficulty."}
+                </p>
+              </>
             ) : (
-              <button onClick={generateInterview} disabled={loadingInterviewGenerate} className="primary-btn">
-                {loadingInterviewGenerate ? "Generating..." : interviewSession ? "Generate New Interview" : "Generate Interview"}
-              </button>
+              <>
+                <button onClick={generateInterview} disabled={loadingInterviewGenerate} className="primary-btn">
+                  {loadingInterviewGenerate ? "Generating..." : interviewSession ? "Generate New Interview" : "Generate Interview"}
+                </button>
+                <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "10px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
+                  {loadingInterviewGenerate
+                    ? "Building your scenario and preparing questions..."
+                    : "A 4-question mock interview with a live scenario, per-answer feedback, and a final performance debrief."}
+                </p>
+              </>
             )}
 
             {!isPaid && questionsUsed !== null && (
