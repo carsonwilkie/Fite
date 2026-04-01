@@ -623,6 +623,17 @@ function Questions() {
               </>
             )}
 
+            {!interviewModeOn && !loadingQuestion && (
+              <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "16px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
+                Generates a realistic, immersive technical question.
+              </p>
+            )}
+            {!interviewModeOn && loadingQuestion && (
+              <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "16px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
+                Contriving your unparalleled technical question...
+              </p>
+            )}
+
             {/* ── INTERVIEW MODE FLOW ── */}
             {interviewModeOn && interviewSession && (
               <div style={styles.section}>

@@ -255,8 +255,7 @@ body {
 
   .manage-sub-btn {
     font-size: 11px !important;
-    padding: 8px 12px !important;
-    max-width: 140px !important;
+    padding: 8px 10px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
