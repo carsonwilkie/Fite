@@ -29,6 +29,9 @@ function History() {
   const [barTooltip, setBarTooltip] = useState(null); // { i, entry, leftPx, barHeightPx }
   const tooltipTimerRef = useRef(null);
   const chartAreaRef = useRef(null);
+  const [sliderDragging, setSliderDragging] = useState(false);
+  const sliderRef = useRef(null);
+  const isDragging = useRef(false);
 
   useEffect(() => {
     if (loading) return;
@@ -253,6 +256,33 @@ function History() {
     }, 100);
   };
 
+  const computeSliderRaw = (clientX, sliderMax) => {
+    const rect = sliderRef.current.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return 2 + ratio * (sliderMax - 2);
+  };
+
+  const handleSliderPointerDown = (e, sliderMax) => {
+    isDragging.current = true;
+    setSliderDragging(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const raw = computeSliderRaw(e.clientX, sliderMax);
+    setSliderPos(raw);
+    setScoreRange(Math.round(raw) >= sliderMax ? null : Math.round(raw));
+  };
+
+  const handleSliderPointerMove = (e, sliderMax) => {
+    if (!isDragging.current) return;
+    const raw = computeSliderRaw(e.clientX, sliderMax);
+    setSliderPos(raw);
+    setScoreRange(Math.round(raw) >= sliderMax ? null : Math.round(raw));
+  };
+
+  const handleSliderPointerUp = () => {
+    isDragging.current = false;
+    setSliderDragging(false);
+  };
+
   return (
     <div style={styles.page} className="page-bg page-wrapper">
       <div style={{
@@ -438,21 +468,35 @@ function History() {
                                 <div style={{ padding: "0 16px" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
                                   <span style={{ fontSize: "14px", fontWeight: "900", color: "#4a6fa5", flexShrink: 0 }}>2</span>
-                                  <input
-                                    type="range"
-                                    min={2}
-                                    max={sliderMax}
-                                    step={0.01}
-                                    value={visualVal}
-                                    onChange={(e) => {
-                                      const raw = Number(e.target.value);
-                                      setSliderPos(raw);
-                                      const rounded = Math.round(raw);
-                                      setScoreRange(rounded >= sliderMax ? null : rounded);
-                                    }}
-                                    className="score-range-slider"
-                                    style={{ background: `linear-gradient(to right, #0a2463 0%, #0a2463 ${fillPct}%, #e8edf5 ${fillPct}%, #e8edf5 100%)` }}
-                                  />
+                                  {/* Custom liquid glass slider */}
+                                  <div
+                                    ref={sliderRef}
+                                    className="glass-slider-container"
+                                    onPointerDown={(e) => handleSliderPointerDown(e, sliderMax)}
+                                    onPointerMove={(e) => handleSliderPointerMove(e, sliderMax)}
+                                    onPointerUp={handleSliderPointerUp}
+                                    onPointerCancel={handleSliderPointerUp}
+                                  >
+                                    <svg style={{ position: "absolute", width: 0, height: 0 }}>
+                                      <defs>
+                                        <filter id="mini-liquid-lens" x="-50%" y="-50%" width="200%" height="200%">
+                                          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" seed="2" result="noise" />
+                                          <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" />
+                                        </filter>
+                                      </defs>
+                                    </svg>
+                                    <div className="glass-slider-track">
+                                      <div className="glass-slider-progress" style={{ width: `${fillPct}%` }} />
+                                    </div>
+                                    <div
+                                      className={`slider-thumb-glass${sliderDragging ? " active" : ""}`}
+                                      style={{ left: `${fillPct}%` }}
+                                    >
+                                      <div className="slider-thumb-glass-filter" />
+                                      <div className="slider-thumb-glass-overlay" />
+                                      <div className="slider-thumb-glass-specular" />
+                                    </div>
+                                  </div>
                                   <span style={{ fontSize: "14px", fontWeight: "900", color: "#4a6fa5", flexShrink: 0 }}>{sliderMax}</span>
                                 </div>
                                 <p style={{ fontSize: "12px", color: "#4a6fa5", margin: "0 0 16px 0", fontStyle: "italic" }}>
