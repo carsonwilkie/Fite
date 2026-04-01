@@ -511,7 +511,7 @@ function Questions() {
                 <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "10px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
                   {loadingQuestion
                     ? "Crafting a question just for you..."
-                    : "Generates a realistic finance interview question based on your selected topic and difficulty."}
+                    : "Formulates a realistic technical question based on your selected topic and difficulty."}
                 </p>
               </>
             ) : (
@@ -521,8 +521,8 @@ function Questions() {
                 </button>
                 <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "10px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
                   {loadingInterviewGenerate
-                    ? "Building your scenario and preparing questions..."
-                    : "A 4-question mock interview with a live scenario, per-answer feedback, and a final performance debrief."}
+                    ? "Building your one-off scenario and preparing questions..."
+                    : "Formulates a 4-question mock interview with a live scenario, per-answer feedback, and a final performance debrief."}
                 </p>
               </>
             )}
@@ -635,17 +635,6 @@ function Questions() {
                   </div>
                 )}
               </>
-            )}
-
-            {!interviewModeOn && !loadingQuestion && (
-              <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "16px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
-                Generates a realistic, immersive technical question.
-              </p>
-            )}
-            {!interviewModeOn && loadingQuestion && (
-              <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "16px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
-                Contriving your unparalleled technical question...
-              </p>
             )}
 
             {/* ── INTERVIEW MODE FLOW ── */}
@@ -817,16 +806,6 @@ function Questions() {
               </div>
             )}
 
-            {interviewModeOn && !interviewSession && !loadingInterviewGenerate && (
-              <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "16px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
-                Interview Mode generates a realistic scenario with {INTERVIEW_QUESTIONS} structured follow-up questions.
-              </p>
-            )}
-            {loadingInterviewGenerate && (
-              <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "16px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
-                Building your one-off interview scenario...
-              </p>
-            )}
           </div>
         </div>
       </div>
