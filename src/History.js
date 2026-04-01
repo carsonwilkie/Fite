@@ -266,7 +266,7 @@ function History() {
   };
 
   const applySliderDOM = (fillPct) => {
-    if (sliderThumbRef.current) sliderThumbRef.current.style.left = `${fillPct}%`;
+    if (sliderThumbRef.current) sliderThumbRef.current.style.left = `clamp(20px, ${fillPct}%, calc(100% - 20px))`;
     if (sliderProgressRef.current) sliderProgressRef.current.style.width = `${fillPct}%`;
   };
 
@@ -505,7 +505,7 @@ function History() {
                                     <div
                                       ref={sliderThumbRef}
                                       className={`slider-thumb-glass${sliderDragging ? " active" : ""}`}
-                                      style={{ left: `${fillPct}%` }}
+                                      style={{ left: `clamp(20px, ${fillPct}%, calc(100% - 20px))` }}
                                     >
                                       <div className="slider-thumb-glass-filter" />
                                       <div className="slider-thumb-glass-overlay" />
