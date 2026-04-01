@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useTransition } from "react";
 import { useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { useUser } from "@clerk/clerk-react";
@@ -31,7 +31,10 @@ function History() {
   const chartAreaRef = useRef(null);
   const [sliderDragging, setSliderDragging] = useState(false);
   const sliderRef = useRef(null);
+  const sliderThumbRef = useRef(null);
+  const sliderProgressRef = useRef(null);
   const isDragging = useRef(false);
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
     if (loading) return;
@@ -262,20 +265,31 @@ function History() {
     return 2 + ratio * (sliderMax - 2);
   };
 
+  const applySliderDOM = (fillPct) => {
+    if (sliderThumbRef.current) sliderThumbRef.current.style.left = `${fillPct}%`;
+    if (sliderProgressRef.current) sliderProgressRef.current.style.width = `${fillPct}%`;
+  };
+
   const handleSliderPointerDown = (e, sliderMax) => {
     isDragging.current = true;
     setSliderDragging(true);
     e.currentTarget.setPointerCapture(e.pointerId);
     const raw = computeSliderRaw(e.clientX, sliderMax);
+    const fillPct = ((raw - 2) / (sliderMax - 2)) * 100;
+    applySliderDOM(fillPct);
     setSliderPos(raw);
-    setScoreRange(Math.round(raw) >= sliderMax ? null : Math.round(raw));
+    const rounded = Math.round(raw);
+    startTransition(() => setScoreRange(rounded >= sliderMax ? null : rounded));
   };
 
   const handleSliderPointerMove = (e, sliderMax) => {
     if (!isDragging.current) return;
     const raw = computeSliderRaw(e.clientX, sliderMax);
+    const fillPct = ((raw - 2) / (sliderMax - 2)) * 100;
+    applySliderDOM(fillPct);
     setSliderPos(raw);
-    setScoreRange(Math.round(raw) >= sliderMax ? null : Math.round(raw));
+    const rounded = Math.round(raw);
+    startTransition(() => setScoreRange(rounded >= sliderMax ? null : rounded));
   };
 
   const handleSliderPointerUp = () => {
@@ -486,9 +500,10 @@ function History() {
                                       </defs>
                                     </svg>
                                     <div className="glass-slider-track">
-                                      <div className="glass-slider-progress" style={{ width: `${fillPct}%` }} />
+                                      <div ref={sliderProgressRef} className="glass-slider-progress" style={{ width: `${fillPct}%` }} />
                                     </div>
                                     <div
+                                      ref={sliderThumbRef}
                                       className={`slider-thumb-glass${sliderDragging ? " active" : ""}`}
                                       style={{ left: `${fillPct}%` }}
                                     >
