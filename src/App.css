@@ -559,6 +559,62 @@ img, span, button {
   background-color: #cffafe;
 }
 
+.generate-interview-btn {
+  background: linear-gradient(135deg, #4ade80 0%, #16a34a 45%, #166534 100%);
+  border: 1px solid rgba(134, 239, 172, 0.5);
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 16px rgba(22, 163, 74, 0.4), inset 0 1px 0 rgba(255,255,255,0.25);
+  transition: filter 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.generate-interview-btn::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -80%;
+  width: 55%;
+  height: 200%;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.35) 50%, transparent 80%);
+  transform: skewX(-15deg);
+  pointer-events: none;
+}
+
+.generate-interview-btn:not(:disabled):hover::before {
+  animation: shine-once 0.45s ease-out forwards;
+}
+
+.generate-interview-btn:not(:disabled):hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25), 0 0 28px rgba(22, 163, 74, 0.65), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+
+.generate-interview-btn:not(:disabled):active {
+  transform: scale(1.01) translateY(1px);
+  filter: brightness(0.95);
+}
+
+.generate-interview-btn-free {
+  background: linear-gradient(135deg, #86efac 0%, #4ade80 45%, #16a34a 100%);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.generate-interview-btn-free:hover {
+  filter: none !important;
+  transform: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 16px rgba(22, 163, 74, 0.4), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+}
+
 .interview-mode-wrapper::after {
   content: "BETA";
   position: absolute;

@@ -44,7 +44,7 @@ function Questions() {
 
   // Interview Mode state
   const [interviewModeOn, setInterviewModeOn] = useState(false);
-  const [showInterviewTooltip, setShowInterviewTooltip] = useState(false);
+  const [showGenerateTooltip, setShowGenerateTooltip] = useState(false);
   const [interviewSession, setInterviewSession] = useState(null); // { scenario, questions: [{question, idealAnswer}] }
   const [interviewStep, setInterviewStep] = useState(0);
   const [interviewUserAnswers, setInterviewUserAnswers] = useState([]); // string per step
@@ -474,7 +474,6 @@ function Questions() {
                   onClick={() => {
                     if (isPolling) return;
                     if (!canToggleInterviewMode && !interviewModeOn) return;
-                    if (!isPaid) { setShowInterviewTooltip(true); setTimeout(() => setShowInterviewTooltip(false), 2500); return; }
                     if (interviewModeOn) {
                       setInterviewModeOn(false);
                       setInterviewSession(null);
@@ -488,17 +487,11 @@ function Questions() {
                       stopInterviewTimer();
                     } else { setInterviewModeOn(true); }
                   }}
-                  className={`interview-mode-btn${!isPaid ? " interview-mode-btn-free" : interviewModeOn ? " interview-mode-btn-on" : ""}`}
+                  className={`interview-mode-btn${interviewModeOn ? " interview-mode-btn-on" : ""}`}
                   style={{ cursor: (isPolling || (!canToggleInterviewMode && !interviewModeOn)) ? "not-allowed" : undefined, opacity: (isPolling || (!canToggleInterviewMode && !interviewModeOn)) ? 0.5 : 1 }}
                 >
                   Interview Mode {interviewModeOn ? "ON" : "OFF"}
                 </button>
-                {showInterviewTooltip && (
-                  <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", backgroundColor: "#1a1a2e", color: "#ffffff", fontSize: "12px", fontWeight: "600", padding: "6px 12px", borderRadius: "8px", whiteSpace: "nowrap", zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
-                    Premium feature — upgrade to unlock
-                    <div style={{ position: "absolute", top: "-5px", left: "50%", transform: "translateX(-50%) rotate(45deg)", width: "10px", height: "10px", backgroundColor: "#1a1a2e" }} />
-                  </div>
-                )}
               </div>
             </div>
 
@@ -516,13 +509,28 @@ function Questions() {
               </>
             ) : (
               <>
-                <button onClick={generateInterview} disabled={loadingInterviewGenerate} className="primary-btn">
-                  {loadingInterviewGenerate ? "Generating..." : interviewSession ? "Generate New Interview" : "Generate Interview"}
-                </button>
+                <div style={{ position: "relative" }}>
+                  <button
+                    onClick={() => {
+                      if (!isPaid) { setShowGenerateTooltip(true); setTimeout(() => setShowGenerateTooltip(false), 2500); return; }
+                      generateInterview();
+                    }}
+                    disabled={loadingInterviewGenerate}
+                    className={`generate-interview-btn${!isPaid ? " generate-interview-btn-free" : ""}`}
+                  >
+                    {loadingInterviewGenerate ? "Generating..." : interviewSession ? "Generate New Interview" : "Generate Interview"}
+                  </button>
+                  {showGenerateTooltip && (
+                    <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", backgroundColor: "#1a1a2e", color: "#ffffff", fontSize: "12px", fontWeight: "600", padding: "6px 12px", borderRadius: "8px", whiteSpace: "nowrap", zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
+                      Premium feature — upgrade to unlock
+                      <div style={{ position: "absolute", top: "-5px", left: "50%", transform: "translateX(-50%) rotate(45deg)", width: "10px", height: "10px", backgroundColor: "#1a1a2e" }} />
+                    </div>
+                  )}
+                </div>
                 <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "10px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
                   {loadingInterviewGenerate
-                    ? "Building your one-off scenario and preparing questions..."
-                    : "Formulates a 4-question mock interview with a live scenario, per-answer feedback, and a final performance debrief."}
+                    ? "Building your scenario and preparing questions..."
+                    : "A 4-question mock interview with a live scenario, per-answer feedback, and a final performance debrief."}
                 </p>
               </>
             )}
