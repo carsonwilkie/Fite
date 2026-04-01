@@ -565,20 +565,25 @@ img, span, button {
 }
 
 .generate-interview-btn {
-  background: linear-gradient(135deg, #4ade80 0%, #16a34a 45%, #166534 100%);
-  border: 1px solid rgba(134, 239, 172, 0.5);
-  color: #ffffff;
-  border-radius: 8px;
-  padding: 14px 28px;
-  font-size: 15px;
-  font-weight: 700;
+   /* Transparency & Color */
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  
+  /* Frosty Effect */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
+  
+  /* Border & Shape */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  padding: 15px 30px;
+  
+  /* Polished Look */
+  font-family: sans-serif;
+  text-decoration: none;
   cursor: pointer;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 14px rgba(22, 163, 74, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
-  transition: filter 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .generate-interview-btn::before {
