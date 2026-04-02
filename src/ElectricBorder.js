@@ -1,17 +1,12 @@
 function ElectricBorder({ children, active }) {
+  if (!active) return <div className="eb-wrapper">{children}</div>;
   return (
-    <div className={`eb-wrapper${active ? " eb-active" : ""}`}>
-      {active && <div className="eb-bg-glow" />}
+    <div className="eb-wrapper eb-active">
+      <div className="eb-spin-container">
+        <div className="eb-spin" />
+      </div>
+      <div className="eb-glow-layer" />
       {children}
-      {active && (
-        <div className="eb-clip">
-          <div className="eb-main-card" />
-          <div className="eb-glow-1" />
-          <div className="eb-glow-2" />
-          <div className="eb-overlay-1" />
-          <div className="eb-overlay-2" />
-        </div>
-      )}
     </div>
   );
 }

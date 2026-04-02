@@ -995,80 +995,55 @@ img, span, button {
 
 .eb-active {
   position: relative;
-  border-radius: 16px;
-  isolation: isolate;
 }
 
-.eb-clip {
+/* Clips the spinning gradient to the card shape */
+.eb-spin-container {
   position: absolute;
-  inset: 0;
-  border-radius: 16px;
+  inset: -2px;
+  border-radius: 18px;
   overflow: hidden;
   pointer-events: none;
-  z-index: 2;
+  z-index: 0;
 }
 
-.eb-main-card {
+/* The rotating conic gradient — only transform animates (GPU) */
+.eb-spin {
   position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  border: 2px solid #d4a83a;
-  filter: url(#eb-turbulent-displace);
-  pointer-events: none;
-  z-index: 2;
+  inset: -100%;
+  width: 300%;
+  height: 300%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    #8a6010 25deg,
+    #d4a83a 55deg,
+    #f5d78e 85deg,
+    #d4a83a 115deg,
+    #8a6010 145deg,
+    transparent 165deg,
+    transparent 360deg
+  );
+  animation: eb-spin-anim 5s linear infinite;
+  will-change: transform;
 }
 
-.eb-glow-1 {
+/* Outer ambient glow — uses opacity for pulse (GPU) */
+.eb-glow-layer {
   position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  border: 2px solid rgba(212, 168, 58, 0.6);
-  filter: blur(1px);
+  inset: -2px;
+  border-radius: 18px;
+  box-shadow: 0 0 12px 2px #d4a83a66, 0 0 28px 6px #d4a83a22;
+  animation: eb-glow-pulse 3s ease-in-out infinite;
   pointer-events: none;
-  z-index: 2;
+  z-index: 0;
 }
 
-.eb-glow-2 {
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  border: 2px solid #d4a83a;
-  filter: blur(5px);
-  pointer-events: none;
-  z-index: 2;
+@keyframes eb-spin-anim {
+  to { transform: rotate(360deg); }
 }
 
-.eb-overlay-1 {
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  mix-blend-mode: overlay;
-  filter: blur(12px);
-  background: linear-gradient(-30deg, white, transparent 30%, transparent 70%, white);
-  pointer-events: none;
-  z-index: 3;
-}
-
-.eb-overlay-2 {
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  opacity: 0.5;
-  mix-blend-mode: overlay;
-  filter: blur(12px);
-  background: linear-gradient(-30deg, white, transparent 30%, transparent 70%, white);
-  pointer-events: none;
-  z-index: 3;
-}
-
-.eb-bg-glow {
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  filter: blur(24px);
-  transform: scale(1.05);
-  opacity: 0.35;
-  z-index: -1;
-  background: linear-gradient(-30deg, #d4a83a, transparent, #d4a83a);
-  pointer-events: none;
+@keyframes eb-glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
