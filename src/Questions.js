@@ -44,6 +44,9 @@ function Questions() {
 
   // Interview Mode state
   const [interviewModeOn, setInterviewModeOn] = useState(false);
+  const [interviewTurningOff, setInterviewTurningOff] = useState(false);
+  const interviewTurningOffRef = useRef(null);
+  const [interviewNoShine, setInterviewNoShine] = useState(false);
   const [showGenerateTooltip, setShowGenerateTooltip] = useState(false);
   const [interviewSession, setInterviewSession] = useState(null); // { scenario, questions: [{question, idealAnswer}] }
   const [interviewStep, setInterviewStep] = useState(0);
@@ -445,7 +448,7 @@ function Questions() {
             </div>
 
             {/* Mode buttons row */}
-            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "20px", marginBottom: "16px" }}>
               {/* Timer button */}
               <div style={{ position: "relative" }}>
                 <button
@@ -475,6 +478,8 @@ function Questions() {
                     if (isPolling) return;
                     if (!canToggleInterviewMode && !interviewModeOn) return;
                     if (interviewModeOn) {
+                      setInterviewNoShine(true);
+                      setInterviewTurningOff(true);
                       setInterviewModeOn(false);
                       setInterviewSession(null);
                       setInterviewStep(0);
@@ -485,13 +490,24 @@ function Questions() {
                       setInterviewDebrief(null);
                       setInterviewAnswersRevealed(false);
                       stopInterviewTimer();
-                    } else { setInterviewModeOn(true); }
+                      if (interviewTurningOffRef.current) clearTimeout(interviewTurningOffRef.current);
+                      interviewTurningOffRef.current = setTimeout(() => setInterviewTurningOff(false), 800);
+                    } else {
+                      if (interviewTurningOffRef.current) {
+                        clearTimeout(interviewTurningOffRef.current);
+                        interviewTurningOffRef.current = null;
+                        setInterviewTurningOff(false);
+                      }
+                      setInterviewModeOn(true);
+                    }
                   }}
-                  className={`interview-mode-btn${interviewModeOn ? " interview-mode-btn-on" : ""}`}
+                  onMouseLeave={() => setInterviewNoShine(false)}
+                  className={`interview-mode-btn${interviewModeOn ? " interview-mode-btn-on" : ""}${interviewTurningOff ? " interview-mode-btn-turning-off" : ""}${interviewNoShine ? " interview-mode-btn-no-shine" : ""}`}
                   style={{ cursor: (isPolling || (!canToggleInterviewMode && !interviewModeOn)) ? "not-allowed" : undefined, opacity: (isPolling || (!canToggleInterviewMode && !interviewModeOn)) ? 0.5 : 1 }}
                 >
                   Interview Mode {interviewModeOn ? "ON" : "OFF"}
                 </button>
+                <span className={`interview-mode-neon-ring${interviewModeOn ? " ring-on" : ""}`} />
               </div>
             </div>
 
@@ -517,9 +533,11 @@ function Questions() {
                     }}
                     disabled={loadingInterviewGenerate}
                     className={`generate-interview-btn${!isPaid ? " generate-interview-btn-free" : ""}`}
-                    // className={`generate-interview-btn`}
                   >
-                    {loadingInterviewGenerate ? "Generating..." : interviewSession ? "Generate New Interview" : "Generate Interview"}
+                    <div className="generate-interview-btn-glare" />
+                    <span className="generate-interview-btn-text" style={{ position: "relative", zIndex: 1 }}>
+                      {loadingInterviewGenerate ? "Generating..." : interviewSession ? "Generate New Interview" : "Generate Interview"}
+                    </span>
                   </button>
                   {showGenerateTooltip && (
                     <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", backgroundColor: "#1a1a2e", color: "#ffffff", fontSize: "12px", fontWeight: "600", padding: "6px 12px", borderRadius: "8px", whiteSpace: "nowrap", zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>

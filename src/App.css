@@ -45,7 +45,7 @@ body {
 .primary-btn {
   background-color: #0a2463;
   color: #ffffff;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
   padding: 14px 28px;
   font-size: 15px;
@@ -625,61 +625,192 @@ img, span, button {
 }
 
 .generate-interview-btn {
-  background: linear-gradient(135deg, #4ade80 0%, #16a34a 45%, #166534 100%);
-  border: 1px solid rgba(134, 239, 172, 0.5);
-  color: #ffffff;
-  border-radius: 8px;
+  --border-radius: 8px;
+  --transition: 0.4s;
+  --highlight-color-hue: 130deg;
+
+  user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 14px 28px;
+  font-family: "Poppins", "Inter", "Segoe UI", sans-serif;
   font-size: 15px;
   font-weight: 700;
-  cursor: pointer;
+  color: rgba(255, 255, 255, 0.88);
   width: 100%;
+
+  background: linear-gradient(135deg, #4ade80 0%, #16a34a 45%, #166534 100%);
+
+  box-shadow:
+    inset 0px 1px 1px rgba(255, 255, 255, 0.35),
+    inset 0px 2px 2px rgba(255, 255, 255, 0.2),
+    inset 0px 4px 4px rgba(255, 255, 255, 0.1),
+    inset 0px -4px 8px rgba(0, 0, 0, 0.25),
+    0px 2px 6px rgba(0, 0, 0, 0.35),
+    0px 4px 14px rgba(0, 0, 0, 0.2),
+    0px 0px 18px rgba(22, 163, 74, 0.3);
+
+  border: solid 1px rgba(134, 239, 172, 0.4);
+  border-radius: var(--border-radius);
+  cursor: pointer;
   position: relative;
   overflow: hidden;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 14px rgba(22, 163, 74, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
-  transition: filter 0.2s, box-shadow 0.2s, transform 0.2s;
+
+  transition: box-shadow var(--transition), border var(--transition), color var(--transition);
+
+  animation: interview-pulse 2s ease-in-out infinite;
 }
+
+.generate-interview-btn-text {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.75) 0%,
+    #ffffff 20%,
+    rgba(200,255,210,0.9) 35%,
+    rgba(255,255,255,0.75) 50%,
+    rgba(255,255,255,0.75) 100%
+  );
+  background-size: 250% 100%;
+  background-position: 150% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-sweep 4.5s ease-in-out infinite;
+}
+
+@keyframes text-sweep {
+  0%   { background-position: 150% 0; }
+  40%  { background-position: 150% 0; }
+  65%  { background-position: -20% 0; }
+  100% { background-position: -20% 0; }
+}
+
+@keyframes interview-pulse {
+  50% {
+    color: #ffffff;
+    text-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+    box-shadow:
+      inset 0px 1px 1px rgba(255, 255, 255, 0.35),
+      inset 0px 2px 2px rgba(255, 255, 255, 0.2),
+      inset 0px 4px 4px rgba(255, 255, 255, 0.1),
+      inset 0px -4px 8px rgba(0, 0, 0, 0.25),
+      0px 2px 6px rgba(0, 0, 0, 0.35),
+      0px 4px 14px rgba(0, 0, 0, 0.2),
+      0px 0px 28px rgba(74, 222, 128, 0.55);
+  }
+}
+
 
 .generate-interview-btn::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: -120%;
-  width: 80%;
-  height: 100%;
-  background: linear-gradient(105deg, transparent 15%, rgba(255,255,255,0.12) 40%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0.12) 60%, transparent 85%);
-  transform: skewX(-15deg);
+  top: -60%;
+  left: -20%;
+  width: 140%;
+  height: 220%;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 40%, transparent 70%);
   pointer-events: none;
+  animation: shimmer-drift 6s ease-in-out infinite;
 }
 
-.generate-interview-btn:not(.generate-interview-btn-free)::before {
-  animation: metal-glare 4.5s ease-in-out infinite;
-}
-
-@keyframes metal-glare {
-  0%        { left: -120%; }
-  100%      { left: 140%;  }
-}
-
-.generate-interview-btn:not(:disabled):hover {
-  filter: brightness(1.1);
-  transform: scale(1.02);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25), 0 0 28px rgba(22, 163, 74, 0.65), inset 0 1px 0 rgba(255,255,255,0.3);
-}
-
-.generate-interview-btn:not(:disabled):active {
-  transform: scale(1.01) translateY(1px);
-  filter: brightness(0.95);
-}
-
-.generate-interview-btn-free {
-  opacity: 0.5;
-  cursor: not-allowed;
+@keyframes shimmer-drift {
+  0%   { transform: translate(0%,   0%);  opacity: 0.5; }
+  25%  { transform: translate(22%,  10%); opacity: 0.9; }
+  50%  { transform: translate(35%, -8%);  opacity: 0.6; }
+  75%  { transform: translate(10%,  20%); opacity: 1;   }
+  100% { transform: translate(0%,   0%);  opacity: 0.5; }
 }
 
 .generate-interview-btn-free::before {
-  display: none;
+  filter: grayscale(1);
+}
+
+.generate-interview-btn-glare {
+  position: absolute;
+  top: 0;
+  left: -110%;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.12) 45%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0.12) 55%, transparent 80%);
+  transform: skewX(-15deg);
+  pointer-events: none;
+  z-index: 2;
+  animation: metal-glare 4.5s ease-in-out infinite;
+}
+
+.generate-interview-btn-free .generate-interview-btn-glare {
+  opacity: 0.5;
+}
+
+@keyframes metal-glare {
+  0%   { left: -110%; }
+  100% { left: 130%; }
+}
+
+.generate-interview-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: linear-gradient(
+    0deg,
+    #fff,
+    hsl(var(--highlight-color-hue), 100%, 70%),
+    hsla(var(--highlight-color-hue), 100%, 70%, 50%),
+    8%,
+    transparent
+  );
+  opacity: 0;
+  transition: opacity var(--transition), filter var(--transition);
+}
+
+.generate-interview-btn:not(:disabled):hover {
+  animation: none;
+  color: #ffffff;
+  border: solid 1px hsla(var(--highlight-color-hue), 80%, 75%, 50%);
+  box-shadow:
+    inset 0px 1px 1px rgba(255, 255, 255, 0.35),
+    inset 0px 2px 2px rgba(255, 255, 255, 0.2),
+    inset 0px 4px 4px rgba(255, 255, 255, 0.1),
+    inset 0px -4px 8px rgba(0, 0, 0, 0.25),
+    0px 2px 6px rgba(0, 0, 0, 0.35),
+    0px 4px 14px rgba(0, 0, 0, 0.2),
+    0px 0px 32px rgba(74, 222, 128, 0.5);
+}
+
+
+.generate-interview-btn:not(:disabled):hover::after {
+  opacity: 0.5;
+  mask-image: linear-gradient(0deg, #fff, transparent);
+  -webkit-mask-image: linear-gradient(0deg, #fff, transparent);
+}
+
+.generate-interview-btn:not(:disabled):active {
+  animation: none;
+  color: #ffffff;
+  border: solid 1px hsla(var(--highlight-color-hue), 100%, 80%, 70%);
+}
+
+
+.generate-interview-btn:not(:disabled):active::after {
+  opacity: 0.8;
+  mask-image: linear-gradient(0deg, #fff, transparent);
+  -webkit-mask-image: linear-gradient(0deg, #fff, transparent);
+  filter: brightness(150%);
+}
+
+.generate-interview-btn-free {
+  filter: grayscale(1);
+  cursor: not-allowed;
+}
+
+.interview-mode-wrapper {
+  isolation: isolate;
 }
 
 .interview-mode-wrapper::after {
@@ -708,6 +839,27 @@ img, span, button {
   min-width: 148px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 0 0px transparent, 0 0 0px transparent;
+  transition: box-shadow 0.4s linear, filter 0.2s, transform 0.2s;
+}
+
+
+.interview-mode-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.4) 50%, transparent 80%);
+  transform: skewX(-15deg);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+}
+
+.interview-mode-btn:not(.interview-mode-btn-free):not(.interview-mode-btn-no-shine):hover::before {
+  animation: shine-once 0.45s ease-out forwards;
 }
 
 .interview-mode-btn:not(.interview-mode-btn-on):not(.interview-mode-btn-free) {
@@ -715,30 +867,12 @@ img, span, button {
   border: 1px solid rgba(134, 239, 172, 0.5);
   color: #ffffff;
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  box-shadow: 0 1px 5px rgba(0,0,0,0.2), 0 0 10px rgba(22, 163, 74, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
-  transition: filter 0.2s, box-shadow 0.2s, transform 0.2s;
-}
-
-.interview-mode-btn:not(.interview-mode-btn-on):not(.interview-mode-btn-free)::before {
-  content: "";
-  position: absolute;
-  top: -60%;
-  left: -80%;
-  width: 55%;
-  height: 200%;
-  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.4) 50%, transparent 80%);
-  transform: skewX(-15deg);
-  pointer-events: none;
-}
-
-.interview-mode-btn:not(.interview-mode-btn-on):not(.interview-mode-btn-free):hover::before {
-  animation: shine-once 0.45s ease-out forwards;
+  transition: box-shadow 0.4s linear, filter 0.2s, transform 0.2s;
 }
 
 .interview-mode-btn:not(.interview-mode-btn-on):not(.interview-mode-btn-free):hover {
   filter: brightness(1.1);
   transform: scale(1.08);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.25), 0 0 20px rgba(22, 163, 74, 0.6), inset 0 1px 0 rgba(255,255,255,0.25);
 }
 
 .interview-mode-btn:not(.interview-mode-btn-on):not(.interview-mode-btn-free):active {
@@ -747,8 +881,14 @@ img, span, button {
 }
 
 @keyframes shine-once {
-  0%   { left: -80%; }
-  100% { left: 120%; }
+  0%   { left: -80%; opacity: 1; }
+  100% { left: 120%; opacity: 1; }
+}
+
+@property --neon-arc {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
 }
 
 .interview-mode-btn-on {
@@ -756,36 +896,47 @@ img, span, button {
   border: 1px solid rgba(134, 239, 172, 0.5);
   color: #ffffff;
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  box-shadow: 0 1px 5px rgba(0,0,0,0.2), 0 0 10px rgba(22, 163, 74, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
-  transition: filter 0.2s, box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 0 12px #39ff14dd, 0 0 16px #39ff1466;
 }
 
-.interview-mode-btn-on::before {
-  content: "";
+.interview-mode-neon-ring {
+  --neon-arc: 0deg;
   position: absolute;
-  top: -60%;
-  left: -80%;
-  width: 55%;
-  height: 200%;
-  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.4) 50%, transparent 80%);
-  transform: skewX(-15deg);
+  inset: -2px;
+  border: 2px solid #39ff14;
+  border-radius: 20px;
   pointer-events: none;
+  z-index: -1;
+  filter: drop-shadow(0 0 0px #39ff1400) drop-shadow(0 0 0px #39ff1400);
+  transition: --neon-arc 0.4s linear, filter 0.8s linear, transform 0.2s;
+  -webkit-mask: conic-gradient(from calc(270deg - var(--neon-arc)), #000 calc(2 * var(--neon-arc)), #0000 0);
+  mask: conic-gradient(from calc(270deg - var(--neon-arc)), #000 calc(2 * var(--neon-arc)), #0000 0);
+  box-shadow: 0 0 0 2em #0000; /* safari hack */
 }
 
-.interview-mode-btn-on:hover::before {
-  animation: shine-once 0.45s ease-out forwards;
+.interview-mode-neon-ring.ring-on {
+  --neon-arc: 180deg;
+  filter: drop-shadow(0 0 4px #39ff14ff) drop-shadow(0 0 10px #39ff1488);
+}
+
+.interview-mode-btn-on:hover ~ .interview-mode-neon-ring,
+.interview-mode-btn-turning-off:hover ~ .interview-mode-neon-ring {
+  transform: scale(1.08);
+}
+
+.interview-mode-btn-on:active ~ .interview-mode-neon-ring,
+.interview-mode-btn-turning-off:active ~ .interview-mode-neon-ring {
+  transform: scale(1.04) translateY(1px);
 }
 
 .interview-mode-btn-on:hover {
-  filter: brightness(1.1);
   transform: scale(1.08);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.25), 0 0 20px rgba(22, 163, 74, 0.6), inset 0 1px 0 rgba(255,255,255,0.25);
   color: #ffffff;
 }
 
 .interview-mode-btn-on:active {
   transform: scale(1.04) translateY(1px);
-  filter: brightness(0.95);
+  filter: drop-shadow(0 0 4px #39ff14cc) drop-shadow(0 0 10px #39ff1466);
 }
 
 .interview-mode-btn-free {
