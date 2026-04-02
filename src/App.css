@@ -869,7 +869,7 @@ img, span, button {
   border: 1px solid rgba(134, 239, 172, 0.5);
   color: #ffffff;
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  transition: box-shadow 0.4s linear, filter 0.2s, transform 0.2s;
+  transition: box-shadow 0.8s linear, filter 0.2s, transform 0.2s;
 }
 
 .interview-mode-btn:not(.interview-mode-btn-on):not(.interview-mode-btn-free):hover {
@@ -898,7 +898,7 @@ img, span, button {
   border: 1px solid rgba(134, 239, 172, 0.5);
   color: #ffffff;
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  box-shadow: 0 0 12px #39ff14dd, 0 0 16px #39ff1466;
+  box-shadow: 0 0 10px #39ff14dd, 0 0 14px #39ff1466;
 }
 
 .interview-mode-neon-ring {
