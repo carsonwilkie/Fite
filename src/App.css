@@ -3,6 +3,18 @@ body {
   padding: 0;
 }
 
+input:not([type="range"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
+textarea {
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+input:not([type="range"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus {
+  border-color: #4a6fa5 !important;
+  box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.25), 0 0 8px rgba(10, 36, 99, 0.15) !important;
+}
+
 .markdown h1, .markdown h2, .markdown h3 {
   font-size: 15px;
   font-weight: 700;
