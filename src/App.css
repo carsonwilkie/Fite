@@ -17,7 +17,7 @@ textarea:hover:not(:focus) {
 input:not([type="range"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):focus,
 textarea:focus {
   border-color: #4a6fa5 !important;
-  box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.25), 0 0 8px rgba(10, 36, 99, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2), 0 0 12px rgba(74, 111, 165, 0.5), 0 0 24px rgba(10, 36, 99, 0.2) !important;
 }
 
 .markdown h1, .markdown h2, .markdown h3 {
