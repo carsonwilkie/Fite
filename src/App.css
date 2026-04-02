@@ -6,7 +6,12 @@ body {
 input:not([type="range"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
 textarea {
   outline: none;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.2s ease;
+}
+
+input:not([type="range"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):hover:not(:focus),
+textarea:hover:not(:focus) {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 input:not([type="range"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):focus,
