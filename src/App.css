@@ -539,6 +539,8 @@ img, span, button {
 }
 
 .glass-slider-progress {
+  position: absolute;
+  left: 20px;
   height: 100%;
   background: linear-gradient(117deg, #4a6fa5 0%, #0a2463 100%);
   border-radius: 999px;

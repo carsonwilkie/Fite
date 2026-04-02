@@ -268,7 +268,7 @@ function History() {
   const applySliderDOM = (fillPct) => {
     const clamped = `clamp(20px, ${fillPct}%, calc(100% - 20px))`;
     if (sliderThumbRef.current) sliderThumbRef.current.style.left = clamped;
-    if (sliderProgressRef.current) sliderProgressRef.current.style.width = clamped;
+    if (sliderProgressRef.current) sliderProgressRef.current.style.width = `calc(${clamped} - 20px)`;
   };
 
   const handleSliderPointerDown = (e, sliderMax) => {
@@ -501,7 +501,7 @@ function History() {
                                       </defs>
                                     </svg>
                                     <div className="glass-slider-track">
-                                      <div ref={sliderProgressRef} className="glass-slider-progress" style={{ width: `clamp(20px, ${fillPct}%, calc(100% - 20px))` }} />
+                                      <div ref={sliderProgressRef} className="glass-slider-progress" style={{ width: `calc(clamp(20px, ${fillPct}%, calc(100% - 20px)) - 20px)` }} />
                                     </div>
                                     <div
                                       ref={sliderThumbRef}
