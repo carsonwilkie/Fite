@@ -6,7 +6,9 @@ function ElectricBorder({ children, active }) {
         <div className="eb-spin" />
       </div>
       <div className="eb-glow-layer" />
-      {children}
+      <div className="eb-content">
+        {children}
+      </div>
     </div>
   );
 }
