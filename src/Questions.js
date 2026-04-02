@@ -6,6 +6,7 @@ import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
 import { useClerk } from "@clerk/clerk-react";
+import ElectricBorder from "./ElectricBorder";
 import "./App.css";
 
 const TIMER_TIME = 120;
@@ -407,6 +408,7 @@ function Questions() {
 
   return (
     <div style={styles.page} className="page-bg page-wrapper">
+      <ElectricBorder active={isPaid}>
       <div style={{
         backgroundColor: "#f0f4f8", borderRadius: "16px", padding: "24px",
         width: "100%", maxWidth: "728px", boxSizing: "border-box",
@@ -836,6 +838,7 @@ function Questions() {
           </div>
         </div>
       </div>
+      </ElectricBorder>
       <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px", fontStyle: "italic" }}>
         For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
       </p>

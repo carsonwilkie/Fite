@@ -985,3 +985,83 @@ img, span, button {
   font-weight: 600 !important;
   color: #0a2463 !important;
 }
+
+/* Electric border (premium only) */
+.eb-wrapper {
+  width: 100%;
+  max-width: 728px;
+  margin-bottom: 16px;
+}
+
+.eb-active {
+  position: relative;
+  border-radius: 16px;
+  isolation: isolate;
+}
+
+.eb-main-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  border: 2px solid #d4a83a;
+  filter: url(#eb-turbulent-displace);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.eb-glow-1 {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  border: 2px solid rgba(212, 168, 58, 0.6);
+  filter: blur(1px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.eb-glow-2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  border: 2px solid #d4a83a;
+  filter: blur(5px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.eb-overlay-1 {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  mix-blend-mode: overlay;
+  transform: scale(1.1);
+  filter: blur(16px);
+  background: linear-gradient(-30deg, white, transparent 30%, transparent 70%, white);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.eb-overlay-2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  transform: scale(1.1);
+  filter: blur(16px);
+  background: linear-gradient(-30deg, white, transparent 30%, transparent 70%, white);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.eb-bg-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  filter: blur(32px);
+  transform: scale(1.15);
+  opacity: 0.35;
+  z-index: -1;
+  background: linear-gradient(-30deg, #d4a83a, transparent, #d4a83a);
+  pointer-events: none;
+}

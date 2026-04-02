@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import usePaidStatus from "./usePaidStatus";
 import { CATEGORIES as categories } from "./constants";
+import ElectricBorder from "./ElectricBorder";
 import "./App.css";
 
 const difficulties = ["Easy", "Medium", "Hard"];
@@ -16,6 +17,7 @@ function Home() {
 
   return (
     <div style={styles.page} className="page-bg page-wrapper">
+      <ElectricBorder active={isPaid}>
       <div style={{
         backgroundColor: "#f0f4f8",
         borderRadius: "16px",
@@ -171,6 +173,7 @@ function Home() {
           </div>
         </div>
       </div>
+      </ElectricBorder>
       <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px", fontStyle: "italic" }}>
         For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
       </p>

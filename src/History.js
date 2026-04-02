@@ -5,6 +5,7 @@ import { useUser } from "@clerk/clerk-react";
 import ReactMarkdown from "react-markdown";
 import usePaidStatus from "./usePaidStatus";
 import { CATEGORIES } from "./constants";
+import ElectricBorder from "./ElectricBorder";
 import "./App.css";
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 
@@ -299,6 +300,7 @@ function History() {
 
   return (
     <div style={styles.page} className="page-bg page-wrapper">
+      <ElectricBorder active={isPaid}>
       <div style={{
         backgroundColor: "#f0f4f8",
         borderRadius: "16px",
@@ -904,6 +906,7 @@ function History() {
           </div>
         </div>
       </div>
+      </ElectricBorder>
       <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px", fontStyle: "italic" }}>
         For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
       </p>
