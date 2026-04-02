@@ -999,6 +999,15 @@ img, span, button {
   isolation: isolate;
 }
 
+.eb-clip {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .eb-main-card {
   position: absolute;
   inset: 0;
@@ -1034,8 +1043,7 @@ img, span, button {
   inset: 0;
   border-radius: 16px;
   mix-blend-mode: overlay;
-  transform: scale(1.1);
-  filter: blur(16px);
+  filter: blur(12px);
   background: linear-gradient(-30deg, white, transparent 30%, transparent 70%, white);
   pointer-events: none;
   z-index: 3;
@@ -1047,8 +1055,7 @@ img, span, button {
   border-radius: 16px;
   opacity: 0.5;
   mix-blend-mode: overlay;
-  transform: scale(1.1);
-  filter: blur(16px);
+  filter: blur(12px);
   background: linear-gradient(-30deg, white, transparent 30%, transparent 70%, white);
   pointer-events: none;
   z-index: 3;
@@ -1058,8 +1065,8 @@ img, span, button {
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  filter: blur(32px);
-  transform: scale(1.15);
+  filter: blur(24px);
+  transform: scale(1.05);
   opacity: 0.35;
   z-index: -1;
   background: linear-gradient(-30deg, #d4a83a, transparent, #d4a83a);
