@@ -11,7 +11,7 @@ textarea {
 
 input:not([type="range"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):hover:not(:focus),
 textarea:hover:not(:focus) {
-  background-color: rgba(0, 0, 0, 0.06) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
 }
 
 input:not([type="range"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):focus,
