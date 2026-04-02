@@ -526,6 +526,7 @@ img, span, button {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
+  touch-action: none;
 }
 
 .glass-slider-track {
