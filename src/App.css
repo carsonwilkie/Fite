@@ -1134,7 +1134,7 @@ img, span, button {
   background-image:
     radial-gradient(circle at 50% 50%, transparent, #c9a84c),
     linear-gradient(#f5d87a, #f5d87a);
-  animation: eclipse-sweep 5s linear infinite;
+  animation: eclipse-sweep 4s linear infinite;
 }
 
 .premium-badge-body {
@@ -1148,7 +1148,7 @@ img, span, button {
   inset: 0;
   border-radius: 20px;
   background: #f5d87a;
-  animation: eclipse-sweep 5s linear infinite;
+  animation: eclipse-sweep 4s linear infinite;
   z-index: 0;
 }
 
