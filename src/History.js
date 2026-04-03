@@ -308,7 +308,6 @@ function History() {
         width: "100%",
         maxWidth: "728px",
         boxSizing: "border-box",
-        marginBottom: "16px",
         boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
       }} className="wrapper-mobile">
         <div style={styles.container}>

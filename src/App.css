@@ -995,19 +995,22 @@ img, span, button {
 
 .eb-active {
   position: relative;
+  border-radius: 18px;
+  padding: 2px;
+  overflow: hidden;
+  isolation: isolate;
 }
 
+/* Content sits above the spin layer */
 .eb-content {
   position: relative;
   z-index: 1;
 }
 
-/* Clips the spinning gradient to the card shape */
+/* Spin fills the full eb-active area; content's white bg covers the center */
 .eb-spin-container {
   position: absolute;
   inset: 0;
-  border-radius: 18px;
-  overflow: hidden;
   pointer-events: none;
   z-index: 0;
 }
@@ -1033,7 +1036,7 @@ img, span, button {
   will-change: transform;
 }
 
-/* Outer ambient glow — uses opacity for pulse (GPU) */
+/* Outer ambient glow — outside overflow:hidden so box-shadow renders freely */
 .eb-glow-layer {
   position: absolute;
   inset: 0;
@@ -1041,7 +1044,7 @@ img, span, button {
   box-shadow: 0 0 12px 2px #d4a83a66, 0 0 28px 6px #d4a83a22;
   animation: eb-glow-pulse 3s ease-in-out infinite;
   pointer-events: none;
-  z-index: 0;
+  z-index: 2;
 }
 
 @keyframes eb-spin-anim {

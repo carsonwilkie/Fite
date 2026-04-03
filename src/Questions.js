@@ -412,7 +412,7 @@ function Questions() {
       <div style={{
         backgroundColor: "#f0f4f8", borderRadius: "16px", padding: "24px",
         width: "100%", maxWidth: "728px", boxSizing: "border-box",
-        marginBottom: "16px", boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
+        boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
       }} className="wrapper-mobile">
         <div style={styles.container}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }} className="header-mobile">
