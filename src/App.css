@@ -996,7 +996,7 @@ img, span, button {
 .eb-active {
   position: relative;
   border-radius: 18px;
-  padding: 2px;
+  padding: 3px;
   overflow: hidden;
   isolation: isolate;
 }
@@ -1018,22 +1018,27 @@ img, span, button {
 /* The rotating conic gradient — only transform animates (GPU) */
 .eb-spin {
   position: absolute;
-  inset: -100%;
-  width: 300%;
-  height: 300%;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
   background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    #8a6010 25deg,
-    #d4a83a 55deg,
-    #f5d78e 85deg,
-    #d4a83a 115deg,
-    #8a6010 145deg,
-    transparent 165deg,
-    transparent 360deg
+    #d4a83a 0deg,
+    #f5d78e 40deg,
+    #d4a83a 80deg,
+    transparent 120deg,
+    transparent 240deg,
+    #8a6010 280deg,
+    #d4a83a 320deg,
+    #d4a83a 360deg
   );
-  animation: eb-spin-anim 5s linear infinite;
+  animation: eb-spin-anim 4s linear infinite;
   will-change: transform;
+}
+
+@keyframes eb-spin-anim {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 /* Outer ambient glow — outside overflow:hidden so box-shadow renders freely */
@@ -1047,9 +1052,6 @@ img, span, button {
   z-index: 2;
 }
 
-@keyframes eb-spin-anim {
-  to { transform: rotate(360deg); }
-}
 
 @keyframes eb-glow-pulse {
   0%, 100% { opacity: 0.6; }
