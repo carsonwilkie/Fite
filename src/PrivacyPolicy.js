@@ -1,9 +1,10 @@
 import ReactMarkdown from "react-markdown";
+import { useNavigate } from "react-router-dom";
 import "./App.css";
 
 const content = `# Privacy Policy
 
-**Last updated: March 2026**
+**Last updated: April 2026**
 
 ## 1. Introduction
 
@@ -113,9 +114,11 @@ For privacy-related questions or to exercise your rights, contact us at:
 support@fitefinance.com`;
 
 function PrivacyPolicy() {
+  const navigate = useNavigate();
   return (
     <div style={styles.page} className="page-bg page-wrapper">
       <div style={styles.wrapper} className="wrapper-mobile">
+        <button onClick={() => navigate("/")} style={styles.back}>← Back to Home</button>
         <div style={styles.content}>
           <ReactMarkdown>{content}</ReactMarkdown>
         </div>
@@ -144,6 +147,19 @@ const styles = {
     boxSizing: "border-box",
     marginBottom: "16px",
     boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
+  },
+  back: {
+    display: "inline-block",
+    marginBottom: "16px",
+    padding: "8px 16px",
+    backgroundColor: "#0a2463",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "'Segoe UI', sans-serif",
   },
   content: {
     backgroundColor: "#ffffff",

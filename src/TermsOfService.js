@@ -1,9 +1,10 @@
 import ReactMarkdown from "react-markdown";
+import { useNavigate } from "react-router-dom";
 import "./App.css";
 
 const content = `# Terms of Service
 
-**Last updated: March 2026**
+**Last updated: April 2026**
 
 ## 1. Acceptance of Terms
 
@@ -118,9 +119,11 @@ We reserve the right to modify these Terms at any time. We will notify users of 
 For questions about these Terms, contact us at support@fitefinance.com.`;
 
 function TermsOfService() {
+  const navigate = useNavigate();
   return (
     <div style={styles.page} className="page-bg page-wrapper">
       <div style={styles.wrapper} className="wrapper-mobile">
+        <button onClick={() => navigate("/")} style={styles.back}>← Back to Home</button>
         <div style={styles.content}>
           <ReactMarkdown>{content}</ReactMarkdown>
         </div>
@@ -149,6 +152,19 @@ const styles = {
     boxSizing: "border-box",
     marginBottom: "16px",
     boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
+  },
+  back: {
+    display: "inline-block",
+    marginBottom: "16px",
+    padding: "8px 16px",
+    backgroundColor: "#0a2463",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "'Segoe UI', sans-serif",
   },
   content: {
     backgroundColor: "#ffffff",
