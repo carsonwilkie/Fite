@@ -1120,7 +1120,7 @@ img, span, button {
 
 .premium-badge-glow-layer {
   position: absolute;
-  inset: 0;
+  inset: 2;
   border-radius: 20px;
   overflow: hidden;
   filter: blur(3px);
