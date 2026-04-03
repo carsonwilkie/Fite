@@ -2,7 +2,7 @@ function ElectricBorder({ children, active }) {
   if (!active) return <div className="eb-wrapper">{children}</div>;
   return (
     <div className="eb-wrapper" style={{ position: "relative" }}>
-      <div className="eb-glow-layer" />
+      <div className="eb-bg-glow" />
       <div className="eb-active">
         <div className="eb-spin-container">
           <div className="eb-spin" />
@@ -11,6 +11,12 @@ function ElectricBorder({ children, active }) {
           {children}
         </div>
       </div>
+      <div className="eb-solid-border" />
+      <div className="eb-main-card" />
+      <div className="eb-glow-1" />
+      <div className="eb-glow-2" />
+      <div className="eb-overlay-1" />
+      <div className="eb-overlay-2" />
     </div>
   );
 }

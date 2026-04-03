@@ -991,31 +991,25 @@ img, span, button {
   width: 100%;
   max-width: 728px;
   margin-bottom: 16px;
+  position: relative;
 }
 
 .eb-active {
   position: relative;
   border-radius: 18px;
-  padding: 3px;
-  overflow: hidden;
+  padding: 2px;
   isolation: isolate;
 }
 
-/* Content sits above the spin layer */
-.eb-content {
-  position: relative;
-  z-index: 1;
-}
-
-/* Spin fills the full eb-active area; content's white bg covers the center */
 .eb-spin-container {
   position: absolute;
   inset: 0;
+  border-radius: 18px;
+  overflow: hidden;
   pointer-events: none;
   z-index: 0;
 }
 
-/* The rotating conic gradient — only transform animates (GPU) */
 .eb-spin {
   position: absolute;
   top: 50%;
@@ -1041,19 +1035,83 @@ img, span, button {
   to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-/* Outer ambient glow — outside overflow:hidden so box-shadow renders freely */
-.eb-glow-layer {
+.eb-content {
+  position: relative;
+  z-index: 2;
+}
+
+.eb-solid-border {
   position: absolute;
-  inset: 0;
-  border-radius: 18px;
-  box-shadow: 0 0 12px 2px #d4a83a66, 0 0 28px 6px #d4a83a22;
-  animation: eb-glow-pulse 3s ease-in-out infinite;
+  inset: 2px;
+  border-radius: 16px;
+  border: 2px solid #d4a83a;
   pointer-events: none;
   z-index: 2;
 }
 
+.eb-main-card {
+  position: absolute;
+  inset: 2px;
+  border-radius: 16px;
+  border: 2px solid #d4a83a;
+  filter: url(#eb-turbulent-displace);
+  pointer-events: none;
+  z-index: 2;
+}
 
-@keyframes eb-glow-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+.eb-glow-1 {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  border: 2px solid rgba(212, 168, 58, 0.6);
+  filter: blur(1px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.eb-glow-2 {
+  position: absolute;
+  inset: -1px;
+  border-radius: 19px;
+  border: 2px solid #d4a83a;
+  filter: blur(5px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.eb-overlay-1 {
+  position: absolute;
+  inset: -6px;
+  border-radius: 24px;
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+  filter: blur(12px);
+  background: linear-gradient(-30deg, white, transparent 30%, transparent 70%, white);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.eb-overlay-2 {
+  position: absolute;
+  inset: -6px;
+  border-radius: 24px;
+  opacity: 0.15;
+  mix-blend-mode: overlay;
+  filter: blur(12px);
+  background: linear-gradient(-30deg, white, transparent 30%, transparent 70%, white);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Outside overflow:hidden so the glow can bleed freely */
+.eb-bg-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  filter: blur(24px);
+  transform: scale(1.05);
+  opacity: 0.35;
+  z-index: -1;
+  background: linear-gradient(-30deg, #d4a83a, transparent, #d4a83a);
+  pointer-events: none;
 }
