@@ -12,7 +12,6 @@ function ElectricBorder({ children, active }) {
         </div>
       </div>
       <div className="eb-solid-border" />
-      <div className="eb-main-card" />
       <div className="eb-glow-1" />
       <div className="eb-glow-2" />
       <div className="eb-overlay-1" />

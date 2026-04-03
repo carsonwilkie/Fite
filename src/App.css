@@ -1049,16 +1049,6 @@ img, span, button {
   z-index: 2;
 }
 
-.eb-main-card {
-  position: absolute;
-  inset: 2px;
-  border-radius: 16px;
-  border: 2px solid #d4a83a;
-  filter: url(#eb-turbulent-displace);
-  pointer-events: none;
-  z-index: 2;
-}
-
 .eb-glow-1 {
   position: absolute;
   inset: 0;
