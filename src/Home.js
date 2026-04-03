@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import usePaidStatus from "./usePaidStatus";
 import { CATEGORIES as categories } from "./constants";
 import ElectricBorder from "./ElectricBorder";
+import PremiumBadge from "./PremiumBadge";
 import "./App.css";
 
 const difficulties = ["Easy", "Medium", "Hard"];
@@ -38,19 +39,7 @@ function Home() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <h1 style={styles.logo} className="logo-mobile">Fite Finance</h1>
-                {isPaid && (
-                  <span style={{
-                    fontSize: "11px",
-                    fontWeight: "700",
-                    letterSpacing: "0.8px",
-                    padding: "4px 10px",
-                    borderRadius: "20px",
-                    backgroundColor: "#c9a84c",
-                    color: "#ffffff",
-                  }}>
-                    PREMIUM
-                  </span>
-                )}
+                {isPaid && <PremiumBadge />}
               </div>
               <p style={styles.tagline} className="tagline-mobile">The finance site sharpening your interview skills</p>
             </div>
@@ -98,15 +87,9 @@ function Home() {
 
             <div style={{ marginTop: "24px", borderTop: "1px solid #e8edf5", paddingTop: "24px" }}>
               <p style={{ ...styles.prompt, display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  letterSpacing: "0.8px",
-                  padding: "3px 8px",
-                  borderRadius: "20px",
-                  backgroundColor: isPaid ? "#c9a84c" : "#e8edf5",
-                  color: isPaid ? "#ffffff" : "#4a6fa5",
-                }}>PREMIUM</span>
+                {isPaid ? <PremiumBadge small /> : (
+                <span style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.8px", padding: "3px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5" }}>PREMIUM</span>
+              )}
                 Custom question descriptor (optional):
               </p>
               <div style={{ position: "relative" }}>

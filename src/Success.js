@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import usePaidStatus from "./usePaidStatus";
+import PremiumBadge from "./PremiumBadge";
 import "./App.css";
 
 function Success() {
@@ -37,19 +38,7 @@ function Success() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <h1 style={{ ...styles.logo, cursor: "pointer" }} className="logo-mobile" onClick={() => navigate("/")}>Fite Finance</h1>
-                {isPaid && (
-                  <span style={{
-                    fontSize: "11px",
-                    fontWeight: "700",
-                    letterSpacing: "0.8px",
-                    padding: "4px 10px",
-                    borderRadius: "20px",
-                    backgroundColor: "#c9a84c",
-                    color: "#ffffff",
-                  }}>
-                    PREMIUM
-                  </span>
-                )}
+                {isPaid && <PremiumBadge />}
               </div>
               <p style={styles.tagline} className="tagline-mobile">The finance site sharpening your interview skills</p>
             </div>

@@ -1105,3 +1105,68 @@ img, span, button {
   background: linear-gradient(-30deg, #d4a83a, transparent, #d4a83a);
   pointer-events: none;
 }
+
+/* ── Premium Badge ── */
+@keyframes eclipse-sweep {
+  0%   { transform: translateX(110%); }
+  100% { transform: translateX(-110%); }
+}
+
+.premium-badge-wrapper {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.premium-badge-glow-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  filter: blur(3px);
+  pointer-events: none;
+}
+
+.premium-badge-eclipse-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background-image:
+    radial-gradient(circle at 50% 50%, transparent, #c9a84c),
+    linear-gradient(#f5d87a, #f5d87a);
+  animation: eclipse-sweep 3s linear infinite;
+}
+
+.premium-badge-body {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background-color: rgba(201, 168, 76, 0.25);
+}
+
+.premium-badge-eclipse {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: #f5d87a;
+  animation: eclipse-sweep 3s linear infinite;
+  z-index: 0;
+}
+
+.premium-badge-content {
+  position: relative;
+  z-index: 1;
+  margin: 2px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background-color: #c9a84c;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.premium-badge-content.premium-badge-small {
+  padding: 1px 6px;
+}

@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import usePaidStatus from "./usePaidStatus";
 import { CATEGORIES } from "./constants";
 import ElectricBorder from "./ElectricBorder";
+import PremiumBadge from "./PremiumBadge";
 import "./App.css";
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 
@@ -322,17 +323,7 @@ function History() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <h1 style={{ ...styles.logo, cursor: "pointer" }} className="logo-mobile" onClick={() => navigate("/")}>Fite Finance</h1>
-                <span style={{
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  letterSpacing: "0.8px",
-                  padding: "4px 10px",
-                  borderRadius: "20px",
-                  backgroundColor: "#c9a84c",
-                  color: "#ffffff",
-                }}>
-                  PREMIUM
-                </span>
+                <PremiumBadge />
               </div>
               <p style={styles.tagline} className="tagline-mobile">The finance site sharpening your interview skills</p>
             </div>
