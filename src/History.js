@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useTransition } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { useUser } from "@clerk/clerk-react";
 import ReactMarkdown from "react-markdown";
@@ -897,8 +897,15 @@ function History() {
         </div>
       </div>
       </ElectricBorder>
-      <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px", fontStyle: "italic" }}>
+      <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "12px", marginBottom: "4px", fontStyle: "italic" }}>
         For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
+      </p>
+      <p style={{ textAlign: "center", fontSize: "11px", color: "#4a6fa5", marginTop: "20px", marginBottom: "12px" }}>
+        <Link to="/privacy" style={{ color: "#4a6fa5" }}>Privacy Policy</Link>
+        <span style={{ fontSize: "16px", verticalAlign: "middle" }}> · </span>
+        <Link to="/terms" style={{ color: "#4a6fa5" }}>Terms of Service</Link>
+        <span style={{ fontSize: "16px", verticalAlign: "middle" }}> · </span>
+        <Link to="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
       </p>
       <p className="byline-bottom" style={{ textAlign: "center", fontSize: "10px", color: "#5a060d", fontStyle: "italic", marginTop: "4px", marginBottom: "12px", display: "none" }}>
         by Colgate's finest
