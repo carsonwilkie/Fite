@@ -1141,7 +1141,6 @@ img, span, button {
   position: relative;
   border-radius: 20px;
   overflow: hidden;
-  background-color: rgba(201, 168, 76, 0.25);
 }
 
 .premium-badge-eclipse {
