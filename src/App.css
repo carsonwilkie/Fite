@@ -1134,7 +1134,7 @@ img, span, button {
   background-image:
     radial-gradient(circle at 50% 50%, transparent, #c9a84c),
     linear-gradient(#f5d87a, #f5d87a);
-  animation: eclipse-sweep 3s linear infinite;
+  animation: eclipse-sweep 5s linear infinite;
 }
 
 .premium-badge-body {
@@ -1148,7 +1148,7 @@ img, span, button {
   inset: 0;
   border-radius: 20px;
   background: #f5d87a;
-  animation: eclipse-sweep 3s linear infinite;
+  animation: eclipse-sweep 5s linear infinite;
   z-index: 0;
 }
 
@@ -1177,7 +1177,7 @@ img, span, button {
   height: 200%;
   background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.5) 50%, transparent 80%);
   transform: skewX(-15deg);
-  animation: shine-sweep 3s ease-in-out infinite;
+  animation: shine-sweep 5s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
 }
