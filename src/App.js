@@ -5,6 +5,9 @@ import Success from "./Success";
 import Navbar from "./Navbar";
 import ScrollToTop from "./ScrollToTop";
 import History from "./History";
+import PrivacyPolicy from "./PrivacyPolicy";
+import TermsOfService from "./TermsOfService";
+import RefundPolicy from "./RefundPolicy";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react"
 
@@ -21,6 +24,9 @@ function App() {
         <Route path="/questions/:category/:difficulty/:math" element={<Questions />} />
         <Route path="/success" element={<Success />} />
         <Route path="/history" element={<History />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/refunds" element={<RefundPolicy />} />
       </Routes>
     </BrowserRouter>
   );
