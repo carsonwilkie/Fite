@@ -1159,12 +1159,28 @@ img, span, button {
   margin: 2px;
   padding: 2px 8px;
   border-radius: 20px;
-  background-color: #c9a84c;
+  background: linear-gradient(135deg, #f5d06a 0%, #c9a84c 40%, #a87c2a 100%);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.8px;
   color: #ffffff;
   white-space: nowrap;
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.premium-badge-content::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -30%;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.35) 50%, transparent 80%);
+  transform: skewX(-15deg);
+  animation: shine-sweep 3s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .premium-badge-content.premium-badge-small {
