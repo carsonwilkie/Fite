@@ -585,7 +585,7 @@ function Questions() {
             {/* Get Question / Generate Interview button */}
             {!interviewModeOn ? (
               <>
-                {loadingQuestion ? ( /* change back to loadingQuestion*/
+                {true ? ( /* change back to loadingQuestion*/
                   <LightsaberLoader percent={streamProgress} />
                 ) : (
                   <button onClick={getQuestion} disabled={loadingAnswer} className="primary-btn">
