@@ -227,7 +227,8 @@ function Questions() {
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      const ESTIMATED_LENGTH = 250;
+      const baseLength = difficulty === "Easy" ? 150 : difficulty === "Hard" ? 350 : 250;
+      const ESTIMATED_LENGTH = baseLength + (math === "With Math" ? 80 : 0) + (customPrompt && decodeURIComponent(customPrompt) !== "undefined" && decodeURIComponent(customPrompt) !== "" ? 50 : 0);
       let streamedText = "";
       let streamedQuestionsUsed = null;
       let buffer = "";
