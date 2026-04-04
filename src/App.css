@@ -1287,15 +1287,15 @@ img, span, button {
 .ls-guard-shadow {
   position: absolute;
   bottom: 0; left: 0;
-  width: 100%; height: 50%;
-  /* background-color: rgba(255, 255, 255, 0.18); */
+  width: 100%; height: 2px;
+  background-color: rgba(255, 255, 255, 0.18);
 }
 
 /* Guard triangle — right triangle, top corner extends to top of bar (Vader-style asymmetric guard) */
 .ls-guard-tri {
   position: absolute;
-  left: 117.5px;
-  top: -2px;
+  left: 98%;
+  top: -8%;
   width: 0; height: 0;
   border-width: 32px 27px 0 0;
   border-style: solid;
@@ -1305,21 +1305,21 @@ img, span, button {
 /* Guard triangle highlight */
 .ls-guard-tri-shadow {
   position: absolute;
-  left: 131px;
-  top: -2px;
+  left: 98%;
+  top: 50%;
   width: 0; height: 0;
   border-width: 16px 13.5px 0 0;
   border-style: solid;
-  border-color: rgba(255, 255, 255, 0.12) transparent transparent transparent;
+  border-color: rgba(255, 255, 255, 0.18) transparent transparent transparent;
 }
 
 /* Hilt reflective sheen */
 .ls-hilt-shadow {
   position: absolute;
-  top: 0; left: 20;
-  width: 109%; height: 50%;
+  bottom: 0; left: 0;
+  width: 98%; height: 50%;
   background-color: rgba(255, 255, 255, 0.18);
-  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
   pointer-events: none;
 }
 
