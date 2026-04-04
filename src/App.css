@@ -1319,7 +1319,6 @@ img, span, button {
   width: 109%; height: 50%;
   background-color: rgba(255, 255, 255, 0.18);
   border-top-left-radius: 5px;
-  border-top-right-radius: 7px;
   pointer-events: none;
 }
 
