@@ -56,6 +56,31 @@ module.exports = async function handler(req, res) {
       : `Give me a specific, technical finance interview question ${categoryText} ${difficultyText}. The question should be detailed and scenario-based rather than a simple definition question. For example, instead of "what is a DCF?" ask something like "walk me through how you would build a DCF for a company with negative free cash flow." ${customText} ${mathText} Just the question, nothing else.`;
 
   try {
+    if (type === "question" && req.body.stream) {
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders();
+
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        stream: true,
+      });
+
+      let fullText = "";
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content || "";
+        if (delta) {
+          fullText += delta;
+          res.write(`data: ${JSON.stringify({ delta, text: fullText })}\n\n`);
+        }
+      }
+      res.write(`data: ${JSON.stringify({ done: true, text: fullText, ...(questionsUsed !== null && { questionsUsed, questionsLimit: 5 }) })}\n\n`);
+      res.end();
+      return;
+    }
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],

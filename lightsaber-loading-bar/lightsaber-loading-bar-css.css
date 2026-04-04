@@ -1,0 +1,272 @@
+@import url("https://fonts.googleapis.com/css?family=Luckiest+Guy");
+@font-face {
+  font-family: Starjedi;
+  src: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/718469/Starjedi.ttf);
+  font-weight: normal;
+}
+body {
+  background-color: white;
+  margin: 0;
+}
+
+.darth-vader-saber {
+  height: 65px;
+  width: 880px;
+  position: relative;
+}
+.darth-vader-saber .handle {
+  width: 220px;
+  height: 40px;
+  background-color: #BABABA;
+  border-radius: 12px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+}
+.darth-vader-saber .handle .shadow {
+  width: 220px;
+  height: 20px;
+  background-color: rgba(255, 255, 255, 0.2);
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  border-bottom-left-radius: 8px;
+}
+.darth-vader-saber .handle .tip {
+  width: 8px;
+  height: 40px;
+  background-color: #363636;
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+.darth-vader-saber .handle .grip {
+  width: 80px;
+  height: 10px;
+  background-color: #212121;
+  position: absolute;
+}
+.darth-vader-saber .handle .grip1 {
+  left: 8px;
+  top: 0px;
+}
+.darth-vader-saber .handle .grip2 {
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+}
+.darth-vader-saber .handle .grip3 {
+  left: 8px;
+  bottom: 0px;
+}
+.darth-vader-saber .handle .center {
+  width: 50px;
+  height: 40px;
+  position: absolute;
+  background-color: #212121;
+  left: 110px;
+  top: 0;
+}
+.darth-vader-saber .handle .center-bottom {
+  width: 40px;
+  height: 12px;
+  position: absolute;
+  background-color: #363636;
+  left: 115px;
+  bottom: -12px;
+}
+.darth-vader-saber .handle .center-bottom .screw {
+  width: 5px;
+  height: 5Px;
+  border-radius: 50%;
+  background-color: #BABABA;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+.darth-vader-saber .handle .cables .hole {
+  width: 4px;
+  height: 12px;
+  background-color: #444444;
+  position: absolute;
+  top: 20px;
+  margin: auto;
+  border-radius: 30px;
+}
+.darth-vader-saber .handle .cables .hole1 {
+  left: 175px;
+}
+.darth-vader-saber .handle .cables .hole2 {
+  left: 185px;
+}
+.darth-vader-saber .handle .cables .cable {
+  height: 2px;
+  width: 11px;
+  background-color: red;
+  position: absolute;
+  top: 23px;
+  margin: auto;
+  left: 175px;
+}
+.darth-vader-saber .handle .cables .cable1 {
+  top: 24px;
+  left: 177px;
+}
+.darth-vader-saber .handle .cables .cable2 {
+  top: 26px;
+  left: 177px;
+  background-color: orange;
+}
+.darth-vader-saber .handle .guard-tip {
+  width: 40px;
+  height: 15px;
+  background-color: #212121;
+  position: absolute;
+  top: -5px;
+  left: 180px;
+}
+.darth-vader-saber .handle .guard-rectangle {
+  width: 20px;
+  height: 45px;
+  background-color: #212121;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  left: 210px;
+}
+.darth-vader-saber .handle .guard-rectangle .shadow {
+  width: 20px;
+  height: 22.5px;
+  background-color: rgba(255, 255, 255, 0.2);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+.darth-vader-saber .handle .guard-triangle {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 45px 35px 0 0;
+  border-color: #212121 transparent transparent transparent;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  left: 230px;
+}
+.darth-vader-saber .handle .guard-triangle-shadow {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 22.5px 17px 0 0;
+  border-color: rgba(255, 255, 255, 0.2) transparent transparent transparent;
+  position: absolute;
+  bottom: -2px;
+  left: 230px;
+}
+.darth-vader-saber .laser-active {
+  box-shadow: 30px 0 30px #FC3030;
+  animation: glowNeon 80ms linear infinite;
+  animation-direction: alternate-reverse;
+}
+.darth-vader-saber .laser {
+  height: 35px;
+  background-color: red;
+  position: absolute;
+  left: 220px;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+}
+.darth-vader-saber .laser .laser-glow {
+  width: 100%;
+  height: 20px;
+  background-color: rgba(255, 255, 255, 0.96);
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+}
+.darth-vader-saber .laser .laser-glow-active {
+  animation: glow 80ms linear infinite;
+  animation-direction: alternate-reverse;
+}
+.darth-vader-saber .laser .laser-tip {
+  height: 35px;
+  width: 30px;
+  background-color: red;
+  position: absolute;
+  right: -30px;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+}
+.darth-vader-saber .laser .laser-tip .laser-glow {
+  width: 80%;
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+}
+@keyframes glowNeon {
+  from {
+    box-shadow: 30px 0 30px #FC3030;
+  }
+  to {
+    box-shadow: 30px 0 26px #FC3030;
+  }
+}
+@keyframes glow {
+  from {
+    background-color: rgba(255, 255, 255, 0.96);
+  }
+  to {
+    background-color: rgba(255, 255, 255, 0.92);
+  }
+}
+
+.saber-demo {
+  width: 100%;
+  height: 180px;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+.saber-demo h1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  font-family: "Starjedi";
+  color: #212121;
+}
+.saber-demo .saber {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+.saber-demo .percent {
+  color: #D2D5D6;
+  position: absolute;
+  top: 60px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  font-family: "Luckiest Guy";
+  font-size: 30px;
+}

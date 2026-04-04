@@ -8,6 +8,7 @@ import usePrice from "./usePrice";
 import { useClerk } from "@clerk/clerk-react";
 import ElectricBorder from "./ElectricBorder";
 import PremiumBadge from "./PremiumBadge";
+import LightsaberLoader from "./LightsaberLoader";
 import "./App.css";
 
 const TIMER_TIME = 120;
@@ -25,6 +26,7 @@ function Questions() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState(false);
+  const [streamProgress, setStreamProgress] = useState(0);
   const [loadingAnswer, setLoadingAnswer] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
@@ -202,28 +204,78 @@ function Questions() {
   // --- Normal question fetch ---
   const getQuestion = async () => {
     setLoadingQuestion(true);
+    setStreamProgress(0);
     setAnswer(""); setAnswerRevealed(false); setQuestion(""); setUserAnswer("");
     setFeedback(""); setScore(null); setGraded(false);
     stopTimer(); setTimerStarted(false); setIsPaused(false);
     try {
-      let newQuestion = null;
-      let attempts = 0;
-      while (!newQuestion && attempts < 5) {
-        const res = await fetch("/api/question", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "question", category, difficulty, math, customPrompt, userId: user?.id }),
-        });
+      // First attempt via streaming
+      const res = await fetch("/api/question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "question", category, difficulty, math, customPrompt, userId: user?.id, stream: true }),
+      });
+
+      if (res.status === 403) {
         const data = await res.json();
         if (data.limitReached) {
           setQuestion("You've reached your 5 free questions for today. Come back tomorrow, or upgrade to premium for unlimited questions!");
           setLoadingQuestion(false);
           return;
         }
-        if (data.questionsUsed !== undefined) setQuestionsUsed(data.questionsUsed);
-        if (!wasRecentlyAsked(data.result)) newQuestion = data.result;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      const ESTIMATED_LENGTH = 250;
+      let streamedText = "";
+      let streamedQuestionsUsed = null;
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.done) {
+              streamedText = data.text;
+              if (data.questionsUsed !== undefined) streamedQuestionsUsed = data.questionsUsed;
+              setStreamProgress(1);
+            } else if (data.text) {
+              streamedText = data.text;
+              setStreamProgress(Math.min(streamedText.length / ESTIMATED_LENGTH, 0.95));
+            }
+          } catch {}
+        }
+      }
+
+      if (streamedQuestionsUsed !== null) setQuestionsUsed(streamedQuestionsUsed);
+
+      // Check for repeat; retry non-streaming if needed
+      let newQuestion = wasRecentlyAsked(streamedText) ? null : streamedText;
+      let attempts = 1;
+      while (!newQuestion && attempts < 5) {
+        const retryRes = await fetch("/api/question", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "question", category, difficulty, math, customPrompt, userId: user?.id }),
+        });
+        const retryData = await retryRes.json();
+        if (retryData.limitReached) {
+          setQuestion("You've reached your 5 free questions for today. Come back tomorrow, or upgrade to premium for unlimited questions!");
+          setLoadingQuestion(false);
+          return;
+        }
+        if (retryData.questionsUsed !== undefined) setQuestionsUsed(retryData.questionsUsed);
+        if (!wasRecentlyAsked(retryData.result)) newQuestion = retryData.result;
         attempts++;
       }
+
       if (newQuestion) {
         saveQuestion(newQuestion);
         setQuestion(newQuestion);
@@ -513,9 +565,13 @@ function Questions() {
             {/* Get Question / Generate Interview button */}
             {!interviewModeOn ? (
               <>
-                <button onClick={getQuestion} disabled={loadingQuestion || loadingAnswer} className="primary-btn">
-                  {loadingQuestion ? "Loading..." : question && !question.includes("Come back tomorrow") ? "Get New Question" : "Get Question"}
-                </button>
+                {loadingQuestion ? (
+                  <LightsaberLoader percent={streamProgress} />
+                ) : (
+                  <button onClick={getQuestion} disabled={loadingAnswer} className="primary-btn">
+                    {question && !question.includes("Come back tomorrow") ? "Get New Question" : "Get Question"}
+                  </button>
+                )}
                 <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "10px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
                   {loadingQuestion
                     ? "Crafting a question just for you..."

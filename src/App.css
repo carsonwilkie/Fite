@@ -1186,3 +1186,187 @@ img, span, button {
 .premium-badge-content.premium-badge-small {
   padding: 1px 6px;
 }
+
+/* ================================
+   LIGHTSABER LOADER
+   ================================ */
+.ls-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 48px;
+}
+
+/* --- Hilt --- */
+.ls-hilt {
+  width: 120px;
+  height: 28px;
+  flex-shrink: 0;
+  position: relative;
+  background: linear-gradient(to bottom, #d4d4d4 0%, #bababa 50%, #a0a0a0 100%);
+  border-radius: 7px;
+  z-index: 2;
+  overflow: visible;
+}
+
+/* Left cap */
+.ls-tip {
+  position: absolute;
+  left: 0; top: 0;
+  width: 5px; height: 28px;
+  background-color: #363636;
+  border-top-left-radius: 7px;
+  border-bottom-left-radius: 7px;
+}
+
+/* Grip bands */
+.ls-grip {
+  position: absolute;
+  left: 5px;
+  width: 46px; height: 6px;
+  background-color: #212121;
+}
+.ls-grip1 { top: 0; }
+.ls-grip2 { top: 11px; }
+.ls-grip3 { bottom: 0; }
+
+/* Dark center block */
+.ls-center {
+  position: absolute;
+  left: 58px; top: 0;
+  width: 28px; height: 28px;
+  background-color: #212121;
+}
+
+/* Center bottom tab */
+.ls-center-bottom {
+  position: absolute;
+  left: 60px; bottom: -7px;
+  width: 22px; height: 7px;
+  background-color: #363636;
+}
+
+/* Cable holes */
+.ls-hole {
+  position: absolute;
+  width: 2px; height: 7px;
+  background-color: #444;
+  top: 10px;
+  border-radius: 30px;
+}
+.ls-hole1 { left: 90px; }
+.ls-hole2 { left: 95px; }
+
+/* Cables */
+.ls-cable {
+  position: absolute;
+  width: 6px; height: 1px;
+}
+.ls-cable1 { background: red; top: 13px; left: 91px; }
+.ls-cable2 { background: orange; top: 15px; left: 91px; }
+
+/* Guard top protrusion */
+.ls-guard-tip {
+  position: absolute;
+  left: 90px; top: -4px;
+  width: 22px; height: 8px;
+  background-color: #212121;
+}
+
+/* Guard rectangle */
+.ls-guard-rect {
+  position: absolute;
+  left: 105px;
+  top: 50%; transform: translateY(-50%);
+  width: 10px; height: 32px;
+  background-color: #212121;
+  overflow: hidden;
+}
+
+/* Guard rect highlight */
+.ls-guard-shadow {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Guard triangle (angled tip pointing right) */
+.ls-guard-tri {
+  position: absolute;
+  left: 115px;
+  top: 50%; transform: translateY(-50%);
+  width: 0; height: 0;
+  border-top: 16px solid transparent;
+  border-bottom: 16px solid transparent;
+  border-left: 14px solid #212121;
+}
+
+/* Guard triangle highlight */
+.ls-guard-tri-shadow {
+  position: absolute;
+  left: 115px;
+  top: 50%; transform: translateY(-2px);
+  width: 0; height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 7px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Hilt reflective sheen */
+.ls-hilt-shadow {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 50%;
+  background-color: rgba(255, 255, 255, 0.18);
+  border-top-left-radius: 7px;
+  border-top-right-radius: 7px;
+  pointer-events: none;
+}
+
+/* --- Blade --- */
+.ls-blade-track {
+  flex: 1;
+  height: 14px;
+  position: relative;
+  background-color: rgba(180, 0, 0, 0.08);
+  border-radius: 0 7px 7px 0;
+  z-index: 1;
+}
+
+.ls-blade-fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  background-color: #cc0000;
+  border-radius: 0 7px 7px 0;
+  transition: width 0.04s linear;
+}
+
+.ls-blade-fill.ls-blade-complete {
+  box-shadow: 0 0 18px #FC3030, 0 0 36px rgba(252, 48, 48, 0.45);
+  animation: ls-glow-neon 80ms linear infinite alternate-reverse;
+}
+
+/* White center glow strip */
+.ls-blade-glow {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 45%;
+  background-color: rgba(255, 255, 255, 0.92);
+  border-radius: 0 7px 0 0;
+}
+
+.ls-blade-glow.ls-blade-glow-active {
+  animation: ls-glow 80ms linear infinite alternate-reverse;
+}
+
+@keyframes ls-glow-neon {
+  from { box-shadow: 0 0 18px #FC3030, 0 0 36px rgba(252, 48, 48, 0.45); }
+  to   { box-shadow: 0 0 14px #FC3030, 0 0 28px rgba(252, 48, 48, 0.35); }
+}
+
+@keyframes ls-glow {
+  from { background-color: rgba(255, 255, 255, 0.92); }
+  to   { background-color: rgba(255, 255, 255, 0.82); }
+}
