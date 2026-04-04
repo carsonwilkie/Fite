@@ -1340,6 +1340,8 @@ img, span, button {
   border-radius: 0 7px 7px 0;
   overflow: hidden;
   transition: width 0.04s linear;
+  display: flex;
+  align-items: center;
 }
 
 .ls-blade-fill.ls-blade-complete {
@@ -1347,14 +1349,11 @@ img, span, button {
   animation: ls-glow-neon 1200ms ease-in-out infinite alternate-reverse;
 }
 
-/* White center glow strip — centered vertically so red shows as border top + bottom + tip */
+/* White center glow strip — flex child, always constrained to the fill's actual rendered width */
 .ls-blade-glow {
-  position: absolute;
-  top: 0; bottom: 0;
-  left: 0;
-  width: calc(100% - 7px);
+  flex: 1;
   height: 50%;
-  margin: auto;
+  margin-right: 7px;
   background-color: rgba(255, 255, 255, 0.92);
   border-radius: 0 3px 3px 0;
 }
