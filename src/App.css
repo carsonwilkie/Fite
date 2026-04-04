@@ -1348,7 +1348,7 @@ img, span, button {
 
 .ls-blade-fill.ls-blade-complete {
   box-shadow: 0 0 18px #FC3030, 0 0 24px rgba(252, 48, 48, 0.45);
-  animation: ls-glow-neon 150ms infinite alternate-reverse;
+  animation: ls-glow-neon 80ms infinite alternate-reverse;
 }
 
 /* White center glow strip — flex child, always constrained to the fill's actual rendered width */
@@ -1361,7 +1361,7 @@ img, span, button {
 }
 
 .ls-blade-glow.ls-blade-glow-active {
-  animation: ls-glow 150ms infinite alternate-reverse;
+  animation: ls-glow 80ms infinite alternate-reverse;
 }
 
 @keyframes ls-glow-neon {
