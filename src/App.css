@@ -1344,14 +1344,15 @@ img, span, button {
 
 .ls-blade-fill.ls-blade-complete {
   box-shadow: 0 0 18px #FC3030, 0 0 36px rgba(252, 48, 48, 0.45);
-  animation: ls-glow-neon 80ms linear infinite alternate-reverse;
+  animation: ls-glow-neon 1200ms ease-in-out infinite alternate-reverse;
 }
 
 /* White center glow strip — centered vertically so red shows as border top + bottom + tip */
 .ls-blade-glow {
   position: absolute;
   top: 0; bottom: 0;
-  left: 0; right: 7px;
+  left: 0;
+  width: calc(100% - 7px);
   height: 50%;
   margin: auto;
   background-color: rgba(255, 255, 255, 0.92);
@@ -1359,15 +1360,15 @@ img, span, button {
 }
 
 .ls-blade-glow.ls-blade-glow-active {
-  animation: ls-glow 80ms linear infinite alternate-reverse;
+  animation: ls-glow 1200ms ease-in-out infinite alternate-reverse;
 }
 
 @keyframes ls-glow-neon {
-  from { box-shadow: 0 0 18px #FC3030, 0 0 36px rgba(252, 48, 48, 0.45); }
-  to   { box-shadow: 0 0 14px #FC3030, 0 0 28px rgba(252, 48, 48, 0.35); }
+  from { box-shadow: 0 0 18px #FC3030, 0 0 34px rgba(252, 48, 48, 0.44); }
+  to   { box-shadow: 0 0 16px #FC3030, 0 0 30px rgba(252, 48, 48, 0.38); }
 }
 
 @keyframes ls-glow {
   from { background-color: rgba(255, 255, 255, 0.92); }
-  to   { background-color: rgba(255, 255, 255, 0.82); }
+  to   { background-color: rgba(255, 255, 255, 0.88); }
 }
