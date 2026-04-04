@@ -897,7 +897,7 @@ function History() {
         </div>
       </div>
       </ElectricBorder>
-      <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "16px", marginBottom: "4px", fontStyle: "italic" }}>
+      <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "24px", marginBottom: "4px", fontStyle: "italic" }}>
         For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
       </p>
       <p style={{ textAlign: "center", fontSize: "11px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px" }}>
