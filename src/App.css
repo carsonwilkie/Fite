@@ -1365,11 +1365,11 @@ img, span, button {
 }
 
 @keyframes ls-glow-neon {
-  from { box-shadow: 0 0 22px #FC3030, 0 0 44px rgba(252, 48, 48, 0.55); }
+  from { box-shadow: 0 0 16px #FC3030, 0 0 24px rgba(252, 48, 48, 0.55); }
   to   { box-shadow: 0 0 10px #FC3030, 0 0 20px rgba(252, 48, 48, 0.25); }
 }
 
 @keyframes ls-glow {
   from { background-color: rgba(255, 255, 255, 1); height: 55%; }
-  to   { background-color: rgba(255, 255, 255, 0.97); height: 53%; }
+  to   { background-color: rgba(255, 255, 255, 0.94); height: 53%; }
 }
