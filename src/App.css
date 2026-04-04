@@ -1215,8 +1215,8 @@ img, span, button {
   left: 0; top: 0;
   width: 5px; height: 28px;
   background-color: #363636;
-  border-top-left-radius: 0px;
-  border-bottom-left-radius: 0px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 7px;
 }
 
 /* Grip bands */
@@ -1357,6 +1357,7 @@ img, span, button {
   height: 50%;
   margin: auto;
   background-color: rgba(255, 255, 255, 0.92);
+  border-radius: 0 3px 3px 0;
 }
 
 .ls-blade-glow.ls-blade-glow-active {
