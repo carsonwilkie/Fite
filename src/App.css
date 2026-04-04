@@ -1348,13 +1348,14 @@ img, span, button {
   animation: ls-glow-neon 80ms linear infinite alternate-reverse;
 }
 
-/* White center glow strip */
+/* White center glow strip — centered vertically so red shows as border top + bottom */
 .ls-blade-glow {
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 45%;
+  top: 0; bottom: 0; left: 0;
+  width: 100%;
+  height: 50%;
+  margin: auto;
   background-color: rgba(255, 255, 255, 0.92);
-  border-radius: 0 7px 0 0;
 }
 
 .ls-blade-glow.ls-blade-glow-active {

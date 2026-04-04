@@ -27,6 +27,7 @@ function Questions() {
   const [answer, setAnswer] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState(false);
   const [streamProgress, setStreamProgress] = useState(0);
+  const [interviewProgress, setInterviewProgress] = useState(0);
   const [loadingAnswer, setLoadingAnswer] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
@@ -289,6 +290,7 @@ function Questions() {
       } else {
         setQuestion("You've seen all recent questions in this category! Try a different category or check back tomorrow.");
       }
+      await new Promise(r => setTimeout(r, 600));
     } catch (error) {
       console.log("Error:", error);
     }
@@ -316,6 +318,7 @@ function Questions() {
   // --- Interview Mode: generate ---
   const generateInterview = async () => {
     setLoadingInterviewGenerate(true);
+    setInterviewProgress(0);
     setInterviewSession(null);
     setInterviewStep(0);
     setInterviewUserAnswers([]);
@@ -326,6 +329,14 @@ function Questions() {
     setInterviewDebrief(null);
     setInterviewAnswersRevealed(false);
     stopInterviewTimer();
+
+    const startTime = Date.now();
+    const ESTIMATED_MS = 8000;
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      setInterviewProgress(Math.min(elapsed / ESTIMATED_MS, 0.9));
+    }, 50);
+
     try {
       const res = await fetch("/api/interview-generate", {
         method: "POST",
@@ -338,10 +349,13 @@ function Questions() {
         }),
       });
       const data = await res.json();
-      setInterviewSession(data); // data includes resolvedCategory if category was "All"
+      setInterviewSession(data);
     } catch (error) {
       console.log("Error:", error);
     }
+    clearInterval(progressInterval);
+    setInterviewProgress(1);
+    await new Promise(r => setTimeout(r, 600));
     setLoadingInterviewGenerate(false);
   };
 
@@ -582,24 +596,29 @@ function Questions() {
             ) : (
               <>
                 <div style={{ position: "relative" }}>
-                  <button
-                    onClick={() => {
-                      if (!isPaid) { setShowGenerateTooltip(true); setTimeout(() => setShowGenerateTooltip(false), 2500); return; }
-                      generateInterview();
-                    }}
-                    disabled={loadingInterviewGenerate}
-                    className={`generate-interview-btn${!isPaid ? " generate-interview-btn-free" : ""}`}
-                  >
-                    <div className="generate-interview-btn-glare" />
-                    <span className="generate-interview-btn-text" style={{ position: "relative", zIndex: 1 }}>
-                      {loadingInterviewGenerate ? "Generating..." : interviewSession ? "Generate New Interview" : "Generate Interview"}
-                    </span>
-                  </button>
-                  {showGenerateTooltip && (
-                    <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", backgroundColor: "#1a1a2e", color: "#ffffff", fontSize: "12px", fontWeight: "600", padding: "6px 12px", borderRadius: "8px", whiteSpace: "nowrap", zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
-                      Premium feature — upgrade to unlock
-                      <div style={{ position: "absolute", top: "-5px", left: "50%", transform: "translateX(-50%) rotate(45deg)", width: "10px", height: "10px", backgroundColor: "#1a1a2e" }} />
-                    </div>
+                  {loadingInterviewGenerate ? (
+                    <LightsaberLoader percent={interviewProgress} />
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          if (!isPaid) { setShowGenerateTooltip(true); setTimeout(() => setShowGenerateTooltip(false), 2500); return; }
+                          generateInterview();
+                        }}
+                        className={`generate-interview-btn${!isPaid ? " generate-interview-btn-free" : ""}`}
+                      >
+                        <div className="generate-interview-btn-glare" />
+                        <span className="generate-interview-btn-text" style={{ position: "relative", zIndex: 1 }}>
+                          {interviewSession ? "Generate New Interview" : "Generate Interview"}
+                        </span>
+                      </button>
+                      {showGenerateTooltip && (
+                        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", backgroundColor: "#1a1a2e", color: "#ffffff", fontSize: "12px", fontWeight: "600", padding: "6px 12px", borderRadius: "8px", whiteSpace: "nowrap", zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
+                          Premium feature — upgrade to unlock
+                          <div style={{ position: "absolute", top: "-5px", left: "50%", transform: "translateX(-50%) rotate(45deg)", width: "10px", height: "10px", backgroundColor: "#1a1a2e" }} />
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
                 <p style={{ fontSize: "13px", color: "#4a6fa5", margin: "10px 0 0 0", textAlign: "center", fontStyle: "italic" }}>
