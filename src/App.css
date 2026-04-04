@@ -1215,7 +1215,7 @@ img, span, button {
   left: 0; top: 0;
   width: 5px; height: 28px;
   background-color: #363636;
-  border-top-left-radius: 8px;
+  border-top-left-radius: 10px;
   border-bottom-left-radius: 7px;
 }
 
