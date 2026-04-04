@@ -1360,7 +1360,7 @@ img, span, button {
 }
 
 .ls-blade-glow.ls-blade-glow-active {
-  animation: ls-glow 1200ms ease-in-out infinite alternate-reverse;
+  animation: ls-glow 300ms ease-in-out infinite alternate-reverse;
 }
 
 @keyframes ls-glow-neon {
