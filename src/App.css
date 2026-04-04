@@ -1365,7 +1365,7 @@ img, span, button {
 }
 
 @keyframes ls-glow-neon {
-  from { box-shadow: 0 0 12px #FC3030, 0 0 15px rgba(252, 48, 48, 0.55); }
+  from { box-shadow: 0 0 11px #FC3030, 0 0 13px rgba(252, 48, 48, 0.55); }
   to   { box-shadow: 0 0 10px #FC3030, 0 0 12px rgba(252, 48, 48, 0.25); }
 }
 
