@@ -280,17 +280,21 @@ function Questions() {
 
       if (newQuestion) {
         saveQuestion(newQuestion);
-        setQuestion(newQuestion);
-        setTimerStarted(false);
+        // Fire answer fetch early so it runs during the glow delay
         fetch("/api/question", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "answer", question: newQuestion, category, difficulty, math, customPrompt, userId: user?.id }),
         }).then(r => r.json()).then(data => { setAnswer(data.result); });
+      }
+      await new Promise(r => setTimeout(r, 600));
+      // Update page only after glow delay
+      if (newQuestion) {
+        setQuestion(newQuestion);
+        setTimerStarted(false);
       } else {
         setQuestion("You've seen all recent questions in this category! Try a different category or check back tomorrow.");
       }
-      await new Promise(r => setTimeout(r, 600));
     } catch (error) {
       console.log("Error:", error);
     }
@@ -349,13 +353,14 @@ function Questions() {
         }),
       });
       const data = await res.json();
+      clearInterval(progressInterval);
+      setInterviewProgress(1);
+      await new Promise(r => setTimeout(r, 600));
       setInterviewSession(data);
     } catch (error) {
       console.log("Error:", error);
+      clearInterval(progressInterval);
     }
-    clearInterval(progressInterval);
-    setInterviewProgress(1);
-    await new Promise(r => setTimeout(r, 600));
     setLoadingInterviewGenerate(false);
   };
 
