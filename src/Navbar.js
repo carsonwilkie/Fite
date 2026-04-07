@@ -107,9 +107,11 @@ const styles = {
     zIndex: 100,
   },
   byline: {
-    fontSize: "13px",
+    fontSize: "15px",
+    fontWeight: "bold",
     color: "#5a060d",
     fontFamily: "'Snell Roundhand', cursive",
+    wordSpacing: "2px",
     cursor: "default",
   },
 };

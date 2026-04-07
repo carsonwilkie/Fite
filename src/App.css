@@ -267,7 +267,7 @@ textarea:focus {
 
   .byline-fixed {
     display: none !important;
-    font-size: 10px !important;
+    font-size: 12px !important;
     flex-shrink: 0 !important;
   }
 
