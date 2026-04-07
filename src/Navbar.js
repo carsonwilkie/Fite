@@ -109,7 +109,6 @@ const styles = {
   byline: {
     fontSize: "13px",
     color: "#5a060d",
-    fontStyle: "italic",
     fontFamily: "'Snell Roundhand', cursive",
     cursor: "default",
   },
