@@ -5,7 +5,6 @@ import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
 import useUpgrade from "./useUpgrade";
-import { DIFFICULTIES } from "./constants";
 import ElectricBorder from "./ElectricBorder";
 import PremiumBadge from "./PremiumBadge";
 import LightsaberLoader from "./LightsaberLoader";
