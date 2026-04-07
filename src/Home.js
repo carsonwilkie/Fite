@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import usePaidStatus from "./usePaidStatus";
-import { CATEGORIES as categories } from "./constants";
+import { CATEGORIES as categories, DIFFICULTIES } from "./constants";
 import ElectricBorder from "./ElectricBorder";
 import PremiumBadge from "./PremiumBadge";
 import "./App.css";
-
-const difficulties = ["Easy", "Medium", "Hard"];
 
 function Home() {
   const navigate = useNavigate();
@@ -48,7 +46,7 @@ function Home() {
           <div style={styles.card} className="card-mobile">
             <p style={styles.prompt}>Select a difficulty:</p>
             <div style={styles.difficultyRow}>
-              {difficulties.map((d) => (
+              {DIFFICULTIES.map((d) => (
                 <button
                   key={d}
                   onClick={() => { setDifficulty(d); sessionStorage.setItem("difficulty", d); }}
@@ -166,7 +164,7 @@ function Home() {
         <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
         <Link to="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
       </p>
-      <p className="byline-bottom" style={{ textAlign: "center", fontSize: "10px", color: "#5a060d", fontStyle: "italic", marginTop: "4px", marginBottom: "12px", display: "none" }}>
+      <p className="byline-bottom" style={{ textAlign: "center", fontSize: "10px", color: "#5a060d", fontStyle: "italic", fontFamily: "'Snell Roundhand', cursive", marginTop: "4px", marginBottom: "12px", display: "none" }}>
         by Colgate's finest
       </p>
     </div>

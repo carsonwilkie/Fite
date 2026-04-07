@@ -10,10 +10,12 @@ import TermsOfService from "./TermsOfService";
 import RefundPolicy from "./RefundPolicy";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react"
+import { PaidStatusProvider } from "./PaidStatusContext";
 
 function App() {
   return (
     <BrowserRouter>
+      <PaidStatusProvider>
 <Analytics />
       <SpeedInsights />
       <ScrollToTop />
@@ -28,6 +30,7 @@ function App() {
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/refunds" element={<RefundPolicy />} />
       </Routes>
+      </PaidStatusProvider>
     </BrowserRouter>
   );
 }

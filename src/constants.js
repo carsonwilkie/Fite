@@ -1,3 +1,5 @@
+export const DIFFICULTIES = ["Easy", "Medium", "Hard"];
+
 export const CATEGORIES = [
   "All",
   "Investment Banking",

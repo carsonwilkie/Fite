@@ -13,17 +13,24 @@ Finance interview prep tool at fitefinance.com. Users select a category, difficu
 - **Analytics**: Vercel Analytics + Speed Insights
 - **Deployment**: Vercel
 
+## Security
+Never read, display, or reference the contents of .env, .env.local, or any .env.* files.
+
 ## File Structure
 ```
 /api/
-  webhook.js       — Stripe webhook handler
-  checkout.js      — Stripe checkout session creator
-  portal.js        — Stripe customer portal
-  checkPaid.js     — Checks if user has active subscription
-  question.js      — Question + answer generation via OpenAI
-  grade.js         — AI answer grading (premium only), returns {feedback}
-  history.js       — GET/POST question history via Upstash Redis
-  price.js         — Fetches dynamic Stripe price
+  webhook.js            — Stripe webhook handler
+  checkout.js           — Stripe checkout session creator
+  portal.js             — Stripe customer portal
+  checkPaid.js          — Checks if user has active subscription
+  question.js           — Question + answer generation via OpenAI
+  grade.js              — AI answer grading (premium only), returns {feedback}
+  history.js            — GET/POST question history via Upstash Redis
+  price.js              — Fetches dynamic Stripe price
+  constants.js          — Shared CATEGORIES array (used by question.js, interview endpoints)
+  interview-generate.js — Generates interview scenario + 4 structured questions with ideal answers
+  interview-respond.js  — Evaluates a single candidate answer, returns {score, onTrack, response}
+  interview-debrief.js  — Generates post-interview debrief after all 4 answers, returns {feedback}
 
 /src/
   App.js           — Router, renders Navbar + Analytics + SpeedInsights once
@@ -36,6 +43,13 @@ Finance interview prep tool at fitefinance.com. Users select a category, difficu
   usePaidStatus.js — Custom hook: returns { isPaid, loading }
   usePrice.js      — Custom hook: returns dynamic Stripe price string
   App.css          — All styles including mobile responsive classes
+  constants.js     — Shared CATEGORIES array (frontend)
+  ElectricBorder.js    — Animated electric border wrapper component (active prop toggles animation)
+  LightsaberLoader.js  — Progress bar styled as a lightsaber (accepts percent 0–1)
+  PremiumBadge.js      — Gold PREMIUM badge component (small prop for compact variant)
+  PrivacyPolicy.js     — Privacy policy page (rendered via react-markdown)
+  TermsOfService.js    — Terms of service page (rendered via react-markdown)
+  RefundPolicy.js      — Refund policy page (rendered via react-markdown)
 
 /public/
   Background.png
@@ -150,6 +164,9 @@ UPSTASH_REDIS_REST_TOKEN (auto via Vercel)
 /questions/:category/:difficulty/:math               → Questions
 /success                   → Success (redirects non-paid to /)
 /history                   → History (redirects non-paid to /)
+/privacy                   → PrivacyPolicy
+/terms                     → TermsOfService
+/refunds                   → RefundPolicy
 ```
 
 ## Premium Features
@@ -158,6 +175,28 @@ UPSTASH_REDIS_REST_TOKEN (auto via Vercel)
 - Question history page with stats, search, and filters
 - Custom question descriptor input
 - Premium logo + gold PREMIUM badge
+
+## Interview Mode (API-complete, no frontend page yet)
+Three new API endpoints power a structured mock interview feature:
+
+- `POST /api/interview-generate` — takes `{ category, difficulty, math, customPrompt }`, returns `{ scenario, questions: [{question, idealAnswer}x4], resolvedCategory }`
+- `POST /api/interview-respond` — takes `{ scenario, questionIndex, question, idealAnswer, userAnswer, isLast }`, returns `{ score (0–10), onTrack (bool), response (interviewer reply) }`
+- `POST /api/interview-debrief` — takes `{ scenario, questions: [{question, idealAnswer, userAnswer, score}], category, difficulty }`, returns `{ feedback }` (4–6 sentence holistic debrief)
+
+The interview flow: generate scenario → loop through 4 questions calling respond → call debrief once complete.
+
+## Shared Constants
+Categories are now centralized:
+- `src/constants.js` — ES module export, used by frontend
+- `api/constants.js` — CommonJS export, used by `question.js` and `interview-generate.js`
+
+Both must stay in sync if categories change.
+
+## Legal Pages
+`PrivacyPolicy.js`, `TermsOfService.js`, `RefundPolicy.js` all use the same pattern:
+- Content stored as a markdown template string in the file
+- Rendered with `react-markdown`
+- Last updated: April 2026
 
 ## Clerk OAuth
 Google OAuth redirect URI: `https://clerk.fitefinance.com/v1/oauth_callback`

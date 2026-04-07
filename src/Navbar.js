@@ -1,15 +1,15 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
+import useUpgrade from "./useUpgrade";
 import { useNavigate } from "react-router-dom"
-import { useClerk } from "@clerk/clerk-react";
 import { useState } from "react";
 
 function Navbar() {
   const { user } = useUser();
   const { isPaid } = usePaidStatus();
   const navigate = useNavigate();
-  const { openSignIn } = useClerk();
+  const handleUpgrade = useUpgrade();
   const [showHistoryTooltip, setShowHistoryTooltip] = useState(false);
 
   const showTooltip = () => { setShowHistoryTooltip(true); setTimeout(() => setShowHistoryTooltip(false), 2500); };
@@ -19,22 +19,6 @@ function Navbar() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user?.id }),
-    });
-    const data = await res.json();
-    if (data.url) {
-      window.location.href = data.url;
-    }
-  };
-
-  const handleUpgrade = async () => {
-    if (!user?.id) {
-      openSignIn();
-      return;
-    }
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user?.id, email: user?.primaryEmailAddress?.emailAddress }),
     });
     const data = await res.json();
     if (data.url) {
@@ -126,6 +110,7 @@ const styles = {
     fontSize: "13px",
     color: "#5a060d",
     fontStyle: "italic",
+    fontFamily: "'Snell Roundhand', cursive",
     cursor: "default",
   },
 };

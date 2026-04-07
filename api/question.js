@@ -23,7 +23,9 @@ module.exports = async function handler(req, res) {
 
     if (!isPaid) {
       const today = new Date().toISOString().split("T")[0];
-      const countKey = `questions:${userId || req.headers["x-forwarded-for"]}:${today}`;
+      // x-real-ip is set by Vercel infrastructure and is not client-spoofable
+      const clientIp = req.headers["x-real-ip"] || req.headers["x-forwarded-for"]?.split(",").pop().trim();
+      const countKey = `questions:${userId || clientIp}:${today}`;
       const count = (await redis.get(countKey)) || 0;
 
       if (count >= 5) {

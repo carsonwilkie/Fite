@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef, useTransition } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Analytics } from "@vercel/analytics/react";
 import { useUser } from "@clerk/clerk-react";
 import ReactMarkdown from "react-markdown";
 import usePaidStatus from "./usePaidStatus";
-import { CATEGORIES } from "./constants";
+import { CATEGORIES, DIFFICULTIES } from "./constants";
 import ElectricBorder from "./ElectricBorder";
 import PremiumBadge from "./PremiumBadge";
 import "./App.css";
-const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 
 function History() {
   const navigate = useNavigate();
@@ -907,10 +905,9 @@ function History() {
         <span style={{ fontSize: "16px", verticalAlign: "middle" }}> · </span>
         <Link to="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
       </p>
-      <p className="byline-bottom" style={{ textAlign: "center", fontSize: "10px", color: "#5a060d", fontStyle: "italic", marginTop: "4px", marginBottom: "12px", display: "none" }}>
+      <p className="byline-bottom" style={{ textAlign: "center", fontSize: "10px", color: "#5a060d", fontStyle: "italic", fontFamily: "'Snell Roundhand', cursive", marginTop: "4px", marginBottom: "12px", display: "none" }}>
         by Colgate's finest
       </p>
-      <Analytics />
     </div>
   );
 }

@@ -1,15 +1,27 @@
 const OpenAI = require("openai");
+const { Redis } = require("@upstash/redis");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const redis = Redis.fromEnv();
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { question, userAnswer } = req.body;
+  const { question, userAnswer, userId } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  const isPaid = await redis.get(`paid:${userId}`);
+  if (!isPaid) {
+    return res.status(403).json({ error: "Premium subscription required" });
+  }
 
   if (!userAnswer || !userAnswer.trim()) {
     return res.status(200).json({ feedback: "No answer was submitted before time ran out.", score: 0 });

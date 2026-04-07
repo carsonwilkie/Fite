@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Analytics } from "@vercel/analytics/react";
 import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
-import { useClerk } from "@clerk/clerk-react";
+import useUpgrade from "./useUpgrade";
+import { DIFFICULTIES } from "./constants";
 import ElectricBorder from "./ElectricBorder";
 import PremiumBadge from "./PremiumBadge";
 import LightsaberLoader from "./LightsaberLoader";
@@ -20,7 +20,7 @@ function Questions() {
   const { user } = useUser();
   const { isPaid } = usePaidStatus();
   const price = usePrice();
-  const { openSignIn } = useClerk();
+  const handleUpgrade = useUpgrade();
 
   // Normal question state
   const [question, setQuestion] = useState("");
@@ -149,17 +149,6 @@ function Questions() {
     return history.some(item => item.question === q && item.timestamp > oneDayAgo);
   };
 
-  const handleUpgrade = async () => {
-    if (!user?.id) { openSignIn(); return; }
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user?.id, email: user?.primaryEmailAddress?.emailAddress }),
-    });
-    const data = await res.json();
-    if (data.url) window.location.href = data.url;
-  };
-
   // --- Normal question grade ---
   const handleGrade = async () => {
     if (timerOn && timeLeft !== null && timeLeft > 0) freezeTimer();
@@ -168,7 +157,7 @@ function Questions() {
       const res = await fetch("/api/grade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, userAnswer }),
+        body: JSON.stringify({ question, userAnswer, userId: user?.id }),
       });
       const data = await res.json();
       setFeedback(data.feedback);
@@ -927,10 +916,9 @@ function Questions() {
         <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
         <Link to="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
       </p>
-      <p className="byline-bottom" style={{ textAlign: "center", fontSize: "10px", color: "#5a060d", fontStyle: "italic", marginTop: "4px", marginBottom: "12px", display: "none" }}>
+      <p className="byline-bottom" style={{ textAlign: "center", fontSize: "10px", color: "#5a060d", fontStyle: "italic", fontFamily: "'Snell Roundhand', cursive", marginTop: "4px", marginBottom: "12px", display: "none" }}>
         by Colgate's finest
       </p>
-      <Analytics />
     </div>
   );
 }
