@@ -50,7 +50,7 @@ function History() {
         setEntries(data.entries || []);
         setLoadingHistory(false);
       });
-  }, [user, isPaid, loading, navigate]);
+  }, [user, isPaid, loading, router]);
 
   const getDateStr = (timestamp) => new Date(timestamp).toLocaleDateString("en-US", {
     weekday: "long", year: "numeric", month: "long", day: "numeric"
