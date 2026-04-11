@@ -1,6 +1,6 @@
 const OpenAI = require("openai");
 const { Redis } = require("@upstash/redis");
-const { CATEGORIES } = require("./constants");
+const { CATEGORIES } = require("./_constants");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,

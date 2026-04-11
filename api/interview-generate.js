@@ -7,7 +7,7 @@ module.exports = async function handler(req, res) {
 
   const { category: rawCategory, difficulty, math, customPrompt } = req.body;
 
-  const { CATEGORIES: ALL_CATEGORIES } = require("./constants");
+  const { CATEGORIES: ALL_CATEGORIES } = require("./_constants");
   const category = (!rawCategory || rawCategory === "All")
     ? ALL_CATEGORIES[Math.floor(Math.random() * ALL_CATEGORIES.length)]
     : rawCategory;
