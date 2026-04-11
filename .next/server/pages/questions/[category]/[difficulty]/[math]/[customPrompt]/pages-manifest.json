@@ -1,0 +1,3 @@
+{
+  "/questions/[category]/[difficulty]/[math]/[customPrompt]": "pages/questions/[category]/[difficulty]/[math]/[customPrompt].js"
+}

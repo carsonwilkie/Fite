@@ -1,0 +1,8 @@
+__turbopack_load_page_chunks__("/questions/[category]/[difficulty]/[math]", [
+  "static/chunks/0n4nq02bhzh2k.js",
+  "static/chunks/0r3iowx0j~p59.js",
+  "static/chunks/00_zjypuo8khv.js",
+  "static/chunks/0x~plfu_-gp~1.js",
+  "static/chunks/10v722ohudb2l.js",
+  "static/chunks/turbopack-0vk6rxx82xq-1.js"
+])

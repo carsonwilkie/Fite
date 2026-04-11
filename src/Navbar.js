@@ -1,14 +1,13 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
-import { useUser } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
 import useUpgrade from "./useUpgrade";
-import { useNavigate } from "react-router-dom"
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 function Navbar() {
   const { user } = useUser();
   const { isPaid } = usePaidStatus();
-  const navigate = useNavigate();
+  const router = useRouter();
   const handleUpgrade = useUpgrade();
   const [showHistoryTooltip, setShowHistoryTooltip] = useState(false);
 
@@ -59,7 +58,7 @@ function Navbar() {
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {isPaid ? (
               <>
-                <button onClick={() => navigate("/history")} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
+                <button onClick={() => router.push("/history")} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>
                   History
                 </button>
                 <button onClick={handleManageSubscription} className="primary-btn manage-sub-btn" style={{ width: "auto", padding: "10px 20px" }}>

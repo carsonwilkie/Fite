@@ -174,6 +174,8 @@ UPSTASH_REDIS_REST_TOKEN (auto via Vercel)
 - AI answer grading with written feedback
 - Question history page with stats, search, and filters
 - Custom question descriptor input
+- Interview Mode with sequential, structured follow-up questions + feedback
+- Toggleable Timer feature for timed question answering
 - Premium logo + gold PREMIUM badge
 
 ## Interview Mode (API-complete, no frontend page yet)

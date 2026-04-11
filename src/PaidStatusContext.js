@@ -5,7 +5,7 @@ const PaidStatusContext = createContext({ isPaid: false, loading: true });
 
 export function PaidStatusProvider({ children }) {
   const { user, isLoaded } = useUser();
-  const [isPaid, setIsPaid] = useState(() => localStorage.getItem("isPaid") === "true");
+  const [isPaid, setIsPaid] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

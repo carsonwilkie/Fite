@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useRouter } from "next/router";
+import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@clerk/clerk-react";
 import usePaidStatus from "./usePaidStatus";
@@ -8,14 +9,13 @@ import useUpgrade from "./useUpgrade";
 import ElectricBorder from "./ElectricBorder";
 import PremiumBadge from "./PremiumBadge";
 import LightsaberLoader from "./LightsaberLoader";
-import "./App.css";
 
 const TIMER_TIME = 120;
 const INTERVIEW_QUESTIONS = 4;
 
 function Questions() {
-  const { category, difficulty, math, customPrompt } = useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const { category, difficulty, math, customPrompt } = router.query;
   const { user } = useUser();
   const { isPaid } = usePaidStatus();
   const price = usePrice();
@@ -482,11 +482,11 @@ function Questions() {
               alt="logo"
               style={{ height: "64px", width: "64px", cursor: "pointer" }}
               className="logo-img-mobile"
-              onClick={() => navigate("/")}
+              onClick={() => router.push("/")}
             />
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <h1 style={{ ...styles.logo, cursor: "pointer" }} className="logo-mobile" onClick={() => navigate("/")}>Fite Finance</h1>
+                <h1 style={{ ...styles.logo, cursor: "pointer" }} className="logo-mobile" onClick={() => router.push("/")}>Fite Finance</h1>
                 {isPaid && <PremiumBadge />}
               </div>
               <p style={styles.tagline} className="tagline-mobile">The finance site sharpening your interview skills</p>
@@ -495,7 +495,7 @@ function Questions() {
 
           <div style={styles.card} className="card-mobile">
             <div style={styles.categoryHeader} className="category-header-mobile">
-              <button onClick={() => navigate("/")} className="back-btn">← Back</button>
+              <button onClick={() => router.push("/")} className="back-btn">← Back</button>
               <p style={styles.categoryLabel}>{decodeURIComponent(category)}</p>
               <span style={{ ...styles.mathBadge, backgroundColor: "#e8edf5", color: "#4a6fa5" }}>{decodeURIComponent(difficulty)}</span>
               <span style={{ ...styles.mathBadge, backgroundColor: decodeURIComponent(math) === "With Math" ? "#0a2463" : "#e8edf5", color: decodeURIComponent(math) === "With Math" ? "#ffffff" : "#4a6fa5" }}>
@@ -909,11 +909,11 @@ function Questions() {
         For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
       </p>
       <p style={{ textAlign: "center", fontSize: "11px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px" }}>
-        <Link to="/privacy" style={{ color: "#4a6fa5" }}>Privacy Policy</Link>
+        <Link href="/privacy" style={{ color: "#4a6fa5" }}>Privacy Policy</Link>
         <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
-        <Link to="/terms" style={{ color: "#4a6fa5" }}>Terms of Service</Link>
+        <Link href="/terms" style={{ color: "#4a6fa5" }}>Terms of Service</Link>
         <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
-        <Link to="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
+        <Link href="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
       </p>
       <p className="byline-bottom" style={{ textAlign: "center", fontSize: "12px", fontWeight: "bold", color: "#5a060d", fontFamily: "'Snell Roundhand', cursive", wordSpacing: "2px", marginTop: "4px", marginBottom: "12px", display: "none" }}>
         by Colgate's finest

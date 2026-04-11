@@ -1,5 +1,4 @@
-import { useUser } from "@clerk/clerk-react";
-import { useClerk } from "@clerk/clerk-react";
+import { useUser, useClerk } from "@clerk/clerk-react";
 
 export default function useUpgrade() {
   const { user } = useUser();

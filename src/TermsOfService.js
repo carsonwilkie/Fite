@@ -1,6 +1,5 @@
 import ReactMarkdown from "react-markdown";
-import { useNavigate } from "react-router-dom";
-import "./App.css";
+import { useRouter } from "next/router";
 
 const content = `# Terms of Service
 
@@ -119,11 +118,11 @@ We reserve the right to modify these Terms at any time. We will notify users of 
 For questions about these Terms, contact us at support@fitefinance.com.`;
 
 function TermsOfService() {
-  const navigate = useNavigate();
+  const router = useRouter();
   return (
     <div style={styles.page} className="page-bg page-wrapper">
       <div style={styles.wrapper} className="wrapper-mobile">
-        <button onClick={() => navigate("/")} style={styles.back}>← Back to Home</button>
+        <button onClick={() => router.push("/")} style={styles.back}>← Back to Home</button>
         <div style={styles.content}>
           <ReactMarkdown>{content}</ReactMarkdown>
         </div>

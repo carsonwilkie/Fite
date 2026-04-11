@@ -1,0 +1,5 @@
+{
+  "/questions/[category]/[difficulty]/[math]": [
+    "static/chunks/pages/questions/[category]/[difficulty]/[math].js"
+  ]
+}

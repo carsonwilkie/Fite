@@ -1,0 +1,149 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "pages",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "onMatchHeaders": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/questions/[category]/[difficulty]/[math]",
+      "regex": "^/questions/([^/]+?)/([^/]+?)/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPcategory": "nxtPcategory",
+        "nxtPdifficulty": "nxtPdifficulty",
+        "nxtPmath": "nxtPmath"
+      },
+      "namedRegex": "^/questions/(?<nxtPcategory>[^/]+?)/(?<nxtPdifficulty>[^/]+?)/(?<nxtPmath>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/questions/[category]/[difficulty]/[math]/[customPrompt]",
+      "regex": "^/questions/([^/]+?)/([^/]+?)/([^/]+?)/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPcategory": "nxtPcategory",
+        "nxtPdifficulty": "nxtPdifficulty",
+        "nxtPmath": "nxtPmath",
+        "nxtPcustomPrompt": "nxtPcustomPrompt"
+      },
+      "namedRegex": "^/questions/(?<nxtPcategory>[^/]+?)/(?<nxtPdifficulty>[^/]+?)/(?<nxtPmath>[^/]+?)/(?<nxtPcustomPrompt>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/history",
+      "regex": "^/history(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/history(?:/)?$"
+    },
+    {
+      "page": "/privacy",
+      "regex": "^/privacy(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/privacy(?:/)?$"
+    },
+    {
+      "page": "/refunds",
+      "regex": "^/refunds(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/refunds(?:/)?$"
+    },
+    {
+      "page": "/success",
+      "regex": "^/success(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/success(?:/)?$"
+    },
+    {
+      "page": "/terms",
+      "regex": "^/terms(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/terms(?:/)?$"
+    }
+  ],
+  "dataRoutes": [
+    {
+      "page": "/",
+      "dataRouteRegex": "^/_next/data/StHHSVqw_umIEAPejWKrS/index\\.json$"
+    },
+    {
+      "page": "/history",
+      "dataRouteRegex": "^/_next/data/StHHSVqw_umIEAPejWKrS/history\\.json$"
+    },
+    {
+      "page": "/privacy",
+      "dataRouteRegex": "^/_next/data/StHHSVqw_umIEAPejWKrS/privacy\\.json$"
+    },
+    {
+      "page": "/questions/[category]/[difficulty]/[math]",
+      "routeKeys": {
+        "nxtPcategory": "nxtPcategory",
+        "nxtPdifficulty": "nxtPdifficulty",
+        "nxtPmath": "nxtPmath"
+      },
+      "dataRouteRegex": "^/_next/data/StHHSVqw_umIEAPejWKrS/questions/([^/]+?)/([^/]+?)/([^/]+?)\\.json$",
+      "namedDataRouteRegex": "^/_next/data/StHHSVqw_umIEAPejWKrS/questions/(?<nxtPcategory>[^/]+?)/(?<nxtPdifficulty>[^/]+?)/(?<nxtPmath>[^/]+?)\\.json$"
+    },
+    {
+      "page": "/questions/[category]/[difficulty]/[math]/[customPrompt]",
+      "routeKeys": {
+        "nxtPcategory": "nxtPcategory",
+        "nxtPdifficulty": "nxtPdifficulty",
+        "nxtPmath": "nxtPmath",
+        "nxtPcustomPrompt": "nxtPcustomPrompt"
+      },
+      "dataRouteRegex": "^/_next/data/StHHSVqw_umIEAPejWKrS/questions/([^/]+?)/([^/]+?)/([^/]+?)/([^/]+?)\\.json$",
+      "namedDataRouteRegex": "^/_next/data/StHHSVqw_umIEAPejWKrS/questions/(?<nxtPcategory>[^/]+?)/(?<nxtPdifficulty>[^/]+?)/(?<nxtPmath>[^/]+?)/(?<nxtPcustomPrompt>[^/]+?)\\.json$"
+    },
+    {
+      "page": "/refunds",
+      "dataRouteRegex": "^/_next/data/StHHSVqw_umIEAPejWKrS/refunds\\.json$"
+    },
+    {
+      "page": "/success",
+      "dataRouteRegex": "^/_next/data/StHHSVqw_umIEAPejWKrS/success\\.json$"
+    },
+    {
+      "page": "/terms",
+      "dataRouteRegex": "^/_next/data/StHHSVqw_umIEAPejWKrS/terms\\.json$"
+    }
+  ],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

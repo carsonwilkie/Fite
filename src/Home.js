@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useRouter } from "next/router";
+import Link from "next/link";
 import usePaidStatus from "./usePaidStatus";
 import { CATEGORIES as categories, DIFFICULTIES } from "./constants";
 import ElectricBorder from "./ElectricBorder";
 import PremiumBadge from "./PremiumBadge";
-import "./App.css";
 
 function Home() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { isPaid } = usePaidStatus();
-  const [difficulty, setDifficulty] = useState(() => sessionStorage.getItem("difficulty") || "");
-  const [math, setMath] = useState(() => sessionStorage.getItem("math") || "");
+  const [difficulty, setDifficulty] = useState(() => typeof window !== "undefined" ? sessionStorage.getItem("difficulty") || "" : "");
+  const [math, setMath] = useState(() => typeof window !== "undefined" ? sessionStorage.getItem("math") || "" : "");
   const [customPrompt, setCustomPrompt] = useState("");
   const [showCustomTooltip, setShowCustomTooltip] = useState(false);
 
@@ -39,7 +39,7 @@ function Home() {
                 <h1 style={styles.logo} className="logo-mobile">Fite Finance</h1>
                 {isPaid && <PremiumBadge />}
               </div>
-              <p style={styles.tagline} className="tagline-mobile">The finance site sharpening your interview skills</p>
+              <p style={styles.tagline} className="tagline-mobile">The <strong>f</strong>inance s<strong>ite</strong> sharpening your interview skills</p>
             </div>
           </div>
 
@@ -76,7 +76,7 @@ function Home() {
                 <button
                   key={cat}
                   className="category-btn"
-                  onClick={() => navigate(`/questions/${encodeURIComponent(cat)}/${encodeURIComponent(difficulty || "Medium")}/${encodeURIComponent(math || "No Math")}/${encodeURIComponent(customPrompt)}`)}
+                  onClick={() => router.push(`/questions/${encodeURIComponent(cat)}/${encodeURIComponent(difficulty || "Medium")}/${encodeURIComponent(math || "No Math")}/${encodeURIComponent(customPrompt)}`)}
                 >
                   {cat}
                 </button>
@@ -158,11 +158,11 @@ function Home() {
         For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
       </p>
       <p style={{ textAlign: "center", fontSize: "11px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px" }}>
-        <Link to="/privacy" style={{ color: "#4a6fa5" }}>Privacy Policy</Link>
+        <Link href="/privacy" style={{ color: "#4a6fa5" }}>Privacy Policy</Link>
         <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
-        <Link to="/terms" style={{ color: "#4a6fa5" }}>Terms of Service</Link>
+        <Link href="/terms" style={{ color: "#4a6fa5" }}>Terms of Service</Link>
         <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
-        <Link to="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
+        <Link href="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
       </p>
       <p className="byline-bottom" style={{ textAlign: "center", fontSize: "12px", fontWeight: "bold", color: "#5a060d", fontFamily: "'Snell Roundhand', cursive", wordSpacing: "2px", marginTop: "4px", marginBottom: "12px", display: "none" }}>
         by Colgate's finest
