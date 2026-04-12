@@ -1,6 +1,4 @@
-const OpenAI = require("openai");
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = require("./_openai");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -40,7 +38,8 @@ Respond with ONLY a JSON object, no other text:
     });
 
     const text = completion.choices[0].message.content;
-    const parsed = JSON.parse(text);
+    const clean = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+    const parsed = JSON.parse(clean);
     res.status(200).json(parsed);
   } catch (error) {
     res.status(500).json({ error: error.message });

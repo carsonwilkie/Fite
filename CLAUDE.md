@@ -4,20 +4,39 @@
 Finance interview prep tool at fitefinance.com. Users select a category, difficulty, and math preference to get AI-generated questions and answers. Premium users ($3/month via Stripe) get unlimited questions, AI answer grading, and question history.
 
 ## Tech Stack
-- **Frontend**: React (Create React App)
+- **Frontend**: React (Next.js 16, Pages Router)
 - **Backend**: Vercel serverless functions (`/api/`)
-- **Auth**: Clerk
+- **Auth**: Clerk (`@clerk/clerk-react`)
 - **Payments**: Stripe ($3/month subscription)
 - **AI**: OpenAI gpt-4o-mini
 - **Database**: Upstash Redis (via Vercel integration)
 - **Analytics**: Vercel Analytics + Speed Insights
 - **Deployment**: Vercel
 
+## Dev Commands
+```
+npm run dev     — local dev server (localhost:3000)
+npm run build   — production build
+npm run start   — serve production build locally
+```
+
 ## Security
 Never read, display, or reference the contents of .env, .env.local, or any .env.* files.
 
 ## File Structure
 ```
+/pages/
+  _app.js          — ClerkProvider, PaidStatusProvider, Navbar, Analytics, global CSS
+  index.js         → Home
+  success.js       → Success
+  history.js       → History
+  privacy.js       → PrivacyPolicy
+  terms.js         → TermsOfService
+  refunds.js       → RefundPolicy
+  questions/[category]/[difficulty]/[math]/
+    index.js       → Questions (no customPrompt)
+    [customPrompt].js → Questions (with customPrompt)
+
 /api/
   webhook.js            — Stripe webhook handler
   checkout.js           — Stripe checkout session creator
@@ -27,23 +46,27 @@ Never read, display, or reference the contents of .env, .env.local, or any .env.
   grade.js              — AI answer grading (premium only), returns {feedback}
   history.js            — GET/POST question history via Upstash Redis
   price.js              — Fetches dynamic Stripe price
-  constants.js          — Shared CATEGORIES array (used by question.js, interview endpoints)
+  _constants.js         — Shared CATEGORIES array (prefixed _ so Vercel ignores it as a function)
+  _openai.js            — Shared OpenAI client singleton (used by all AI endpoints)
+  _questionBank.js      — Curated question bank by category/difficulty/math; exports sampleQuestions()
   interview-generate.js — Generates interview scenario + 4 structured questions with ideal answers
   interview-respond.js  — Evaluates a single candidate answer, returns {score, onTrack, response}
   interview-debrief.js  — Generates post-interview debrief after all 4 answers, returns {feedback}
 
 /src/
-  App.js           — Router, renders Navbar + Analytics + SpeedInsights once
   Navbar.js        — Shared navbar (SignIn, History, Manage Sub, Upgrade buttons)
   Home.js          — Category/difficulty/math selection + custom prompt
   Questions.js     — Question/answer/grading flow
   History.js       — Premium history page with stats, search, filters
   Success.js       — Post-payment success page
   ScrollToTop.js   — Scroll restoration on navigation
+  PaidStatusContext.js — Context + provider for isPaid state
   usePaidStatus.js — Custom hook: returns { isPaid, loading }
   usePrice.js      — Custom hook: returns dynamic Stripe price string
+  useUpgrade.js    — Custom hook: handles Stripe checkout redirect
   App.css          — All styles including mobile responsive classes
-  constants.js     — Shared CATEGORIES array (frontend)
+  index.css        — Base body/font styles
+  constants.js     — Shared CATEGORIES array (frontend, ES module)
   ElectricBorder.js    — Animated electric border wrapper component (active prop toggles animation)
   LightsaberLoader.js  — Progress bar styled as a lightsaber (accepts percent 0–1)
   PremiumBadge.js      — Gold PREMIUM badge component (small prop for compact variant)
@@ -58,7 +81,7 @@ Never read, display, or reference the contents of .env, .env.local, or any .env.
 ```
 
 ## Categories
-All, Investment Banking, Private Equity, Asset Management, Accounting, Financial Modeling, Valuation, Sales and Trading
+All, Investment Banking, Private Equity, Asset Management, Accounting, Consulting, Valuation, Sales and Trading
 
 ## Key Patterns
 
@@ -145,10 +168,9 @@ Questions are stored in `localStorage` as `questionHistory`. Questions asked in 
 
 ## Environment Variables
 ```
-REACT_APP_CLERK_PUBLISHABLE_KEY
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY  — Clerk publishable key (client-safe)
 CLERK_SECRET_KEY
 STRIPE_SECRET_KEY
-REACT_APP_STRIPE_PUBLISHABLE_KEY
 STRIPE_PRICE_ID
 STRIPE_WEBHOOK_SECRET
 NEXT_PUBLIC_URL=https://www.fitefinance.com
@@ -159,15 +181,22 @@ UPSTASH_REDIS_REST_TOKEN (auto via Vercel)
 
 ## Routes
 ```
-/                          → Home
-/questions/:category/:difficulty/:math/:customPrompt → Questions
-/questions/:category/:difficulty/:math               → Questions
-/success                   → Success (redirects non-paid to /)
-/history                   → History (redirects non-paid to /)
-/privacy                   → PrivacyPolicy
-/terms                     → TermsOfService
-/refunds                   → RefundPolicy
+/                                                    → Home
+/questions/[category]/[difficulty]/[math]            → Questions (no customPrompt)
+/questions/[category]/[difficulty]/[math]/[customPrompt] → Questions
+/success                                             → Success (redirects non-paid to /)
+/history                                             → History (redirects non-paid to /)
+/privacy                                             → PrivacyPolicy
+/terms                                               → TermsOfService
+/refunds                                             → RefundPolicy
 ```
+
+## Navigation
+All navigation uses Next.js — not React Router:
+- `useRouter()` from `next/router` (replaces `useNavigate`)
+- `router.push("/path")` (replaces `navigate("/path")`)
+- `router.query` (replaces `useParams()`)
+- `Link href=` from `next/link` (replaces `Link to=` from react-router-dom)
 
 ## Premium Features
 - Unlimited questions (free users: 5/day)
@@ -190,9 +219,34 @@ The interview flow: generate scenario → loop through 4 questions calling respo
 ## Shared Constants
 Categories are now centralized:
 - `src/constants.js` — ES module export, used by frontend
-- `api/constants.js` — CommonJS export, used by `question.js` and `interview-generate.js`
+- `api/_constants.js` — CommonJS export, used by `question.js` and `interview-generate.js`
 
 Both must stay in sync if categories change.
+
+## Question Bank (`api/_questionBank.js`)
+A curated bank of finance interview questions used to inject few-shot calibration examples into question generation prompts, so GPT sees real examples of the target difficulty/category instead of guessing.
+
+- Each entry: `{ q: string, math: boolean }`
+- Organized by category → difficulty (Easy / Medium / Hard)
+- Covers: Investment Banking, Private Equity, Asset Management, Accounting, Consulting, Valuation, Sales and Trading
+- `sampleQuestions(category, difficulty, math, n)` — returns `n` randomly sampled question strings with fallback logic:
+  1. Category + difficulty + math match
+  2. Category + difficulty (any math)
+  3. Cross-category at this difficulty + math match
+  4. Cross-category at this difficulty
+  5. Empty array (graceful — prompt just won't include examples)
+- Used by `question.js` (3 examples, `type === "question"` only) and `interview-generate.js` (2 examples)
+- To add a new category: add a key matching a value in CATEGORIES with Easy/Medium/Hard arrays; aim for 5+ questions per tier
+
+## Shared OpenAI Client (`api/_openai.js`)
+All AI endpoints import the OpenAI client from `api/_openai.js` rather than instantiating their own. Do not add `new OpenAI(...)` to individual endpoint files.
+
+## JSON Parse Safety (interview endpoints)
+`interview-generate.js` and `interview-respond.js` both sanitize GPT output before parsing to handle cases where the model wraps JSON in markdown fences:
+```js
+const clean = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+const parsed = JSON.parse(clean);
+```
 
 ## Legal Pages
 `PrivacyPolicy.js`, `TermsOfService.js`, `RefundPolicy.js` all use the same pattern:

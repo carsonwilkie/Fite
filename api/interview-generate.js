@@ -1,13 +1,12 @@
-const OpenAI = require("openai");
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = require("./_openai");
+const { CATEGORIES: ALL_CATEGORIES } = require("./_constants");
+const { sampleQuestions } = require("./_questionBank");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { category: rawCategory, difficulty, math, customPrompt } = req.body;
 
-  const { CATEGORIES: ALL_CATEGORIES } = require("./_constants");
   const category = (!rawCategory || rawCategory === "All")
     ? ALL_CATEGORIES[Math.floor(Math.random() * ALL_CATEGORIES.length)]
     : rawCategory;
@@ -15,7 +14,12 @@ module.exports = async function handler(req, res) {
   const mathNote = math === "With Math" ? " Include quantitative/numerical elements where appropriate." : " Keep it qualitative — no calculations required.";
   const promptNote = customPrompt && customPrompt !== "undefined" ? ` Focus on: ${customPrompt}.` : "";
 
-  const prompt = `You are a senior interviewer at a top ${category} firm conducting a real interview. Generate a realistic interview scenario and a structured sequence of 4 questions (initial + 3 follow-ups) that probe the candidate's thinking.${mathNote}${promptNote}
+  const examples = sampleQuestions(category, difficulty, math, 2);
+  const examplesBlock = examples.length > 0
+    ? `\nHere are ${examples.length} example questions at this difficulty level — use them to calibrate the tone, depth, and specificity of your questions. Do not repeat them:\n${examples.map((q, i) => `${i + 1}. ${q}`).join("\n")}\n`
+    : "";
+
+  const prompt = `You are a senior interviewer at a top ${category} firm conducting a real interview. Generate a realistic interview scenario and a structured sequence of 4 questions (initial + 3 follow-ups) that probe the candidate's thinking.${mathNote}${promptNote}${examplesBlock}
 
 Difficulty: ${difficulty}
 
@@ -43,7 +47,8 @@ Respond with ONLY a JSON object in this exact format, no other text:
     });
 
     const text = completion.choices[0].message.content;
-    const parsed = JSON.parse(text);
+    const clean = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+    const parsed = JSON.parse(clean);
     res.status(200).json({ ...parsed, resolvedCategory: category });
   } catch (error) {
     res.status(500).json({ error: error.message });

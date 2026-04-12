@@ -3,7 +3,7 @@ const CATEGORIES = [
   "Private Equity",
   "Asset Management",
   "Accounting",
-  "Financial Modeling",
+  "Consulting",
   "Valuation",
   "Sales and Trading",
 ];
