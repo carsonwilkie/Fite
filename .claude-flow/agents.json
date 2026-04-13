@@ -1,0 +1,69 @@
+{
+  "agents": {
+    "hive-worker-1776118594181-67xj": {
+      "agentId": "hive-worker-1776118594181-67xj",
+      "agentType": "worker",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "role": "worker",
+        "hiveRole": "worker"
+      },
+      "createdAt": "2026-04-13T22:16:34.181Z",
+      "domain": "hive-mind"
+    },
+    "hive-worker-1776118594181-2rq9": {
+      "agentId": "hive-worker-1776118594181-2rq9",
+      "agentType": "worker",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "role": "worker",
+        "hiveRole": "worker"
+      },
+      "createdAt": "2026-04-13T22:16:34.181Z",
+      "domain": "hive-mind"
+    },
+    "hive-worker-1776118594181-jogc": {
+      "agentId": "hive-worker-1776118594181-jogc",
+      "agentType": "worker",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "role": "worker",
+        "hiveRole": "worker"
+      },
+      "createdAt": "2026-04-13T22:16:34.181Z",
+      "domain": "hive-mind"
+    },
+    "hive-worker-1776118594181-6cns": {
+      "agentId": "hive-worker-1776118594181-6cns",
+      "agentType": "worker",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "role": "worker",
+        "hiveRole": "worker"
+      },
+      "createdAt": "2026-04-13T22:16:34.181Z",
+      "domain": "hive-mind"
+    },
+    "hive-worker-1776118594181-mymq": {
+      "agentId": "hive-worker-1776118594181-mymq",
+      "agentType": "worker",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "role": "worker",
+        "hiveRole": "worker"
+      },
+      "createdAt": "2026-04-13T22:16:34.181Z",
+      "domain": "hive-mind"
+    }
+  }
+}

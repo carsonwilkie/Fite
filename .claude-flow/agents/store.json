@@ -1,0 +1,44 @@
+{
+  "agents": {
+    "agent-1776118384104-2v4jcl": {
+      "agentId": "agent-1776118384104-2v4jcl",
+      "agentType": "researcher",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic"
+      },
+      "createdAt": "2026-04-13T22:13:04.104Z",
+      "model": "sonnet",
+      "modelRoutedBy": "default"
+    },
+    "agent-1776118396232-apiv2l": {
+      "agentId": "agent-1776118396232-apiv2l",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic"
+      },
+      "createdAt": "2026-04-13T22:13:16.232Z",
+      "model": "sonnet",
+      "modelRoutedBy": "default"
+    },
+    "agent-1776118401775-wy17ja": {
+      "agentId": "agent-1776118401775-wy17ja",
+      "agentType": "tester",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic"
+      },
+      "createdAt": "2026-04-13T22:13:21.775Z",
+      "model": "sonnet",
+      "modelRoutedBy": "default"
+    }
+  },
+  "version": "3.0.0"
+}

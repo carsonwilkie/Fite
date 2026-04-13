@@ -1,9 +1,7 @@
 import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/router";
-import { useRef, useEffect, useState } from "react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { useRef, useEffect, useState, useCallback } from "react";
+import LandingNav from "../src/LandingNav";
 import {
   SignedIn,
   SignedOut,
@@ -13,110 +11,21 @@ import {
 import usePaidStatus from "../src/usePaidStatus";
 import useUpgrade from "../src/useUpgrade";
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
-  bg:          "#020817",
-  bgAlt:       "#0b1120",
-  surface:     "#0d1b2a",
-  primary:     "#1565C0",
-  secondary:   "#4FC3F7",
-  gold:        "#c9a84c",
-  onSurface:   "#f8fafc",
-  muted:       "#94a3b8",
+  bg:        "#020817",
+  bgAlt:     "#0b1120",
+  surface:   "#0d1b2a",
+  primary:   "#1565C0",
+  secondary: "#4FC3F7",
+  gold:      "#c9a84c",
+  onSurface: "#f8fafc",
+  muted:     "#94a3b8",
 };
 const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 
-// ─── ScrollReveal — IntersectionObserver based ───────────────────────────────
-function ScrollReveal({ children, direction = "up", startOffset = 0, className, style }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const yPx = !visible && (direction === "up" || direction === "scale") ? 28 : 0;
-  const xPx = !visible && direction === "left" ? -48 : !visible && direction === "right" ? 48 : 0;
-  const sc  = !visible && direction === "scale" ? 0.88 : 1;
-  const delay = startOffset ? `${Math.round(startOffset * 120)}ms` : "0ms";
-
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: `translateY(${yPx}px) translateX(${xPx}px) scale(${sc})`,
-        transition: `opacity 0.6s ease ${delay}, transform 0.65s cubic-bezier(0.22,1,0.36,1) ${delay}`,
-        willChange: "opacity, transform",
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-// ─── SectionScan — IntersectionObserver based ────────────────────────────────
-function SectionScan({ label, align = "left" }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  const centered = align === "center";
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.1 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      style={{
-        display: "flex", alignItems: "center",
-        flexDirection: centered ? "column" : "row",
-        gap: centered ? 12 : 16,
-        marginBottom: centered ? 32 : 56,
-        paddingTop: 4,
-      }}
-    >
-      <span style={{
-        opacity: visible ? 0.7 : 0,
-        transform: visible ? "none" : centered ? "translateY(-8px)" : "translateX(-20px)",
-        transition: "opacity 0.5s ease, transform 0.5s ease",
-        willChange: "opacity, transform",
-        fontSize: 9, fontWeight: 800, letterSpacing: "0.22em",
-        textTransform: "uppercase", fontFamily: "Inter, sans-serif",
-        color: C.secondary, whiteSpace: "nowrap",
-        display: "inline-block",
-      }}>
-        {label}
-      </span>
-      <div style={{
-        transform: visible ? "scaleX(1)" : "scaleX(0)",
-        transformOrigin: centered ? "center" : "left",
-        transition: "transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s",
-        willChange: "transform",
-        ...(centered
-          ? { width: 64, height: 2, borderRadius: 2, background: cyberGrad }
-          : { flex: 1, height: 1, background: `linear-gradient(to right, ${C.secondary}, rgba(79,195,247,0))` }),
-        boxShadow: "0 0 8px rgba(79,195,247,0.35)",
-      }} />
-    </div>
-  );
-}
+const TOTAL_FRAMES = 111;
+const frameSrc = (i) => `/frames/frame-${String(i).padStart(4, "0")}.jpg`;
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
@@ -125,11 +34,189 @@ export default function LandingPage() {
   const { isPaid } = usePaidStatus();
   const handleUpgrade = useUpgrade();
 
-  const { scrollY } = useScroll();
-  const heroTextY   = useTransform(scrollY, [0, 600], [0, -90]);
-  const heroCardY   = useTransform(scrollY, [0, 600], [0, -40]);
-  // Clamp min 0 so brief initialization never hides hero content
-  const heroOpacity = useTransform(scrollY, [0, 500], [1, 0]);
+  // Canvas / hero refs
+  const heroSectionRef = useRef(null);
+  const canvasRef      = useRef(null);
+  const ctxRef         = useRef(null);
+  const framesRef      = useRef([]);
+
+  // DOM refs for GSAP-driven overlay animations (no React state re-renders on scroll)
+  const heroOverlayRef  = useRef(null);
+  const line1Ref        = useRef(null);
+  const line2Ref        = useRef(null);
+  const line3Ref        = useRef(null);
+  const scrollHintRef   = useRef(null);
+  const midTagRef       = useRef(null);
+  const midTagInnerRef  = useRef(null);
+  const midTagSpawnRef  = useRef(false);
+  const endDetailsRef   = useRef(null);
+  const endInnerRef     = useRef(null);
+  const endSpawnRef     = useRef(false);
+  const progressBarRef  = useRef(null);
+  const pendingFrameRef = useRef(null); // RAF handle for batched canvas draws
+
+  // Mount-only state
+  const [heroTextIn, setHeroTextIn] = useState(false);
+
+  // Hero text entrance — delayed so the global transition cover has partially lifted first
+  useEffect(() => {
+    const t = setTimeout(() => setHeroTextIn(true), 540);
+    return () => clearTimeout(t);
+  }, []);
+
+  // "Explore" click — navigate to features/supplemental page
+  const handleExplore = useCallback(() => {
+    router.push("/features");
+  }, [router]);
+
+  // Canvas resize — keep it matched to viewport
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const resize = () => {
+      // Cap DPR at 1.5 — Retina at 2× means 4× pixels per drawImage call.
+      // CSS scaling handles display; canvas doesn't need full DPR precision for video frames.
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width  = Math.round(window.innerWidth  * dpr);
+      canvas.height = Math.round(window.innerHeight * dpr);
+      ctxRef.current = null;
+      const f = framesRef.current[0];
+      if (f) drawFrame(f); // ImageBitmap has no .complete — check truthiness
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Frame preload — convert to ImageBitmap so drawImage pulls from GPU memory
+  // instead of re-decoding the JPEG every frame.
+  useEffect(() => {
+    const arr = new Array(TOTAL_FRAMES).fill(null);
+    framesRef.current = arr;
+    Array.from({ length: TOTAL_FRAMES }, (_, i) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const toBitmap = window.createImageBitmap
+          ? window.createImageBitmap(img)
+          : Promise.resolve(img);
+        toBitmap
+          .then(bmp => { arr[i] = bmp; if (i === 0) drawFrame(bmp); })
+          .catch(()  => { arr[i] = img; if (i === 0) drawFrame(img); });
+      };
+      img.src = frameSrc(i + 1);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function drawFrame(img) {
+    const canvas = canvasRef.current;
+    if (!canvas || !img) return;
+    if (!ctxRef.current) ctxRef.current = canvas.getContext("2d");
+    const ctx = ctxRef.current;
+    const cw = canvas.width, ch = canvas.height;
+    // ImageBitmap uses .width/.height; HTMLImageElement uses .naturalWidth/.naturalHeight
+    const iw = img.naturalWidth  ?? img.width;
+    const ih = img.naturalHeight ?? img.height;
+    if (!iw || !ih) return;
+    const scale = Math.max(cw / iw, ch / ih);
+    const sw = iw * scale, sh = ih * scale;
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(img, (cw - sw) / 2, (ch - sh) / 2, sw, sh);
+  }
+
+  // GSAP ScrollTrigger — drives canvas frame scrub + all overlay animations via direct DOM
+  useEffect(() => {
+    let st;
+    async function init() {
+      const { gsap }          = await import("gsap");
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      gsap.registerPlugin(ScrollTrigger);
+
+      st = ScrollTrigger.create({
+        trigger: heroSectionRef.current,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.4,
+        onUpdate(self) {
+          const p = self.progress;
+
+          // — Canvas frame — batched to one draw per animation frame.
+          // Skip when the end overlay fully covers the canvas (p ≥ 0.94) so the
+          // browser isn't compositing canvas draws that are invisible anyway.
+          const idx = Math.min(Math.floor(p * (TOTAL_FRAMES - 1)), TOTAL_FRAMES - 1);
+          const img = framesRef.current[idx];
+          if (img && p < 0.94) {
+            if (pendingFrameRef.current) cancelAnimationFrame(pendingFrameRef.current);
+            pendingFrameRef.current = requestAnimationFrame(() => {
+              pendingFrameRef.current = null;
+              drawFrame(img);
+            });
+          }
+
+          // — Progress bar —
+          if (progressBarRef.current) {
+            progressBarRef.current.style.width = `${p * 100}%`;
+          }
+
+          // — Hero text exit (p: 0.18 → 0.28) —
+          const textT = Math.max(0, Math.min((p - 0.18) / 0.1, 1));
+          if (heroOverlayRef.current) {
+            heroOverlayRef.current.style.opacity = `${1 - textT}`;
+            heroOverlayRef.current.style.pointerEvents = textT > 0.5 ? "none" : "auto";
+          }
+          if (line1Ref.current) line1Ref.current.style.transform = `translateX(${-textT * 120}px)`;
+          if (line2Ref.current) line2Ref.current.style.transform = `scale(${1 - textT * 0.3})`;
+          if (line3Ref.current) line3Ref.current.style.transform = `translateX(${textT * 120}px)`;
+
+          // — Scroll hint (fades out after first tiny scroll) —
+          if (scrollHintRef.current) {
+            scrollHintRef.current.style.opacity = `${Math.max(0, 1 - p / 0.04)}`;
+          }
+
+          // — Mid-scroll tagline (p: 0.3 → 0.72) —
+          const midOp = p < 0.30 ? 0
+            : p < 0.45 ? (p - 0.30) / 0.15
+            : p < 0.60 ? 1
+            : p < 0.72 ? 1 - (p - 0.60) / 0.12
+            : 0;
+          if (midTagRef.current) midTagRef.current.style.opacity = `${midOp}`;
+          if (midOp > 0.05 && !midTagSpawnRef.current) {
+            midTagSpawnRef.current = true;
+            const inner = midTagInnerRef.current;
+            if (inner) {
+              // Split remove/add across frames — no forced layout reflow needed.
+              inner.classList.remove("mid-tag-spawn");
+              requestAnimationFrame(() => inner.classList.add("mid-tag-spawn"));
+            }
+          } else if (midOp < 0.01) {
+            midTagSpawnRef.current = false;
+          }
+
+          // — End-of-scroll overlay (p: 0.82 → 0.94) —
+          const endOp = Math.max(0, Math.min((p - 0.82) / 0.12, 1));
+          if (endDetailsRef.current) {
+            endDetailsRef.current.style.opacity      = `${endOp}`;
+            endDetailsRef.current.style.pointerEvents = endOp > 0.5 ? "auto" : "none";
+          }
+          if (endOp > 0.05 && !endSpawnRef.current) {
+            endSpawnRef.current = true;
+            const inner = endInnerRef.current;
+            if (inner) {
+              // Split remove/add across frames — no forced layout reflow needed.
+              inner.classList.remove("end-details-spawn");
+              requestAnimationFrame(() => inner.classList.add("end-details-spawn"));
+            }
+          } else if (endOp < 0.01) {
+            endSpawnRef.current = false;
+          }
+        },
+      });
+    }
+    init();
+    return () => st?.kill();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -138,469 +225,237 @@ export default function LandingPage() {
         <meta name="description" content="AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your IB, PE, or HF interview." />
       </Head>
 
-      <div style={{ color: C.onSurface, minHeight: "100vh" }}>
+      <LandingNav />
 
-        {/* ── FIXED HERO BACKGROUND ─────────────────────────────────────────── */}
-        <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
-          <Image src="/Hero_Image.webp" alt="Finance background" fill priority style={{ objectFit: "cover" }} />
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(to right, rgba(2,8,23,0.97) 0%, rgba(2,8,23,0.75) 55%, rgba(2,8,23,0.40) 100%)",
-          }} />
-        </div>
+      <div style={{ color: C.onSurface }}>
 
-        {/* ── HERO ──────────────────────────────────────────────────────────── */}
-        <section style={{ position: "relative", minHeight: 870, display: "flex", alignItems: "center", zIndex: 1 }}>
+        {/* ── HERO — scroll-pinned canvas ────────────────────────────────────── */}
+        <section ref={heroSectionRef} style={{ position: "relative", height: "600vh" }}>
+          <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden" }}>
 
-          {/* Logo — top-left */}
-          <motion.div
-            initial={{ y: -10 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            style={{
-              position: "absolute", top: 28, left: 32, zIndex: 20,
-              fontSize: 22, fontWeight: 800, letterSpacing: "-0.04em",
-              fontFamily: "Inter, sans-serif", cursor: "default",
-              display: "flex", alignItems: "center", gap: 6,
-            }}
-          >
-            <span style={{ color: C.primary, textShadow: "0 0 12px rgba(21,101,192,0.7)" }}>Fite</span>{" "}
-            <span style={{ color: C.secondary, textShadow: "0 0 12px rgba(79,195,247,0.7)" }}>Finance</span>
-            {isPaid && (
-              <span style={{ color: C.gold, textShadow: "0 0 10px rgba(201,168,76,0.7)", fontSize: 20, fontWeight: 900, lineHeight: 1 }}>+</span>
-            )}
-          </motion.div>
+            {/* Canvas */}
+            <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", background: "#020817" }} />
 
-          <div className="hero-grid" style={{ position: "relative", zIndex: 10, maxWidth: 1280, margin: "0 auto", padding: "80px 32px", width: "100%", boxSizing: "border-box" }}>
+            {/* Gradient vignette */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(2,8,23,0.5) 0%, rgba(2,8,23,0.15) 45%, rgba(2,8,23,0.65) 100%)", pointerEvents: "none" }} />
 
-            {/* Left: headline — parallax + fade on scroll */}
-            <motion.div style={{ y: heroTextY, opacity: heroOpacity }}>
-              {/* No opacity-0 initial states here — elements are always visible, just spring up on mount */}
-              <motion.div
-                initial={{ y: 20 }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <div style={{
-                  display: "inline-block", padding: "4px 12px", borderRadius: 999,
-                  background: "rgba(21,101,192,0.2)", border: "1px solid rgba(21,101,192,0.4)",
-                  color: C.secondary, fontSize: 10, fontWeight: 700,
-                  textTransform: "uppercase", letterSpacing: "0.15em",
-                  marginBottom: 24, fontFamily: "Manrope, sans-serif",
-                }}>
-                  Next-Gen Interview Preparation
-                </div>
-              </motion.div>
 
-              <motion.h1
-                initial={{ y: 36 }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
-                style={{
-                  fontSize: "clamp(52px, 7.5vw, 84px)", fontWeight: 900,
-                  lineHeight: 1.02, letterSpacing: "-0.04em",
-                  color: C.onSurface, margin: "0 0 24px 0", fontFamily: "Inter, sans-serif",
-                }}
-              >
-                Master Your Technicals
-                <br />
-                with{" "}
-                <span style={{ color: C.secondary, fontStyle: "italic", textShadow: "0 0 30px rgba(79,195,247,0.35)" }}>
-                  AI-Powered
-                </span>{" "}
-                Precision.
-              </motion.h1>
+            {/* Corner HUD — bottom left */}
+            <div style={{ position: "absolute", bottom: 28, left: 32, fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", color: C.secondary, opacity: 0.4, textTransform: "uppercase", pointerEvents: "none" }}>
+              FITE FINANCE
+            </div>
 
-              <motion.p
-                initial={{ y: 20 }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
-                style={{ fontSize: 18, color: C.muted, lineHeight: 1.7, maxWidth: 480, margin: "0 0 40px 0", fontFamily: "Manrope, sans-serif" }}
-              >
-                Generate custom finance questions, practice structured mock interviews,
-                and get instant AI grading.
-              </motion.p>
+            {/* Corner HUD — bottom right */}
+            <div style={{ position: "absolute", bottom: 28, right: 32, fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", color: C.secondary, opacity: 0.4, textTransform: "uppercase", pointerEvents: "none" }}>
+              PRECISION IN PREPARATION
+            </div>
 
-              <motion.div
-                initial={{ y: 20 }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.26 }}
-              >
-                <button
-                  className="lp-btn-outline"
-                  onClick={() => document.getElementById("features-section").scrollIntoView({ behavior: "smooth" })}
+            {/* Hero text overlay */}
+            <div ref={heroOverlayRef} style={{ position: "absolute", bottom: "18%", left: "7%", zIndex: 10 }}>
+              <div style={{
+                display: "inline-block", padding: "4px 12px", borderRadius: 999,
+                background: "rgba(21,101,192,0.2)", border: "1px solid rgba(21,101,192,0.4)",
+                color: C.secondary, fontSize: 10, fontWeight: 700,
+                textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 20,
+                fontFamily: "Manrope, sans-serif",
+                opacity: heroTextIn ? 1 : 0,
+                transform: heroTextIn ? "translateY(0)" : "translateY(14px)",
+                transition: "opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s",
+              }}>
+                Next-Gen Interview Preparation
+              </div>
+
+              <div style={{ fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, lineHeight: 1.05, letterSpacing: "-0.04em", color: C.onSurface, fontFamily: "Inter, sans-serif", maxWidth: 600 }}>
+                <div
+                  ref={line1Ref}
+                  style={{
+                    willChange: "transform",
+                    opacity: heroTextIn ? 1 : 0,
+                    transition: heroTextIn ? "opacity 0.6s ease 0.15s" : "opacity 0.6s ease 0.15s",
+                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 12px rgba(0,0,0,0.85), 0 6px 40px rgba(0,0,0,0.55)",
+                  }}
                 >
-                  Explore Premium Features
-                </button>
-              </motion.div>
-            </motion.div>
+                  Master Your
+                </div>
+                <div
+                  ref={line2Ref}
+                  style={{ willChange: "transform", transformOrigin: "left center", opacity: heroTextIn ? 1 : 0, transition: heroTextIn ? "opacity 0.6s ease 0.22s" : "opacity 0.6s ease 0.22s" }}
+                >
+                  <span style={{
+                    color: C.secondary, fontStyle: "italic",
+                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 12px rgba(0,0,0,0.8), 0 0 40px rgba(79,195,247,0.45)",
+                  }}>Technicals</span>
+                </div>
+                <div
+                  ref={line3Ref}
+                  style={{
+                    willChange: "transform",
+                    opacity: heroTextIn ? 1 : 0,
+                    transition: heroTextIn ? "opacity 0.6s ease 0.3s" : "opacity 0.6s ease 0.3s",
+                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 12px rgba(0,0,0,0.85), 0 6px 40px rgba(0,0,0,0.55)",
+                  }}
+                >
+                </div>
+              </div>
 
-            {/* Right: sign-up card — slower parallax, no opacity-0 initial */}
-            <motion.div
-              initial={{ x: 40 }}
-              animate={{ x: 0 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-              className="lp-glass-card-solid"
-              style={{
-                y: heroCardY,
-                padding: 32, borderRadius: 16,
-                boxShadow: "0 20px 50px rgba(0,0,0,0.6)",
-                alignSelf: "center",
-                border: isPaid ? "1px solid rgba(201,168,76,0.35)" : undefined,
-              }}
+              {/* Scroll hint */}
+              <div ref={scrollHintRef} style={{ marginTop: 32, display: "flex", alignItems: "center", gap: 10, opacity: 1, transition: "opacity 0.5s ease 0.6s", pointerEvents: "none" }}
+                className="hero-scroll-hint"
+              >
+                <div style={{ width: 26, height: 42, border: `2px solid rgba(79,195,247,0.9)`, borderRadius: 13, display: "flex", justifyContent: "center", padding: "5px 0", boxShadow: "0 0 16px rgba(79,195,247,0.5), 0 0 4px rgba(79,195,247,0.25), inset 0 0 8px rgba(79,195,247,0.1)" }}>
+                  <div style={{ width: 4, height: 9, background: C.secondary, borderRadius: 2, boxShadow: "0 0 6px rgba(79,195,247,0.8)" }} className="scroll-dot" />
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Inter, sans-serif", color: "rgba(248,250,252,0.95)", textShadow: "0 1px 4px rgba(0,0,0,0.8), 0 0 12px rgba(79,195,247,0.25)" }}>Scroll to explore</span>
+              </div>
+            </div>
+
+            {/* Mid-scroll tagline */}
+            <div
+              ref={midTagRef}
+              style={{ position: "absolute", top: "40%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", opacity: 0, pointerEvents: "none", width: "88%", maxWidth: 640, zIndex: 10 }}
             >
-              <h3 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 8px 0", color: C.onSurface, fontFamily: "Inter, sans-serif" }}>
-                {isPaid ? "Welcome Back" : "Start Preparing"}
-              </h3>
-              <p style={{ fontSize: 13, color: C.muted, margin: "0 0 28px 0", fontFamily: "Manrope, sans-serif" }}>
-                {isPaid
-                  ? "Your premium access is active. Keep sharpening your edge."
-                  : "Built for candidates targeting IB, PE, and hedge fund roles."}
-              </p>
+              <div ref={midTagInnerRef}>
+                {/* Overline */}
+                <div style={{
+                  fontSize: 9, fontWeight: 800, letterSpacing: "0.28em",
+                  color: C.secondary, textTransform: "uppercase",
+                  fontFamily: "Inter, sans-serif", marginBottom: 20, opacity: 0.65,
+                  textShadow: "0 0 12px rgba(79,195,247,0.4)",
+                }}>
+                </div>
 
-              {isLoaded && (
-                <>
-                  <SignedOut>
-                    <SignUpButton mode="modal">
-                      <button className="lp-btn-mission">Start Practicing</button>
-                    </SignUpButton>
-                    <SignUpButton mode="modal">
-                      <button className="lp-btn-upgrade">Upgrade to Premium</button>
-                    </SignUpButton>
-                    <p style={{ fontSize: 11, textAlign: "center", color: C.muted, margin: "10px 0 0", fontFamily: "Manrope, sans-serif", opacity: 0.7 }}>
-                      Unlock all features for $3/mo · no card required to start
-                    </p>
-                  </SignedOut>
+                {/* Main headline */}
+                <p style={{
+                  fontSize: "clamp(28px, 4.5vw, 46px)", fontWeight: 900,
+                  color: C.onSurface, fontFamily: "Inter, sans-serif",
+                  letterSpacing: "-0.04em", lineHeight: 1.1,
+                  margin: "0 0 28px 0",
+                  textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 20px rgba(0,0,0,0.9), 0 8px 50px rgba(0,0,0,0.6)",
+                }}>
+                  Built for candidates who<br />
+                  <span style={{
+                    color: C.secondary,
+                    fontStyle: "italic",
+                    fontWeight: 800,
+                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 20px rgba(0,0,0,0.9), 0 0 35px rgba(79,195,247,0.35)",
+                  }}>
+                    don&apos;t leave it to chance.
+                  </span>
+                </p>
+              </div>
+            </div>
 
-                  <SignedIn>
-                    {isPaid ? (
-                      <button className="lp-btn-mission-gold" onClick={() => router.push("/practice")}>
-                        Start Practicing
-                      </button>
-                    ) : (
-                      <>
-                        <button className="lp-btn-mission" onClick={() => router.push("/practice")}>
-                          Start Practicing
-                        </button>
-                        <button className="lp-btn-upgrade" onClick={handleUpgrade}>
-                          Upgrade to Premium
-                        </button>
-                        <p style={{ fontSize: 11, textAlign: "center", color: C.muted, margin: "10px 0 0", fontFamily: "Manrope, sans-serif", opacity: 0.7 }}>
-                          Unlock all features for $3/mo
-                        </p>
-                      </>
-                    )}
-                  </SignedIn>
-                </>
-              )}
-
-              <div style={{ marginTop: 28, paddingTop: 28, borderTop: "1px solid rgba(21,101,192,0.2)" }}>
-                {isPaid ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 16, color: C.gold }}>verified</span>
-                    <span style={{ fontSize: 12, color: C.gold, fontFamily: "Manrope, sans-serif", fontWeight: 600 }}>
-                      Premium Active · All features unlocked
-                    </span>
+            {/* End-of-scroll: product details + sign-up card */}
+            <div
+              ref={endDetailsRef}
+              style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 7%", opacity: 0, pointerEvents: "none", willChange: "opacity", transform: "translateZ(0)" }}
+            >
+              <div ref={endInnerRef} style={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "center", willChange: "transform" }}>
+              {/* Left: product details */}
+              <div style={{ textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 16px rgba(0,0,0,0.85)" }}>
+                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.22em", color: C.secondary, textTransform: "uppercase", marginBottom: 14, fontFamily: "Inter, sans-serif" }}>
+                  Product Details
+                </div>
+                <div style={{
+                  fontSize: "clamp(28px, 4.5vw, 52px)", fontWeight: 900, letterSpacing: "-0.04em",
+                  fontFamily: "Inter, sans-serif", marginBottom: 4,
+                }}>
+                  <span style={{ color: C.primary,   textShadow: "0 0 24px rgba(21,101,192,0.9)"  }}>Fite</span>{" "}
+                  <span style={{ color: C.secondary, textShadow: "0 0 24px rgba(79,195,247,0.9)"  }}>Finance</span>
+                </div>
+                <div className="lp-glass-card-solid" style={{
+                  padding: 24, marginTop: 14, borderRadius: 16, minWidth: 270, maxWidth: 340,
+                  boxShadow: "0 4px 24px rgba(0,0,0,0.65)",
+                  border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.3)",
+                }}>
+                  <div style={{ color: C.secondary, fontSize: 15, fontFamily: "Manrope, sans-serif", marginBottom: 12, fontWeight: 600 }}>
+                    Practice, don&apos;t guess.
                   </div>
-                ) : (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
-                    {["IB", "PE", "HF", "Consulting", "AM"].map(cat => (
-                      <span key={cat} style={{
-                        fontSize: 10, fontWeight: 700, fontFamily: "Manrope, sans-serif",
-                        color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em",
-                        padding: "3px 8px", borderRadius: 4,
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                      }}>{cat}</span>
-                    ))}
-                    <span style={{ fontSize: 11, color: C.muted, fontFamily: "Manrope, sans-serif", opacity: 0.5 }}>& more</span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12, lineHeight: 1.6 }}>
+                    Train with custom questions, structured mock interviews, and instant feedback—so you&apos;re never caught off guard.
                   </div>
+                </div>
+              </div>
+
+              {/* Right: sign-up card */}
+              <div className="lp-glass-card-solid" style={{
+                padding: 32, borderRadius: 16, minWidth: 270, maxWidth: 340,
+                boxShadow: "0 4px 24px rgba(0,0,0,0.65)",
+                border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.3)",
+              }}>
+                <h3 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 8px 0", color: C.onSurface, fontFamily: "Inter, sans-serif" }}>
+                  {isPaid ? "Welcome Back" : "Start Preparing"}
+                </h3>
+                <p style={{ fontSize: 13, color: C.muted, margin: "0 0 24px 0", fontFamily: "Manrope, sans-serif" }}>
+                  {isPaid ? "Your premium access is active." : "Built for IB, PE, and hedge fund candidates."}
+                </p>
+                {isLoaded && (
+                  <>
+                    <SignedOut>
+                      <SignUpButton mode="modal">
+                        <button className="lp-btn-mission">Start Practicing</button>
+                      </SignUpButton>
+                      <SignUpButton mode="modal">
+                        <button className="lp-btn-upgrade">Upgrade to Premium</button>
+                      </SignUpButton>
+                      <p style={{ fontSize: 11, textAlign: "center", color: C.muted, margin: "10px 0 0", fontFamily: "Manrope, sans-serif", opacity: 0.7 }}>
+                        Unlock all for $3/mo · no card to start
+                      </p>
+                    </SignedOut>
+                    <SignedIn>
+                      {isPaid ? (
+                        <button className="lp-btn-mission-gold" onClick={() => router.push("/practice")}>Start Practicing</button>
+                      ) : (
+                        <>
+                          <button className="lp-btn-mission" onClick={() => router.push("/practice")}>Start Practicing</button>
+                          <button className="lp-btn-upgrade" onClick={handleUpgrade}>Upgrade to Premium</button>
+                        </>
+                      )}
+                    </SignedIn>
+                  </>
                 )}
               </div>
-            </motion.div>
-
-          </div>
-        </section>
-
-        {/* ── FEATURES ──────────────────────────────────────────────────────── */}
-        <section id="features-section" style={{ position: "relative", zIndex: 2, background: C.bg }}>
-          <div style={{ padding: "96px 32px", maxWidth: 1280, margin: "0 auto" }}>
-            <SectionScan label="Premium Features" />
-            <ScrollReveal direction="left" style={{ marginBottom: 64 }}>
-              <h2 style={{ fontSize: "clamp(22px, 3vw, 34px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 16px 0", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
-                Precision Engineering{" "}
-                <span style={{ color: C.secondary }}>for Financial Excellence</span>
-              </h2>
-              <div style={{ height: 4, width: 96, background: cyberGrad, borderRadius: 2 }} />
-            </ScrollReveal>
-
-            <div className="feat-grid">
-              <ScrollReveal direction="left" startOffset={0.1} className="feat-large lp-glass-card">
-                <span className="material-symbols-outlined lp-icon-secondary">tune</span>
-                <h3 className="lp-card-title">Customized Practice</h3>
-                <p className="lp-card-body" style={{ maxWidth: 380 }}>
-                  Select category (IB, PE, HF), difficulty, and math preference.
-                  Tailor your prep to the exact desk you&apos;re targeting.
-                </p>
-                <div style={{ marginTop: 32, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  {["Investment Banking", "LBO Modeling"].map(tag => (
-                    <span key={tag} className="lp-tag">{tag}</span>
-                  ))}
-                </div>
-              </ScrollReveal>
-
-              <ScrollReveal direction="right" startOffset={0.2} className="feat-small lp-glass-card">
-                <span className="material-symbols-outlined lp-icon-secondary">psychology</span>
-                <h3 className="lp-card-title">AI Grading</h3>
-                <p className="lp-card-body">
-                  Instant written feedback on every answer. No more guessing if your
-                  &quot;Value-Add&quot; story actually hit the mark.
-                </p>
-              </ScrollReveal>
-
-              <ScrollReveal startOffset={0.15} className="feat-full lp-glass-card">
-                <div style={{ display: "flex", flexDirection: "row", gap: 48, alignItems: "center", flexWrap: "wrap" }}>
-                  <div style={{ flex: 1, minWidth: 240 }}>
-                    <span className="material-symbols-outlined lp-icon-primary">timeline</span>
-                    <h3 className="lp-card-title">History &amp; Tracking</h3>
-                    <p className="lp-card-body">
-                      Track your progress over time with granular data points. Visualize
-                      your readiness across core competencies and technical hurdles.
-                    </p>
-                  </div>
-                  <div style={{
-                    flex: 1, minWidth: 180,
-                    backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-                    padding: 24, borderRadius: 12,
-                    border: "1px solid rgba(21,101,192,0.2)",
-                    background: "rgba(2,8,23,0.5)",
-                  }}>
-                    <div style={{ height: 140, display: "flex", alignItems: "flex-end", gap: 8 }}>
-                      {[30, 45, 60, 85, 70].map((h, i) => (
-                        <div key={i} style={{
-                          flex: 1, borderRadius: "4px 4px 0 0",
-                          height: `${h}%`,
-                          background: i === 3 ? cyberGrad : `rgba(21,101,192,${0.2 + i * 0.12})`,
-                          boxShadow: i === 3 ? "0 0 20px rgba(21,101,192,0.4)" : "none",
-                        }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-
-              <ScrollReveal startOffset={0.1} className="feat-full lp-glass-card">
-                <span className="material-symbols-outlined lp-icon-secondary">record_voice_over</span>
-                <h3 className="lp-card-title">Mock Interview Mode</h3>
-                <p className="lp-card-body" style={{ maxWidth: 600 }}>
-                  A full structured mock interview: realistic scenario, four sequential questions,
-                  live AI interviewer responses, and a holistic debrief after you&apos;re done.
-                  Premium experience, $3/mo.
-                </p>
-              </ScrollReveal>
+              </div>{/* end endInnerRef */}
             </div>
-          </div>
-        </section>
 
-        {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
-        <section style={{ position: "relative", zIndex: 2, background: C.bgAlt }}>
-          <div style={{ padding: "96px 32px", maxWidth: 1280, margin: "0 auto" }}>
-            <SectionScan label="How It Works" />
-            <ScrollReveal direction="right" style={{ marginBottom: 64 }}>
-              <h2 style={{ fontSize: "clamp(22px, 3vw, 34px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 16px 0", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
-                How It Works
-              </h2>
-              <p style={{ color: C.muted, fontFamily: "Manrope, sans-serif", margin: "0 0 16px 0", fontSize: 16 }}>
-                From signup to debrief in four steps.
-              </p>
-              <div style={{ height: 4, width: 96, background: cyberGrad, borderRadius: 2 }} />
-            </ScrollReveal>
-
-            <div className="how-grid">
-              {[
-                { step: "01", icon: "person_add",   title: "Create an Account",       body: "Sign up in seconds — no credit card required. Free tier gives you 5 questions per day to start building your edge right away.", tag: "Free" },
-                { step: "02", icon: "tune",          title: "Configure Your Session",  body: "Pick a category (IB, PE, HF, Consulting…), set difficulty, toggle math on or off, and optionally add a custom descriptor to zero in on exactly what you need.", tag: "Customizable" },
-                { step: "03", icon: "rate_review",   title: "Answer & Get Graded",     body: "Tackle AI-generated questions drawn from real interview patterns. Write your answer, reveal the model answer, then get instant written AI feedback on accuracy and depth.", tag: "AI-Powered" },
-                { step: "04", icon: "timeline",      title: "Track Your Progress",     body: "Every graded answer is logged in your history. Search by keyword, filter by category or difficulty, and watch your performance improve over time.", tag: "Premium" },
-              ].map(({ step, icon, title, body, tag }, i) => (
-                <ScrollReveal key={step} direction="scale" startOffset={0.05 + i * 0.1} className="lp-glass-card how-step-card">
-                  <div style={{ fontSize: 52, fontWeight: 900, fontFamily: "Inter, sans-serif", background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", lineHeight: 1, marginBottom: 20, letterSpacing: "-0.04em" }}>
-                    {step}
-                  </div>
-                  <span className="material-symbols-outlined lp-icon-secondary">{icon}</span>
-                  <h3 className="lp-card-title" style={{ fontSize: 18 }}>{title}</h3>
-                  <p className="lp-card-body">{body}</p>
-                  <div style={{ marginTop: 20 }}>
-                    <span className="lp-tag">{tag}</span>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── PRICING ───────────────────────────────────────────────────────── */}
-        <section style={{ padding: "96px 32px", position: "relative", zIndex: 2, background: C.bg }}>
-          <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-            <SectionScan label="Pricing" />
-          </div>
-          <ScrollReveal style={{ textAlign: "center", marginBottom: 64 }}>
-            <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 16px 0", fontFamily: "Inter, sans-serif" }}>
-              Invest in Your Career
-            </h2>
-            <div style={{ height: 4, width: 64, background: cyberGrad, borderRadius: 2, margin: "0 auto 12px" }} />
-            <p style={{ color: C.muted, fontFamily: "Manrope, sans-serif", margin: 0 }}>
-              Predictable pricing for exponential returns.
-            </p>
-          </ScrollReveal>
-
-          <div className="lp-pricing-grid">
-            {/* Free tier */}
-            <ScrollReveal
-              direction="left"
-              startOffset={0.1}
-              style={{
-                background: C.surface,
-                border: "1px solid rgba(51,65,85,0.3)",
-                padding: 40, borderRadius: 16,
-                display: "flex", flexDirection: "column",
-              }}
+            {/* Explore CTA — always visible */}
+            <div
+              style={{ position: "absolute", bottom: "6%", left: "50%", transform: "translateX(-50%)", textAlign: "center", zIndex: 30 }}
             >
-              <div style={{ marginBottom: 32 }}>
-                <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 4px 0", fontFamily: "Inter, sans-serif" }}>Free Tier</h3>
-                <p style={{ color: C.muted, fontSize: 14, margin: 0, fontFamily: "Manrope, sans-serif" }}>Essential Prep</p>
-              </div>
-              <div style={{ fontSize: 42, fontWeight: 900, margin: "0 0 32px 0", fontFamily: "Inter, sans-serif" }}>
-                $0<span style={{ fontSize: 18, fontWeight: 400, color: C.muted }}>/mo</span>
-              </div>
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px 0", flex: 1 }}>
-                {[
-                  { t: "5 Questions / Day",    ok: true  },
-                  { t: "Basic Logic Feedback", ok: true  },
-                  { t: "Unlimited History",    ok: false },
-                  { t: "Mock Interview Mode",  ok: false },
-                ].map(({ t, ok }) => (
-                  <li key={t} style={{ display: "flex", alignItems: "center", gap: 12, opacity: ok ? 1 : 0.35, color: C.muted, fontFamily: "Manrope, sans-serif", fontSize: 14, marginBottom: 16 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 18, color: ok ? C.primary : C.muted }}>{ok ? "check_circle" : "cancel"}</span>
-                    {t}
-                  </li>
-                ))}
-              </ul>
-              <SignUpButton mode="modal">
-                <button className="lp-btn-outline-block">Get Started Free</button>
-              </SignUpButton>
-            </ScrollReveal>
-
-            {/* Premium tier — outer div carries scale(1.03), ScrollReveal handles animation */}
-            <div style={{ transform: "scale(1.03)" }}>
-              <ScrollReveal
-                direction="right"
-                startOffset={0.2}
-                className="lp-glass-card-solid"
-                style={{
-                  padding: 40, borderRadius: 16,
-                  display: "flex", flexDirection: "column",
-                  position: "relative",
-                  boxShadow: "0 30px 60px rgba(0,0,0,0.5)",
-                }}
+              <button
+                onClick={handleExplore}
+                style={{ background: cyberGrad, color: "#fff", border: "none", cursor: "pointer", fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: 700, padding: "14px 36px", borderRadius: 999, boxShadow: "0 0 32px rgba(21,101,192,0.55), 0 0 8px rgba(79,195,247,0.3)", letterSpacing: "0.04em" }}
+                className="explore-btn"
               >
-                <div style={{ position: "absolute", top: 0, right: 40, transform: "translateY(-50%)", background: cyberGrad, color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 12px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "Manrope, sans-serif", boxShadow: "0 4px 12px rgba(21,101,192,0.4)" }}>
-                  Recommended
-                </div>
-                <div style={{ marginBottom: 32 }}>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 4px 0", fontFamily: "Inter, sans-serif" }}>Premium Tier</h3>
-                  <p style={{ color: C.muted, fontSize: 14, margin: 0, fontFamily: "Manrope, sans-serif" }}>Advanced Mastery</p>
-                </div>
-                <div style={{ fontSize: 42, fontWeight: 900, margin: "0 0 32px 0", color: C.secondary, fontFamily: "Inter, sans-serif" }}>
-                  $3<span style={{ fontSize: 18, fontWeight: 400, color: C.muted }}>/mo</span>
-                </div>
-                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px 0", flex: 1 }}>
-                  {["Unlimited Questions", "Advanced AI Answer Grading", "Complete Question History", "Mock Interview Mode", "Priority 24/7 Support"].map(t => (
-                    <li key={t} style={{ display: "flex", alignItems: "center", gap: 12, color: C.onSurface, fontFamily: "Manrope, sans-serif", fontSize: 14, marginBottom: 16 }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 18, color: C.secondary }}>verified</span>
-                      {t}
-                    </li>
-                  ))}
-                </ul>
-                <SignUpButton mode="modal">
-                  <button className="lp-btn-premium">Go Premium →</button>
-                </SignUpButton>
-                <p style={{ fontSize: 10, textAlign: "center", margin: "12px 0 0", color: C.muted, opacity: 0.6, fontFamily: "Manrope, sans-serif" }}>
-                  Secure payment powered by Stripe
-                </p>
-              </ScrollReveal>
+                Explore Features ↓
+              </button>
+            </div>
+
+            {/* Scroll progress bar */}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 2, background: "rgba(255,255,255,0.06)", pointerEvents: "none" }}>
+              <div ref={progressBarRef} style={{ height: "100%", width: "0%", background: cyberGrad, boxShadow: "0 0 8px rgba(79,195,247,0.6)" }} />
             </div>
           </div>
         </section>
-
-        {/* ── CTA ───────────────────────────────────────────────────────────── */}
-        <section style={{ padding: "128px 32px", textAlign: "center", position: "relative", overflow: "hidden", zIndex: 2, background: C.bgAlt }}>
-          <div style={{
-            position: "absolute", inset: 0,
-            background: isPaid ? "rgba(201,168,76,0.07)" : "rgba(21,101,192,0.08)",
-            filter: "blur(120px)", borderRadius: "50%",
-            transform: "scale(0.5)", pointerEvents: "none",
-          }} />
-
-          <SectionScan label={isPaid ? "Premium Access" : "Get Started"} align="center" />
-
-          {isPaid ? (
-            <>
-              <ScrollReveal startOffset={0} style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: C.gold, margin: "0 0 16px 0", fontFamily: "Manrope, sans-serif", position: "relative", zIndex: 1 }}>
-                Premium Member
-              </ScrollReveal>
-              <ScrollReveal startOffset={0.05} style={{ position: "relative", zIndex: 1 }}>
-                <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 16px 0", fontFamily: "Inter, sans-serif" }}>
-                  Your edge is ready.
-                </h2>
-              </ScrollReveal>
-              <ScrollReveal startOffset={0.1} style={{ color: C.muted, fontFamily: "Manrope, sans-serif", margin: "0 0 32px 0", fontSize: 17, position: "relative", zIndex: 1 }}>
-                All premium features are unlocked. Keep sharpening your technicals.
-              </ScrollReveal>
-              <ScrollReveal startOffset={0.18} style={{ position: "relative", zIndex: 1 }}>
-                <button className="lp-btn-cta-gold" onClick={() => router.push("/practice")}>
-                  Go to Practice →
-                </button>
-              </ScrollReveal>
-            </>
-          ) : (
-            <>
-              <ScrollReveal startOffset={0} style={{ position: "relative", zIndex: 1 }}>
-                <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 32px 0", fontFamily: "Inter, sans-serif" }}>
-                  Ready to secure the offer?
-                </h2>
-              </ScrollReveal>
-              <ScrollReveal startOffset={0.15} style={{ position: "relative", zIndex: 1 }}>
-                <SignUpButton mode="modal">
-                  <button className="lp-btn-cta">Get Started for Free</button>
-                </SignUpButton>
-              </ScrollReveal>
-            </>
-          )}
-        </section>
-
-        {/* ── FOOTER ────────────────────────────────────────────────────────── */}
-        <footer style={{ background: C.bg, borderTop: "1px solid rgba(21,101,192,0.2)", position: "relative", zIndex: 2 }}>
-          <div className="lp-footer-inner" style={{ maxWidth: 1280, margin: "0 auto", padding: "48px 32px" }}>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 8, fontFamily: "Inter, sans-serif", display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ color: C.primary }}>Fite</span>{" "}
-                <span style={{ color: C.secondary }}>Finance</span>
-                {isPaid && <span style={{ color: C.gold, textShadow: "0 0 8px rgba(201,168,76,0.6)", fontWeight: 900 }}>+</span>}
-              </div>
-              <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.12em", color: C.muted, margin: 0, fontFamily: "Manrope, sans-serif" }}>
-                © 2025 Fite Finance. Precision in Preparation.
-              </p>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 32 }}>
-              <Link href="/privacy" className="lp-footer-link">Privacy</Link>
-              <Link href="/terms"   className="lp-footer-link">Terms</Link>
-              <Link href="/refunds" className="lp-footer-link">Refunds</Link>
-            </div>
-          </div>
-        </footer>
 
       </div>
+
+      <style>{`
+        html, body { background: #020817; overscroll-behavior-y: none; }
+        @keyframes scrollDot {
+          0%   { transform: translateY(0);   opacity: 1; }
+          100% { transform: translateY(14px); opacity: 0; }
+        }
+        .scroll-dot { animation: scrollDot 1.6s ease-in-out infinite; }
+        .hero-scroll-hint { opacity: 0; animation: fadeIn 0.5s ease 0.7s forwards; }
+        @keyframes fadeIn { to { opacity: 1; } }
+        @keyframes explorePulse {
+          0%, 100% { box-shadow: 0 0 32px rgba(21,101,192,0.55), 0 0 8px rgba(79,195,247,0.3); }
+          50%       { box-shadow: 0 0 48px rgba(21,101,192,0.8), 0 0 24px rgba(79,195,247,0.5); }
+        }
+        .explore-btn { animation: explorePulse 2s ease-in-out infinite; }
+        .explore-btn:hover { filter: brightness(1.15); transform: translateY(-2px) !important; }
+      `}</style>
     </>
   );
 }

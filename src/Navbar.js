@@ -2,7 +2,7 @@ import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/c
 import usePaidStatus from "./usePaidStatus";
 import useUpgrade from "./useUpgrade";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function Navbar() {
   const { user } = useUser();
@@ -10,6 +10,24 @@ function Navbar() {
   const router = useRouter();
   const handleUpgrade = useUpgrade();
   const [showHistoryTooltip, setShowHistoryTooltip] = useState(false);
+  const navRef    = useRef(null);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > lastScrollY.current && y > 80) {
+        el.style.transform = "translateY(-100%)";
+      } else {
+        el.style.transform = "translateY(0)";
+      }
+      lastScrollY.current = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const showTooltip = () => { setShowHistoryTooltip(true); setTimeout(() => setShowHistoryTooltip(false), 2500); };
 
@@ -26,7 +44,7 @@ function Navbar() {
   };
 
   return (
-    <div style={styles.navbar} className="navbar-fixed navbar-transparent">
+    <div ref={navRef} style={{ ...styles.navbar, transition: "transform 0.35s cubic-bezier(0.22,1,0.36,1)" }} className="navbar-fixed navbar-transparent">
       <div className="byline-fixed" style={{ ...styles.byline, pointerEvents: "auto" }}>
         by Colgate's finest
       </div>

@@ -27,7 +27,9 @@ Never read, display, or reference the contents of .env, .env.local, or any .env.
 ```
 /pages/
   _app.js          — ClerkProvider, PaidStatusProvider, Navbar, Analytics, global CSS
-  index.js         → Home
+                     Navbar is hidden on "/" and "/features" (isLanding check)
+  index.js         → Hero landing page (canvas scroll animation only)
+  features.js      → Supplemental landing page (Features, How It Works, Pricing, CTA, Footer)
   success.js       → Success
   history.js       → History
   privacy.js       → PrivacyPolicy
@@ -164,7 +166,8 @@ Questions are stored in `localStorage` as `questionHistory`. Questions asked in 
 ## Mobile Behavior
 - Navbar switches from `position: fixed` (transparent, desktop) to `position: relative` (mobile)
 - `.byline-fixed` hidden on mobile; `.byline-bottom` shown below support email
-- `overscroll-behavior-x: none` (allows pull-to-refresh, blocks horizontal bounce)
+- `overscroll-behavior-x: none` in App.css (allows pull-to-refresh, blocks horizontal bounce)
+- Hero page (`/`) additionally sets `overscroll-behavior-y: none` via inline `<style>` to prevent vertical rubber-band showing white space
 
 ## Environment Variables
 ```
@@ -181,7 +184,8 @@ UPSTASH_REDIS_REST_TOKEN (auto via Vercel)
 
 ## Routes
 ```
-/                                                    → Home
+/                                                    → Hero landing page (canvas animation)
+/features                                            → Supplemental landing page (features/pricing/CTA)
 /questions/[category]/[difficulty]/[math]            → Questions (no customPrompt)
 /questions/[category]/[difficulty]/[math]/[customPrompt] → Questions
 /success                                             → Success (redirects non-paid to /)
@@ -206,6 +210,32 @@ All navigation uses Next.js — not React Router:
 - Interview Mode with sequential, structured follow-up questions + feedback
 - Toggleable Timer feature for timed question answering
 - Premium logo + gold PREMIUM badge
+
+## Landing Page Architecture
+
+The landing experience is split across two pages:
+
+### Hero page (`pages/index.js`)
+- **Scroll-driven canvas animation**: 111 JPEG frames in `/public/frames/` scrubbed via GSAP ScrollTrigger. Section height 600vh with a `position: sticky` 100vh viewport.
+- **No scroll gate**: Users can scroll freely back and forth through the animation. No `scrollLockedRef` or wheel/touch event blockers.
+- **Overlays driven by scroll progress**:
+  - Hero text (bottom-left): exits p 0.18–0.28
+  - Mid-scroll tagline: visible p 0.30–0.72
+  - End-of-scroll product details + sign-up card: enters p 0.82–0.94
+- **"Explore Features" CTA**: always visible (bottom-center, fixed to sticky viewport). Clicking navigates to `/features` via `router.push`.
+- **Entry animation**: Full-screen dark cover slides **upward** (translateY(0) → translateY(-100%)) on every page load, with a glowing cyan sweep line at its departing edge. `heroTextIn` delayed to 650ms to sync with the cover clearing.
+- **Overscroll**: `body { overscroll-behavior-y: none }` + `html, body { background: #020817 }` prevents white flash.
+- **Design tokens** (shared with features page): `C.bg = #020817`, `C.primary = #1565C0`, `C.secondary = #4FC3F7`, `C.gold = #c9a84c`.
+
+### Supplemental features page (`pages/features.js`)
+- Contains: Features grid, How It Works, Pricing, CTA section, Footer.
+- All helper components live here (ScrollReveal, SectionScan, GlowCard, ScrambleText, CountUp, AnimatedBar) — not in index.js.
+- **"← Back" button**: fixed top-left, glassmorphism style, routes to `/`.
+- **Entry animation**: Same dark cover but slides **downward** (translateY(0) → translateY(100%)), glow line on the top edge, revealing the page from top down.
+- Navbar is hidden here (same as `/`) via `isLanding` check in `_app.js`.
+
+### LandingPage.css (`src/LandingPage.css`)
+Imported globally via `_app.js`. Covers: mid-tag and end-details spawn keyframes, hero/feat/how/pricing grid layouts, button variants (`lp-btn-*`), glass card styles, footer layout.
 
 ## Interview Mode (API-complete, no frontend page yet)
 Three new API endpoints power a structured mock interview feature:
