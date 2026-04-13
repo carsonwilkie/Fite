@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-04-13T02:43:22.102Z",
+  "projectRoot": "/Users/carsonwilkie/Fite",
+  "structure": {
+    "hasPackageJson": true,
+    "hasTsConfig": false,
+    "hasClaudeConfig": true,
+    "hasClaudeFlow": true
+  },
+  "scannedAt": 1776048202102
+}

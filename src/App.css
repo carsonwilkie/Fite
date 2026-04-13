@@ -338,7 +338,10 @@ textarea:focus {
 html, body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  /* overflow-x: hidden removed — setting this on html/body makes them scroll
+     containers, which breaks IntersectionObserver (whileInView) because the
+     observer root becomes the body element instead of the viewport. Use the
+     .lp-overflow-guard wrapper div on inner content instead. */
   height: 100%;
   min-height: 100%;
   overscroll-behavior-x: none;
