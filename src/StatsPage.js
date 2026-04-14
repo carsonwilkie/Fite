@@ -22,13 +22,19 @@ const C = {
 
 const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 
-function label(text) {
+function SectionHeader({ text }) {
   return (
-    <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.22em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 10, opacity: 0.7 }}>
-      {text}
+    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+      <div style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", color: C.text, fontFamily: "Manrope, sans-serif" }}>
+        {text}
+      </div>
+      <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${C.border}, transparent)` }} />
     </div>
   );
 }
+
+// Keep `label` as alias for backward compat within file
+const label = (text) => <SectionHeader text={text} />;
 
 function StatCard({ value, sub, accent, delay = 0 }) {
   return (
@@ -38,8 +44,8 @@ function StatCard({ value, sub, accent, delay = 0 }) {
       transition={{ duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
       style={{ padding: "20px 18px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, textAlign: "center" }}
     >
-      <div style={{ fontSize: 28, fontWeight: 900, color: accent || C.text, fontFamily: "Inter, sans-serif", lineHeight: 1 }}>{value ?? "—"}</div>
-      <div style={{ fontSize: 10, fontWeight: 700, color: C.textMuted, marginTop: 6, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>{sub}</div>
+      <div style={{ fontSize: 30, fontWeight: 900, color: accent || C.text, fontFamily: "Inter, sans-serif", lineHeight: 1 }}>{value ?? "—"}</div>
+      <div style={{ fontSize: 10, fontWeight: 800, color: C.textMuted, marginTop: 8, fontFamily: "Manrope, sans-serif", letterSpacing: "0.1em", textTransform: "uppercase" }}>{sub}</div>
     </motion.div>
   );
 }
@@ -211,7 +217,7 @@ export default function StatsPage() {
             ← Dashboard
           </motion.button>
           <div style={{ width: 1, height: 16, backgroundColor: C.border }} />
-          <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", color: C.secondary, fontFamily: "Manrope, sans-serif" }}>Performance Stats</span>
+          <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase", color: C.text, fontFamily: "Manrope, sans-serif" }}>Performance Stats</span>
         </div>
         <motion.button
           onClick={() => router.push("/history")}
@@ -237,7 +243,7 @@ export default function StatsPage() {
         ) : (
           <>
             {/* ── Overview cards ── */}
-            <div style={{ marginBottom: 28 }}>{label("Overview")}</div>
+            {label("Overview")}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 12, marginBottom: 32 }}>
               <StatCard value={totalQuestions} sub="Total Questions" delay={0} />
               <StatCard value={gradedQuestions} sub="Graded" delay={0.05} />
@@ -247,7 +253,7 @@ export default function StatsPage() {
             </div>
 
             {/* ── Activity ── */}
-            <div style={{ marginBottom: 28 }}>{label("Activity")}</div>
+            {label("Activity")}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 12, marginBottom: 32 }}>
               <StatCard value={avgPerDay} sub="Avg / Day" accent={C.secondary} delay={0} />
               <StatCard value={currentStreak} sub="Current Streak" accent={currentStreak > 0 ? C.warn : undefined} delay={0.05} />
@@ -255,7 +261,7 @@ export default function StatsPage() {
             </div>
 
             {/* ── Score chart (slider-controlled by # questions) ── */}
-            <div style={{ marginBottom: 12 }}>{label("Score History")}</div>
+            {label("Score History")}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
               style={{ padding: "20px 22px 18px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, marginBottom: 32 }}>
 
@@ -352,7 +358,7 @@ export default function StatsPage() {
             {/* ── Category breakdown ── */}
             {catRows.length > 0 && (
               <>
-                <div style={{ marginBottom: 12 }}>{label("By Category")}</div>
+                {label("By Category")}
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                   style={{ padding: "20px 22px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
                   {catRows.map((row, i) => (
@@ -363,17 +369,17 @@ export default function StatsPage() {
             )}
 
             {/* ── Difficulty breakdown ── */}
-            <div style={{ marginBottom: 12 }}>{label("By Difficulty")}</div>
+            {label("By Difficulty")}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
               style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 32 }}>
               {["Easy", "Medium", "Hard"].map((d, i) => {
                 const scoreRows = scoredEntries.filter(e => e.difficulty === d);
                 const avg = scoreRows.length > 0 ? (scoreRows.reduce((s, e) => s + e.score, 0) / scoreRows.length).toFixed(1) : null;
                 return (
-                  <div key={d} style={{ padding: "18px 14px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, textAlign: "center" }}>
-                    <div style={{ fontSize: 26, fontWeight: 900, color: C.text }}>{diffCounts[d]}</div>
-                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 4 }}>{d}</div>
-                    {avg && <div style={{ fontSize: 12, color: scoreColor(+avg), fontWeight: 700, marginTop: 6 }}>avg {avg}</div>}
+                  <div key={d} style={{ padding: "20px 14px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, textAlign: "center" }}>
+                    <div style={{ fontSize: 30, fontWeight: 900, color: C.text }}>{diffCounts[d]}</div>
+                    <div style={{ fontSize: 10, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 6 }}>{d}</div>
+                    {avg && <div style={{ fontSize: 13, color: scoreColor(+avg), fontWeight: 800, marginTop: 6, fontFamily: "Manrope, sans-serif" }}>avg {avg}</div>}
                   </div>
                 );
               })}

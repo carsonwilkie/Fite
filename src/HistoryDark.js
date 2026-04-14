@@ -63,7 +63,7 @@ function EntryCard({ entry, index, expanded, onToggle }) {
       >
         <ScoreChip score={entry.score ?? null} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.45, marginBottom: 6 }}>{shortTitle}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.5, marginBottom: 7 }}>{shortTitle}</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {isInterview && <Badge text="Interview" accent={C.gold} />}
             {entry.category && <Badge text={entry.category} />}
@@ -221,7 +221,7 @@ export default function HistoryDark() {
             ← Dashboard
           </motion.button>
           <div style={{ width: 1, height: 16, backgroundColor: C.border }} />
-          <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", color: C.secondary, fontFamily: "Manrope, sans-serif" }}>Question History</span>
+          <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase", color: C.text, fontFamily: "Manrope, sans-serif" }}>Question History</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{entries.length} entries</span>
@@ -235,41 +235,68 @@ export default function HistoryDark() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 820, margin: "0 auto", padding: "24px 20px 80px" }}>
+      <div style={{ maxWidth: 820, margin: "0 auto", padding: "28px 20px 80px" }}>
 
         {/* Search */}
-        <div style={{ position: "relative", marginBottom: 16 }}>
+        <div style={{ position: "relative", marginBottom: 20 }}>
           <input
             type="text"
             placeholder="Search questions..."
             value={search}
             onChange={e => startTransition(() => setSearch(e.target.value))}
-            style={{ width: "100%", padding: "12px 16px 12px 40px", backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 13, color: C.text, fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box" }}
+            style={{ width: "100%", padding: "13px 16px 13px 42px", backgroundColor: C.surface, border: `1px solid ${search ? C.secondary : C.border}`, borderRadius: 10, fontSize: 14, color: C.text, fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box", transition: "border-color 0.2s" }}
           />
-          <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: C.textMuted, fontSize: 14, pointerEvents: "none" }}>⌕</span>
+          <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: search ? C.secondary : C.textMuted, fontSize: 16, pointerEvents: "none", transition: "color 0.2s" }}>⌕</span>
         </div>
 
-        {/* Filters */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
-          {/* Category */}
-          {["", ...CATEGORIES.filter(c => c !== "All")].map(cat => (
-            <FilterChip key={cat || "_all"} label={cat || "All Categories"} active={selectedCategory === cat} onClick={() => startTransition(() => setSelectedCategory(selectedCategory === cat ? "" : cat))} />
-          ))}
-          <div style={{ width: 1, height: 28, backgroundColor: C.border, alignSelf: "center" }} />
-          {/* Difficulty */}
-          {DIFFICULTIES.map(d => (
-            <FilterChip key={d} label={d} active={selectedDifficulty === d} onClick={() => startTransition(() => setSelectedDifficulty(selectedDifficulty === d ? "" : d))} />
-          ))}
-          <div style={{ width: 1, height: 28, backgroundColor: C.border, alignSelf: "center" }} />
-          {/* Math */}
-          {["With Math", "No Math"].map(m => (
-            <FilterChip key={m} label={m} active={selectedMath === m} onClick={() => startTransition(() => setSelectedMath(selectedMath === m ? "" : m))} />
-          ))}
-          <div style={{ width: 1, height: 28, backgroundColor: C.border, alignSelf: "center" }} />
-          {/* Sort */}
-          <FilterChip label="Newest" active={sortOrder === "newest"} onClick={() => setSortOrder("newest")} />
-          <FilterChip label="Oldest" active={sortOrder === "oldest"} onClick={() => setSortOrder("oldest")} />
+        {/* Filters — grouped by type */}
+        <div style={{ backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 16px", marginBottom: 28, display: "flex", flexDirection: "column", gap: 12 }}>
+
+          {/* Category row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", width: 64, flexShrink: 0 }}>Category</span>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {["", ...CATEGORIES.filter(c => c !== "All")].map(cat => (
+                <FilterChip key={cat || "_all"} label={cat || "All"} active={selectedCategory === cat} onClick={() => startTransition(() => setSelectedCategory(selectedCategory === cat ? "" : cat))} />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ height: 1, backgroundColor: C.border }} />
+
+          {/* Difficulty row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", width: 64, flexShrink: 0 }}>Difficulty</span>
+            <div style={{ display: "flex", gap: 6 }}>
+              {DIFFICULTIES.map(d => (
+                <FilterChip key={d} label={d} active={selectedDifficulty === d} onClick={() => startTransition(() => setSelectedDifficulty(selectedDifficulty === d ? "" : d))} />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ height: 1, backgroundColor: C.border }} />
+
+          {/* Math + Sort row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", width: 64, flexShrink: 0 }}>Quant</span>
+            <div style={{ display: "flex", gap: 6, flex: 1 }}>
+              {["With Math", "No Math"].map(m => (
+                <FilterChip key={m} label={m} active={selectedMath === m} onClick={() => startTransition(() => setSelectedMath(selectedMath === m ? "" : m))} />
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 6, marginLeft: "auto" }}>
+              <FilterChip label="↓ Newest" active={sortOrder === "newest"} onClick={() => setSortOrder("newest")} />
+              <FilterChip label="↑ Oldest" active={sortOrder === "oldest"} onClick={() => setSortOrder("oldest")} />
+            </div>
+          </div>
         </div>
+
+        {/* Results count */}
+        {entries.length > 0 && (
+          <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 16, letterSpacing: "0.04em" }}>
+            Showing <span style={{ color: C.text, fontWeight: 700 }}>{filtered.length}</span> of <span style={{ color: C.text, fontWeight: 700 }}>{entries.length}</span> entries
+          </div>
+        )}
 
         {/* Entries */}
         {filtered.length === 0 ? (
@@ -278,8 +305,8 @@ export default function HistoryDark() {
           </div>
         ) : (
           Object.entries(grouped).map(([date, group]) => (
-            <div key={date} style={{ marginBottom: 28 }}>
-              <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 10, opacity: 0.6 }}>{date}</div>
+            <div key={date} style={{ marginBottom: 32 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: C.secondary, fontFamily: "Manrope, sans-serif", marginBottom: 10, paddingBottom: 8, borderBottom: `1px solid ${C.border}` }}>{date}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {group.map(entry => {
                   const gi = globalIdx++;
