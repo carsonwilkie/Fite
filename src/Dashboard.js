@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
-import { useUser, UserButton, useClerk } from "@clerk/clerk-react";
+import { useUser, UserButton, useClerk, SignInButton, SignUpButton } from "@clerk/clerk-react";
 import { motion, AnimatePresence } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
@@ -720,7 +720,7 @@ function InterviewCanvas({ loadingInterviewGenerate, interviewProgress, intervie
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function Dashboard() {
   const router    = useRouter();
-  const { user }  = useUser();
+  const { user, isSignedIn } = useUser();
   const { openUserProfile } = useClerk();
   const { isPaid } = usePaidStatus();
   const price      = usePrice();
@@ -985,6 +985,22 @@ export default function Dashboard() {
                 style={{ padding: "8px 18px", borderRadius: 999, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #f5d06a, #c9a84c)", color: "#fff", fontSize: 11, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", boxShadow: "0 4px 16px rgba(201,168,76,0.4)" }}>
                 Upgrade
               </motion.button>
+            )}
+            {!isSignedIn && !isMobile && (
+              <>
+                <SignInButton mode="modal">
+                  <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                    style={{ padding: "8px 16px", borderRadius: 999, border: `1px solid rgba(79,195,247,0.4)`, background: "rgba(79,195,247,0.08)", color: C.secondary, fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
+                    Sign In
+                  </motion.button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                    style={{ padding: "8px 16px", borderRadius: 999, border: "none", background: cyberGrad, color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", fontFamily: "Manrope, sans-serif", cursor: "pointer", boxShadow: "0 4px 14px rgba(21,101,192,0.4)" }}>
+                    Sign Up
+                  </motion.button>
+                </SignUpButton>
+              </>
             )}
             {/* Mobile: configure button */}
             {isMobile && (
