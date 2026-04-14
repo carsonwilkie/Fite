@@ -595,10 +595,10 @@ export default function LandingPage() {
                     </SignedOut>
                     <SignedIn>
                       {isPaid ? (
-                        <button className="lp-btn-mission-gold" onClick={() => router.push("/practice")} style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Start Practicing</button>
+                        <button className="lp-btn-mission-gold" onClick={() => router.push("/dashboard")} style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Start Practicing</button>
                       ) : (
                         <>
-                          <button className="lp-btn-mission" onClick={() => router.push("/practice")} style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Start Practicing</button>
+                          <button className="lp-btn-mission" onClick={() => router.push("/dashboard")} style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Start Practicing</button>
                           <button className="lp-btn-upgrade" onClick={handleUpgrade} style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Upgrade to Premium</button>
                         </>
                       )}

@@ -10,7 +10,8 @@ const C_MUTED     = "#94a3b8";
 export default function LandingNav() {
   const router = useRouter();
   const { isPaid } = usePaidStatus();
-  const onHero = router.pathname === "/";
+  const onHero      = router.pathname === "/";
+  const onDashboard = router.pathname === "/dashboard";
 
   return (
     <>
@@ -28,7 +29,8 @@ export default function LandingNav() {
 
         <div className="landing-nav__center">
           <NavLink active={onHero} onClick={() => router.push("/")}>Home</NavLink>
-          <NavLink active={!onHero} onClick={() => router.push("/features")}>Features</NavLink>
+          <NavLink active={router.pathname === "/features"} onClick={() => router.push("/features")}>Features</NavLink>
+          <NavLink active={onDashboard} onClick={() => router.push("/dashboard")}>Dashboard</NavLink>
         </div>
 
         <div className="landing-nav__actions">
@@ -48,7 +50,7 @@ export default function LandingNav() {
           </SignedOut>
           <SignedIn>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <button onClick={() => router.push("/practice")} style={primaryBtn}>
+              <button onClick={() => router.push("/dashboard")} style={primaryBtn}>
                 Practice
               </button>
               <UserButton />
