@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@clerk/clerk-react";
+import { motion, AnimatePresence } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
 import useUpgrade from "./useUpgrade";
@@ -12,6 +13,28 @@ import LightsaberLoader from "./LightsaberLoader";
 
 const TIMER_TIME = 120;
 const INTERVIEW_QUESTIONS = 4;
+
+// Animated SVG score ring
+function ScoreRing({ score, color }) {
+  const radius = 22;
+  const circumference = 2 * Math.PI * radius;
+  return (
+    <svg width="56" height="56" style={{ position: "absolute", top: 0, left: 0, transform: "rotate(-90deg)" }} aria-hidden="true">
+      <circle cx="28" cy="28" r={radius} fill="none" stroke="#e8edf5" strokeWidth="3" />
+      <motion.circle
+        cx="28" cy="28" r={radius}
+        fill="none"
+        stroke={color}
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        initial={{ strokeDashoffset: circumference }}
+        animate={{ strokeDashoffset: circumference * (1 - score / 10) }}
+        transition={{ duration: 1, ease: "easeOut", delay: 0.15 }}
+      />
+    </svg>
+  );
+}
 
 function Questions() {
   const router = useRouter();
@@ -470,11 +493,17 @@ function Questions() {
   return (
     <div style={styles.page} className="page-bg page-wrapper">
       <ElectricBorder active={isPaid}>
-      <div style={{
-        backgroundColor: "#f0f4f8", borderRadius: "16px", padding: "24px",
-        width: "100%", maxWidth: "728px", boxSizing: "border-box",
-        boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
-      }} className="wrapper-mobile">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          backgroundColor: "#f0f4f8", borderRadius: "16px", padding: "24px",
+          width: "100%", maxWidth: "728px", boxSizing: "border-box",
+          boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
+        }}
+        className="wrapper-mobile"
+      >
         <div style={styles.container}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }} className="header-mobile">
             <img
@@ -664,71 +693,116 @@ function Questions() {
                   </div>
                 )}
 
-                {question && (
-                  <div style={styles.section}>
-                    <p style={styles.label}>QUESTION</p>
-                    <p style={styles.text}>{question}</p>
+                <AnimatePresence mode="wait">
+                  {question && (
+                    <motion.div
+                      key={question}
+                      style={styles.section}
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <p style={styles.label}>QUESTION</p>
+                      <p style={styles.text}>{question}</p>
 
-                    {!question.includes("Come back tomorrow") && (
-                      <div style={{ marginTop: "20px" }}>
-                        <p style={{ ...styles.label, marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
-                          YOUR ANSWER
-                          {isPaid ? <PremiumBadge small /> : <span style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.8px", padding: "3px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5" }}>PREMIUM</span>}
-                        </p>
-                        <textarea
-                          placeholder={isPaid ? "Type your answer here to get AI feedback..." : "Upgrade to Premium to get AI feedback on your answers"}
-                          value={userAnswer}
-                          onChange={(e) => isPaid && !(timerOn && (!timerStarted || timeLeft === 0 || graded)) && setUserAnswer(e.target.value)}
-                          disabled={!isPaid || (timerOn && (!timerStarted || timeLeft === 0 || graded))}
-                          style={{
-                            width: "100%", minHeight: "120px", padding: "12px 16px", borderRadius: "8px",
-                            border: "2px solid #e8edf5", fontSize: "14px", color: isPaid ? "#1a1a2e" : "#a0aec0",
-                            fontFamily: "'Segoe UI', sans-serif", boxSizing: "border-box", outline: "none",
-                            backgroundColor: isPaid ? "#ffffff" : "#f7f9fc", cursor: isPaid ? "text" : "not-allowed", resize: "vertical",
-                          }}
-                        />
-                        {isPaid && (
-                          <button onClick={handleGrade} disabled={loadingFeedback || !userAnswer.trim() || graded || (timerOn && !timerStarted)} className="secondary-btn" style={{ marginTop: "12px" }}>
-                            {loadingFeedback ? "Grading..." : graded ? "Graded ✓" : "Grade My Answer"}
-                          </button>
+                      {!question.includes("Come back tomorrow") && (
+                        <div style={{ marginTop: "20px" }}>
+                          <p style={{ ...styles.label, marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                            YOUR ANSWER
+                            {isPaid ? <PremiumBadge small /> : <span style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.8px", padding: "3px 8px", borderRadius: "20px", backgroundColor: "#e8edf5", color: "#4a6fa5" }}>PREMIUM</span>}
+                          </p>
+                          <textarea
+                            placeholder={isPaid ? "Type your answer here to get AI feedback..." : "Upgrade to Premium to get AI feedback on your answers"}
+                            value={userAnswer}
+                            onChange={(e) => isPaid && !(timerOn && (!timerStarted || timeLeft === 0 || graded)) && setUserAnswer(e.target.value)}
+                            disabled={!isPaid || (timerOn && (!timerStarted || timeLeft === 0 || graded))}
+                            style={{
+                              width: "100%", minHeight: "120px", padding: "12px 16px", borderRadius: "8px",
+                              border: "2px solid #e8edf5", fontSize: "14px", color: isPaid ? "#1a1a2e" : "#a0aec0",
+                              fontFamily: "'Segoe UI', sans-serif", boxSizing: "border-box", outline: "none",
+                              backgroundColor: isPaid ? "#ffffff" : "#f7f9fc", cursor: isPaid ? "text" : "not-allowed", resize: "vertical",
+                            }}
+                          />
+                          {isPaid && (
+                            <motion.button
+                              onClick={handleGrade}
+                              disabled={loadingFeedback || !userAnswer.trim() || graded || (timerOn && !timerStarted)}
+                              className="secondary-btn"
+                              style={{ marginTop: "12px" }}
+                              whileHover={(!loadingFeedback && userAnswer.trim() && !graded) ? { scale: 1.01 } : {}}
+                              whileTap={(!loadingFeedback && userAnswer.trim() && !graded) ? { scale: 0.98 } : {}}
+                            >
+                              {loadingFeedback ? "Grading..." : graded ? "Graded ✓" : "Grade My Answer"}
+                            </motion.button>
+                          )}
+                        </div>
+                      )}
+
+                      <AnimatePresence>
+                        {feedback && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                            style={{ marginTop: "20px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: `4px solid ${score !== null ? getScoreColor(score) : "#0a2463"}` }}
+                          >
+                            {score !== null && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.6 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ type: "spring", stiffness: 280, damping: 18 }}
+                                style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}
+                              >
+                                {/* Score ring */}
+                                <div style={{ width: "56px", height: "56px", position: "relative", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <ScoreRing score={score} color={getScoreColor(score)} />
+                                  <span style={{ fontSize: "16px", fontWeight: "700", color: getScoreColor(score), position: "relative", zIndex: 1 }}>{score}</span>
+                                </div>
+                                <div>
+                                  <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 2px 0" }}>SCORE</p>
+                                  <p style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a2e", margin: 0 }}>{score} / 10</p>
+                                </div>
+                              </motion.div>
+                            )}
+                            <p style={{ ...styles.label, marginBottom: "8px" }}>FEEDBACK</p>
+                            <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{feedback}</p>
+                          </motion.div>
                         )}
-                      </div>
-                    )}
+                      </AnimatePresence>
 
-                    {feedback && (
-                      <div style={{ marginTop: "20px", padding: "16px", backgroundColor: "#f0f4f8", borderRadius: "8px", borderLeft: `4px solid ${score !== null ? getScoreColor(score) : "#0a2463"}` }}>
-                        {score !== null && (
-                          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
-                            <div style={{ width: "48px", height: "48px", borderRadius: "50%", backgroundColor: getScoreBg(score), border: `2px solid ${getScoreColor(score)}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <span style={{ fontSize: "18px", fontWeight: "700", color: getScoreColor(score) }}>{score}</span>
-                            </div>
-                            <div>
-                              <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 2px 0" }}>SCORE</p>
-                              <p style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a2e", margin: 0 }}>{score} / 10</p>
-                            </div>
-                          </div>
-                        )}
-                        <p style={{ ...styles.label, marginBottom: "8px" }}>FEEDBACK</p>
-                        <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{feedback}</p>
-                      </div>
-                    )}
+                      {question.includes("Come back tomorrow") ? (
+                        <button className="upgrade-btn upgrade-btn-offset" onClick={handleUpgrade} style={{ width: "100%", display: "block", marginTop: "16px" }}>⭐ Upgrade for {price || "$3/month"}</button>
+                      ) : (
+                        <motion.button
+                          onClick={getAnswer}
+                          disabled={loadingQuestion || loadingAnswer || answerRevealed || (timerOn && !graded)}
+                          className="secondary-btn"
+                          whileHover={(!loadingQuestion && !loadingAnswer && !answerRevealed) ? { scale: 1.01 } : {}}
+                          whileTap={(!loadingQuestion && !loadingAnswer && !answerRevealed) ? { scale: 0.98 } : {}}
+                        >
+                          {loadingAnswer ? "Loading..." : "Show Answer"}
+                        </motion.button>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                    {question.includes("Come back tomorrow") ? (
-                      <button className="upgrade-btn upgrade-btn-offset" onClick={handleUpgrade} style={{ width: "100%", display: "block", marginTop: "16px" }}>⭐ Upgrade for {price || "$3/month"}</button>
-                    ) : (
-                      <button onClick={getAnswer} disabled={loadingQuestion || loadingAnswer || answerRevealed || (timerOn && !graded)} className="secondary-btn">
-                        {loadingAnswer ? "Loading..." : "Show Answer"}
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {!question.includes("Come back tomorrow") && answerRevealed && answer && (
-                  <div style={styles.section}>
-                    <p style={styles.label}>ANSWER</p>
-                    <ReactMarkdown className="markdown">{answer}</ReactMarkdown>
-                  </div>
-                )}
+                <AnimatePresence>
+                  {!question.includes("Come back tomorrow") && answerRevealed && answer && (
+                    <motion.div
+                      style={styles.section}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <p style={styles.label}>ANSWER</p>
+                      <ReactMarkdown className="markdown">{answer}</ReactMarkdown>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </>
             )}
 
@@ -757,7 +831,13 @@ function Questions() {
 
                 {/* Completed steps (read-only) */}
                 {interviewUserAnswers.map((ans, i) => (
-                  <div key={i} style={{ marginBottom: "20px", borderTop: i > 0 ? "2.5px solid #e8edf5" : "none", paddingTop: i > 0 ? "20px" : "0" }}>
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: i * 0.05 }}
+                    style={{ marginBottom: "20px", borderTop: i > 0 ? "2.5px solid #e8edf5" : "none", paddingTop: i > 0 ? "20px" : "0" }}
+                  >
                     <div style={{ borderLeft: "3px solid #0a2463", paddingLeft: "14px", marginBottom: "10px" }}>
                       <p style={{ fontSize: "11px", fontWeight: "700", color: "#4a6fa5", letterSpacing: "1px", margin: "0 0 6px 0" }}>QUESTION {i + 1}</p>
                       <p style={{ fontSize: "14px", color: "#1a1a2e", lineHeight: "1.6", margin: 0, fontWeight: "500" }}>{interviewSession.questions[i].question}</p>
@@ -790,7 +870,7 @@ function Questions() {
                         <p style={{ fontSize: "13px", color: "#1a1a2e", lineHeight: "1.6", margin: 0 }}>{interviewSession.questions[i].idealAnswer}</p>
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 ))}
 
                 {/* Current question input */}
@@ -903,21 +983,27 @@ function Questions() {
 
           </div>
         </div>
-      </div>
+      </motion.div>
       </ElectricBorder>
-      <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "40px", marginBottom: "12px", fontStyle: "italic" }}>
-        For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
-      </p>
-      <p style={{ textAlign: "center", fontSize: "11px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px" }}>
-        <Link href="/privacy" style={{ color: "#4a6fa5" }}>Privacy Policy</Link>
-        <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
-        <Link href="/terms" style={{ color: "#4a6fa5" }}>Terms of Service</Link>
-        <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
-        <Link href="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
-      </p>
-      <p className="byline-bottom" style={{ textAlign: "center", fontSize: "12px", fontWeight: "bold", color: "#5a060d", fontFamily: "'Snell Roundhand', cursive", wordSpacing: "2px", marginTop: "4px", marginBottom: "12px", display: "none" }}>
-        by Colgate's finest
-      </p>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.4 }}
+      >
+        <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "40px", marginBottom: "12px", fontStyle: "italic" }}>
+          For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
+        </p>
+        <p style={{ textAlign: "center", fontSize: "11px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px" }}>
+          <Link href="/privacy" style={{ color: "#4a6fa5" }}>Privacy Policy</Link>
+          <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
+          <Link href="/terms" style={{ color: "#4a6fa5" }}>Terms of Service</Link>
+          <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
+          <Link href="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
+        </p>
+        <p className="byline-bottom" style={{ textAlign: "center", fontSize: "12px", fontWeight: "bold", color: "#5a060d", fontFamily: "'Snell Roundhand', cursive", wordSpacing: "2px", marginTop: "4px", marginBottom: "12px", display: "none" }}>
+          by Colgate's finest
+        </p>
+      </motion.div>
     </div>
   );
 }

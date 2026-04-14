@@ -1,0 +1,9 @@
+{
+  "id": "swarm-1776187682299-3c8ul9",
+  "topology": "hierarchical-mesh",
+  "maxAgents": 15,
+  "strategy": "development",
+  "initializedAt": "2026-04-14T17:28:02.299Z",
+  "status": "stopped",
+  "stoppedAt": "2026-04-14T17:39:11.899Z"
+}

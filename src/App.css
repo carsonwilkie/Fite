@@ -1376,3 +1376,38 @@ img, span, button {
   from { background-color: rgba(255, 255, 255, 1); height: 55%; }
   to   { background-color: rgba(255, 255, 255, 0.94); height: 53%; }
 }
+/* ── UI Revamp: Shared animation utilities ───────────────────────────────── */
+
+/* Success page gold pulse glow */
+@keyframes successGoldGlow {
+  0%, 100% { box-shadow: 0 0 40px 10px rgba(0, 0, 0, 0.4); }
+  40%       { box-shadow: 0 0 60px 18px rgba(201, 168, 76, 0.32), 0 0 40px 10px rgba(0, 0, 0, 0.4); }
+}
+.success-wrapper {
+  animation: successGoldGlow 2.8s ease-in-out 2;
+}
+
+/* Category button enhanced hover sweep */
+.category-btn {
+  position: relative;
+  overflow: hidden;
+}
+.category-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background: linear-gradient(135deg, rgba(10,36,99,0.04) 0%, rgba(10,36,99,0.08) 100%);
+  pointer-events: none;
+}
+.category-btn:hover::after {
+  opacity: 1;
+}
+
+/* Difficulty button position reset (needed for layoutId spring) */
+.difficulty-btn {
+  position: relative;
+}
+
+/* Navbar glassmorphism — applied via inline style when scrolled */
