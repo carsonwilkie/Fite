@@ -75,6 +75,44 @@ function ScoreRing({ score, color, size = 112 }) {
   );
 }
 
+const TIMER_DURATION = 120; // seconds
+
+function TimerDisplay({ timeLeft }) {
+  if (timeLeft === null) return null;
+  const pct   = timeLeft / TIMER_DURATION;
+  const color = pct > 0.5 ? C.success : pct > 0.25 ? C.warn : C.danger;
+  const mins  = Math.floor(timeLeft / 60);
+  const secs  = timeLeft % 60;
+  const str   = `${mins}:${secs.toString().padStart(2, "0")}`;
+  const size  = 56; const cx = size / 2; const r = cx - 4; const circ = 2 * Math.PI * r;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 18px", borderRadius: 12, background: C.surface, border: `1px solid ${color}40`, marginBottom: 8 }}
+    >
+      <div style={{ position: "relative", width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <svg width={size} height={size} style={{ transform: "rotate(-90deg)", position: "absolute" }}>
+          <circle cx={cx} cy={cx} r={r} fill="none" stroke={C.surfaceHigh} strokeWidth="4" />
+          <motion.circle
+            cx={cx} cy={cx} r={r} fill="none" stroke={color} strokeWidth="4" strokeLinecap="round"
+            strokeDasharray={circ}
+            animate={{ strokeDashoffset: circ * (1 - pct) }}
+            transition={{ duration: 0.8, ease: "linear" }}
+          />
+        </svg>
+        <span style={{ fontSize: 12, fontWeight: 900, color, position: "relative", zIndex: 1, fontFamily: "Manrope, sans-serif" }}>{str}</span>
+      </div>
+      <div>
+        <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 3 }}>Timer</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: timeLeft === 0 ? C.danger : C.text, fontFamily: "Inter, sans-serif" }}>
+          {timeLeft === 0 ? "Time's up!" : `${timeLeft}s remaining`}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 function NavItem({ icon, label, active, onClick, gold, muted }) {
   return (
     <motion.button
@@ -165,7 +203,7 @@ function SessionIntel({ count, avgScore, readiness }) {
 }
 
 // ─── Question Canvas (right panel, question mode) ─────────────────────────────
-function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback, score, graded, answerRevealed, loadingQuestion, loadingAnswer, loadingFeedback, streamProgress, wordCount, isPaid, category, difficulty, math, onGetAnswer, onGrade, onNewQuestion, onUpgrade, price, questionsUsed, getScoreColor, getScoreBg }) {
+function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback, score, graded, answerRevealed, loadingQuestion, loadingAnswer, loadingFeedback, streamProgress, wordCount, isPaid, category, difficulty, math, onGetAnswer, onGrade, onNewQuestion, onUpgrade, price, questionsUsed, getScoreColor, getScoreBg, timeLeft }) {
   const isLimitMsg = question?.includes("you've reached") || question?.includes("You've reached") || question?.includes("seen all recent");
 
   // Empty / loading state
@@ -211,6 +249,9 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         style={{ display: "flex", flexDirection: "column", gap: 32 }}
       >
+        {/* Timer display */}
+        <TimerDisplay timeLeft={timeLeft} />
+
         {/* Question header badges */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <span style={{ padding: "4px 12px", background: "rgba(79,195,247,0.1)", color: C.secondary, fontSize: 10, fontWeight: 900, fontFamily: "Manrope, sans-serif", borderRadius: 6, letterSpacing: "0.15em", textTransform: "uppercase", border: `1px solid rgba(79,195,247,0.2)` }}>
@@ -658,6 +699,26 @@ export default function Dashboard() {
   const [loadingDebrief,           setLoadingDebrief]           = useState(false);
   const [interviewAnswersRevealed, setInterviewAnswersRevealed] = useState(false);
 
+  // Timer state
+  const [timerOn,  setTimerOn]  = useState(false);
+  const [timeLeft, setTimeLeft] = useState(null);
+  const timerIntervalRef = useRef(null);
+  const timerOnRef       = useRef(false);
+  useEffect(() => { timerOnRef.current = timerOn; }, [timerOn]);
+
+  const startTimer = () => {
+    clearInterval(timerIntervalRef.current);
+    setTimeLeft(TIMER_DURATION);
+    timerIntervalRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) { clearInterval(timerIntervalRef.current); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+  const stopTimer = () => { clearInterval(timerIntervalRef.current); setTimeLeft(null); };
+  useEffect(() => () => clearInterval(timerIntervalRef.current), []);
+
   // Session stats
   const [sessionScores, setSessionScores] = useState([]);
   const [sessionCount,  setSessionCount]  = useState(0);
@@ -675,7 +736,7 @@ export default function Dashboard() {
   const saveQuestion      = (q) => { const h = JSON.parse(localStorage.getItem("questionHistory") || "[]"); h.push({ question: q, timestamp: Date.now() }); localStorage.setItem("questionHistory", JSON.stringify(h)); };
   const wasRecentlyAsked  = (q) => { const h = JSON.parse(localStorage.getItem("questionHistory") || "[]"); const ago = Date.now() - 864e5; return h.some(x => x.question === q && x.timestamp > ago); };
 
-  const resetQuestion = () => { setQuestion(""); setAnswer(""); setUserAnswer(""); setFeedback(""); setScore(null); setGraded(false); setAnswerRevealed(false); setStreamProgress(0); };
+  const resetQuestion = () => { stopTimer(); setQuestion(""); setAnswer(""); setUserAnswer(""); setFeedback(""); setScore(null); setGraded(false); setAnswerRevealed(false); setStreamProgress(0); };
 
   // ─── Question handlers ───────────────────────────────────────────────────
   const getQuestion = async () => {
@@ -693,6 +754,7 @@ export default function Dashboard() {
       if (newQ) { saveQuestion(newQ); fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "answer", question: newQ, category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, userId: user?.id }) }).then(r => r.json()).then(d => setAnswer(d.result)); }
       await new Promise(r => setTimeout(r, 600));
       setQuestion(newQ || "You've seen all recent questions in this category! Try a different one.");
+      if (timerOnRef.current && newQ) startTimer();
     } catch (e) { console.error(e); }
     setLoadingQuestion(false);
     setSessionCount(c => c + 1);
@@ -748,6 +810,7 @@ export default function Dashboard() {
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid rgba(21,101,192,0.06)` }}>
             <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", padding: "0 14px", marginBottom: 6, opacity: 0.4 }}>Account</div>
             <NavItem icon="history" label="History" onClick={() => isPaid ? router.push("/history") : null} muted={!isPaid} />
+            <NavItem icon="bar_chart" label="Stats" onClick={() => isPaid ? router.push("/stats") : null} muted={!isPaid} />
             {isPaid
               ? <NavItem icon="credit_card" label="Manage Sub" onClick={handleManageSub} />
               : <NavItem icon="workspace_premium" label="Upgrade" onClick={handleUpgrade} gold />
@@ -880,7 +943,20 @@ export default function Dashboard() {
                 <span style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Quant / Math</span>
                 <motion.button onClick={() => setMathOn(v => !v)} whileTap={{ scale: 0.88 }}
                   style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", position: "relative", backgroundColor: mathOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
-                  <motion.div animate={{ x: mathOn ? 20 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                  <motion.div animate={{ x: mathOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                    style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
+                </motion.button>
+              </div>
+
+              {/* Timer toggle */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", background: C.surface, borderRadius: 12, border: `1px solid ${C.border}` }}>
+                <div>
+                  <span style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Timer</span>
+                  <span style={{ marginLeft: 7, fontSize: 9, color: C.gold, fontFamily: "Manrope, sans-serif", fontWeight: 700, letterSpacing: "0.06em" }}>2 MIN</span>
+                </div>
+                <motion.button onClick={() => { setTimerOn(v => !v); if (timerOn) stopTimer(); }} whileTap={{ scale: 0.88 }}
+                  style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", position: "relative", backgroundColor: timerOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
+                  <motion.div animate={{ x: timerOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
                     style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
                 </motion.button>
               </div>
@@ -936,6 +1012,7 @@ export default function Dashboard() {
                   onGetAnswer={getAnswer} onGrade={handleGrade} onNewQuestion={getQuestion}
                   onUpgrade={handleUpgrade} price={price} questionsUsed={questionsUsed}
                   getScoreColor={getScoreColor} getScoreBg={getScoreBg}
+                  timeLeft={timerOn ? timeLeft : null}
                 />
               ) : (
                 <InterviewCanvas
@@ -1076,7 +1153,20 @@ export default function Dashboard() {
                   <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Quant / Math</span>
                   <motion.button onClick={() => setMathOn(v => !v)} whileTap={{ scale: 0.88 }}
                     style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", position: "relative", backgroundColor: mathOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
-                    <motion.div animate={{ x: mathOn ? 20 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                    <motion.div animate={{ x: mathOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                      style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
+                  </motion.button>
+                </div>
+
+                {/* Timer toggle */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}` }}>
+                  <div>
+                    <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Timer</span>
+                    <span style={{ marginLeft: 7, fontSize: 9, color: C.gold, fontFamily: "Manrope, sans-serif", fontWeight: 700, letterSpacing: "0.06em" }}>2 MIN</span>
+                  </div>
+                  <motion.button onClick={() => { setTimerOn(v => !v); if (timerOn) stopTimer(); }} whileTap={{ scale: 0.88 }}
+                    style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", position: "relative", backgroundColor: timerOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
+                    <motion.div animate={{ x: timerOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
                       style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
                   </motion.button>
                 </div>

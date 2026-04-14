@@ -1,2 +1,2 @@
-import History from "../src/History";
-export default History;
+import HistoryDark from "../src/HistoryDark";
+export default HistoryDark;
