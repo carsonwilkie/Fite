@@ -675,7 +675,7 @@ export default function LandingPage() {
         @media (max-width: 900px) {
           .end-details-outer {
             align-items: flex-start !important;
-            padding: 84px 12px 80px !important;
+            padding: 110px 12px 80px !important;
             overflow: hidden !important;
           }
           .end-panels-inner {

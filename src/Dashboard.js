@@ -1126,7 +1126,7 @@ export default function Dashboard() {
             transition={{ duration: 0.5, delay: 0.2 }}
             style={{ flex: 1, overflowY: "auto", backgroundColor: C.bg, position: "relative" }}
           >
-            <div style={{ maxWidth: 840, margin: "0 auto", padding: isMobile ? "20px 16px 120px" : "40px 44px 120px" }}>
+            <div style={{ maxWidth: 840, margin: "0 auto", padding: isMobile ? "20px 16px 0" : "40px 44px 120px" }}>
               {mode === "question" ? (
                 <QuestionCanvas
                   question={question} answer={answer} userAnswer={userAnswer} setUserAnswer={setUserAnswer}
@@ -1159,13 +1159,25 @@ export default function Dashboard() {
                 />
               )}
             </div>
+
+            {/* Mobile footer — sits inside scroll area below content */}
+            {isMobile && (
+              <div style={{ padding: "24px 16px 90px", display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "10px 28px", borderTop: `1px solid ${C.border}`, marginTop: 32 }}>
+                {[["Privacy","/privacy"],["Terms","/terms"],["Refunds","/refunds"],["Support","mailto:support@fitefinance.com"]].map(([lbl, href]) => (
+                  <Link key={lbl} href={href} style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: C.textMuted, textDecoration: "none", fontFamily: "Manrope, sans-serif" }}>
+                    {lbl}
+                  </Link>
+                ))}
+              </div>
+            )}
+
             {/* Ambient glow */}
             <div style={{ position: "fixed", bottom: 0, right: 0, width: 500, height: 500, background: "rgba(21,101,192,0.07)", filter: "blur(100px)", borderRadius: "50%", pointerEvents: "none", transform: "translate(30%, 30%)", zIndex: 0 }} />
           </motion.section>
         </div>
 
-        {/* Footer */}
-        <footer style={{ flexShrink: 0, padding: "10px 44px", backgroundColor: `${C.surfaceLow}ee`, backdropFilter: "blur(12px)", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "center", gap: 36 }}>
+        {/* Footer — desktop only; mobile footer lives inside the scroll canvas */}
+        <footer style={{ flexShrink: 0, padding: "10px 44px", backgroundColor: `${C.surfaceLow}ee`, backdropFilter: "blur(12px)", borderTop: `1px solid ${C.border}`, display: isMobile ? "none" : "flex", justifyContent: "center", gap: 36 }}>
           {[["Privacy","/privacy"],["Terms","/terms"],["Refunds","/refunds"],["Support","mailto:support@fitefinance.com"]].map(([lbl, href]) => (
             <Link key={lbl} href={href} style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: C.textMuted, textDecoration: "none", fontFamily: "Manrope, sans-serif", transition: "color 0.18s" }}>
               {lbl}
@@ -1190,8 +1202,8 @@ export default function Dashboard() {
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: action ? "pointer" : "default", padding: "6px 12px", borderRadius: 10 }}
             >
               {label === "Account" ? (
-                <div style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <UserButton />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <UserButton appearance={{ elements: { avatarBox: { width: 22, height: 22 } } }} />
                 </div>
               ) : (
                 <Icon name={icon} size={22} style={{ color: active ? C.secondary : muted ? `${C.textMuted}40` : C.textMuted }} />
