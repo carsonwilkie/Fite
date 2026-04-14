@@ -108,24 +108,84 @@ function GlowCard({ children, className, style }) {
 // ─── ScrambleText ─────────────────────────────────────────────────────────────
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%*";
 function ScrambleText({ text, active }) {
-  const ref = useRef(null);
+  const [revealedCount, setRevealedCount] = useState(text.length);
+  const startedRef = useRef(false);
+  const SCRAMBLE_WINDOW = 6;
+  const DURATION_MS = 1650;
+
   useEffect(() => {
-    if (!active || !ref.current) return;
-    let frame = 0;
-    const total = text.length * 4;
-    const id = setInterval(() => {
-      const revealed = Math.floor((frame / total) * text.length);
-      ref.current.textContent = text.split("").map((ch, i) => {
-        if (i < revealed) return ch;
-        if (ch === " ") return " ";
-        return CHARS[Math.floor(Math.random() * CHARS.length)];
-      }).join("");
-      frame++;
-      if (frame > total) { ref.current.textContent = text; clearInterval(id); }
-    }, 28);
-    return () => clearInterval(id);
+    if (!active || startedRef.current) return;
+    startedRef.current = true;
+    setRevealedCount(0);
+
+    let rafId;
+    let startTime;
+
+    const tick = (now) => {
+      if (startTime == null) startTime = now;
+      const progress = Math.min((now - startTime) / DURATION_MS, 1);
+      const eased = 1 - Math.pow(1 - progress, 2.4);
+      const nextRevealed = progress >= 1 ? text.length : Math.min(text.length - 1, Math.floor(eased * text.length));
+
+      setRevealedCount(nextRevealed);
+
+      if (progress >= 1) {
+        setRevealedCount(text.length);
+        return;
+      }
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
   }, [active, text]);
-  return <span ref={ref}>{text}</span>;
+
+  useEffect(() => {
+    if (!active) {
+      setRevealedCount(text.length);
+      startedRef.current = false;
+    }
+  }, [active, text]);
+
+  return (
+    <span style={{ whiteSpace: "pre-wrap" }}>
+      {text.split("").map((ch, i) => {
+        if (ch === " ") {
+          return <span key={`${ch}-${i}`}> </span>;
+        }
+
+        const isRevealed = i < revealedCount;
+        const shouldScramble = !isRevealed && i < revealedCount + SCRAMBLE_WINDOW;
+        const overlayChar = shouldScramble
+          ? CHARS[Math.floor(Math.random() * CHARS.length)]
+          : ch;
+
+        return (
+          <span
+            key={`${ch}-${i}`}
+            style={{
+              position: "relative",
+              display: "inline-block",
+              color: "transparent",
+            }}
+          >
+            {ch}
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                color: shouldScramble ? "rgba(248,250,252,0.88)" : "#f8fafc",
+              }}
+            >
+              {overlayChar}
+            </span>
+          </span>
+        );
+      })}
+    </span>
+  );
 }
 
 // ─── CountUp ──────────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/clerk-react";
 import { useRouter } from "next/router";
 import usePaidStatus from "./usePaidStatus";
 
@@ -33,11 +33,18 @@ export default function LandingNav() {
 
         <div className="landing-nav__actions">
           <SignedOut>
-            <SignInButton mode="modal">
-              <button style={ghostBtn}>
-                Sign In
-              </button>
-            </SignInButton>
+            <>
+              <SignInButton mode="modal">
+                <button style={ghostBtn}>
+                  Sign In
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button style={primaryBtn}>
+                  Sign Up
+                </button>
+              </SignUpButton>
+            </>
           </SignedOut>
           <SignedIn>
             <button onClick={() => router.push("/practice")} style={primaryBtn}>

@@ -336,7 +336,7 @@ export default function LandingPage() {
                   margin: "0 0 28px 0",
                   textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 20px rgba(0,0,0,0.9), 0 8px 50px rgba(0,0,0,0.6)",
                 }}>
-                  Built for candidates who<br />
+                  Built for every skill level<br />
                   <span style={{
                     color: C.secondary,
                     fontStyle: "italic",
@@ -381,7 +381,7 @@ export default function LandingPage() {
                     Practice, don&apos;t guess.
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, lineHeight: 1.6 }}>
-                    Train with custom questions, structured mock interviews, and instant feedback—so you&apos;re never caught off guard.
+                    Train with custom questions, structured mock interviews, and instant feedback so you&apos;re never caught off guard.
                   </div>
                 </div>
               </div>
