@@ -290,7 +290,7 @@ export default function FeaturesPage() {
 
         {/* ── FEATURES ──────────────────────────────────────────────────────────── */}
         <section id="features-section" style={{ position: "relative", zIndex: 2, background: C.bg }}>
-          <div style={{ padding: "clamp(152px, 18vw, 176px) 32px 96px", maxWidth: 1280, margin: "0 auto" }}>
+          <div className="features-page-intro" style={{ padding: "clamp(152px, 18vw, 176px) 32px 96px", maxWidth: 1280, margin: "0 auto" }}>
             <SectionScan label="Premium Features" />
             <ScrollReveal direction="left" style={{ marginBottom: 48 }}>
               <h2 style={{ fontSize: "clamp(22px, 3vw, 34px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 16px 0", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
@@ -393,7 +393,7 @@ export default function FeaturesPage() {
             </div>
 
             {/* Scramble quote */}
-            <div ref={scrambleRef} style={{ marginTop: 96, textAlign: "center", padding: "64px 32px", borderRadius: 24, background: "linear-gradient(135deg, rgba(21,101,192,0.08), rgba(79,195,247,0.04))", border: "1px solid rgba(21,101,192,0.15)" }}>
+            <div className="features-quote-block" ref={scrambleRef} style={{ marginTop: 96, textAlign: "center", padding: "64px 32px", borderRadius: 24, background: "linear-gradient(135deg, rgba(21,101,192,0.08), rgba(79,195,247,0.04))", border: "1px solid rgba(21,101,192,0.15)" }}>
               <p style={{ fontSize: "clamp(18px, 2.8vw, 30px)", fontWeight: 800, fontFamily: "Inter, sans-serif", letterSpacing: "-0.02em", color: C.onSurface, margin: 0, lineHeight: 1.45 }}>
                 <ScrambleText
                   text="The edge between a good candidate and a great one is preparation."
@@ -595,12 +595,19 @@ export default function FeaturesPage() {
         }
         @media (max-width: 720px) {
           .features-home-cta {
-            top: 102px;
+            top: 132px;
             left: 16px;
           }
           .back-home-btn {
-            padding: 9px 22px !important;
-            font-size: 13px !important;
+            padding: 8px 20px !important;
+            font-size: 12px !important;
+          }
+          .features-page-intro {
+            padding: 248px 20px 72px !important;
+          }
+          .features-quote-block {
+            margin-top: 56px !important;
+            padding: 40px 20px !important;
           }
         }
       `}</style>

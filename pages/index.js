@@ -25,7 +25,13 @@ const C = {
 const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 
 const TOTAL_FRAMES = 111;
+const MOBILE_FRAME_STEP = 2;
+const DESKTOP_FRAME_NUMBERS = Array.from({ length: TOTAL_FRAMES }, (_, i) => i + 1);
+const MOBILE_FRAME_NUMBERS = DESKTOP_FRAME_NUMBERS.filter((frameNumber, index) =>
+  index % MOBILE_FRAME_STEP === 0 || frameNumber === TOTAL_FRAMES
+);
 const frameSrc = (i) => `/frames/frame-${String(i).padStart(4, "0")}.jpg`;
+const heroFrameCache = new Map();
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
@@ -62,6 +68,9 @@ export default function LandingPage() {
   const heroViewportHeight = heroViewport.height || null;
   const heroSceneHeight = heroViewportHeight ? `${heroViewportHeight}px` : "100vh";
   const heroScrollHeight = heroViewportHeight ? `${heroViewportHeight * 6}px` : "600vh";
+  const isMobileHeroLayout = heroViewport.width > 0 && heroViewport.width <= 900;
+  const heroFrameNumbers = isMobileHeroLayout ? MOBILE_FRAME_NUMBERS : DESKTOP_FRAME_NUMBERS;
+  const heroFrameTotal = heroFrameNumbers.length;
 
   // Hero text entrance — delayed so the global transition cover has partially lifted first
   useEffect(() => {
@@ -130,24 +139,81 @@ export default function LandingPage() {
   }, [heroViewport.width, heroViewport.height]);
 
   // Frame preload — convert to ImageBitmap so drawImage pulls from GPU memory
-  // instead of re-decoding the JPEG every frame.
+  // instead of re-decoding the JPEG every frame. On mobile, sample fewer frames
+  // and load them progressively to avoid Safari memory/decode failures.
   useEffect(() => {
-    const arr = new Array(TOTAL_FRAMES).fill(null);
+    if (!heroViewport.width) return undefined;
+
+    let cancelled = false;
+    const arr = heroFrameNumbers.map((frameNumber) => heroFrameCache.get(frameNumber) ?? null);
     framesRef.current = arr;
-    Array.from({ length: TOTAL_FRAMES }, (_, i) => {
-      const img = new window.Image();
-      img.onload = () => {
-        const toBitmap = window.createImageBitmap
-          ? window.createImageBitmap(img)
-          : Promise.resolve(img);
-        toBitmap
-          .then(bmp => { arr[i] = bmp; if (i === 0) drawFrame(bmp); })
-          .catch(()  => { arr[i] = img; if (i === 0) drawFrame(img); });
-      };
-      img.src = frameSrc(i + 1);
-    });
+
+    if (arr[0]) {
+      drawFrame(arr[0]);
+    }
+
+    const maxConcurrentLoads = isMobileHeroLayout ? 2 : 6;
+    let nextIndex = 0;
+    let activeLoads = 0;
+
+    const commitFrame = (index, asset) => {
+      if (cancelled) return;
+      arr[index] = asset;
+      if (index === 0) drawFrame(asset);
+    };
+
+    const loadFrameAtIndex = (index) => {
+      const frameNumber = heroFrameNumbers[index];
+      const cachedAsset = heroFrameCache.get(frameNumber);
+
+      if (cachedAsset) {
+        commitFrame(index, cachedAsset);
+        return Promise.resolve();
+      }
+
+      return new Promise((resolve) => {
+        const img = new window.Image();
+        img.decoding = "async";
+        img.onload = () => {
+          const finalize = (asset) => {
+            heroFrameCache.set(frameNumber, asset);
+            commitFrame(index, asset);
+            resolve();
+          };
+
+          if (!isMobileHeroLayout && window.createImageBitmap) {
+            window.createImageBitmap(img).then(finalize).catch(() => finalize(img));
+          } else {
+            finalize(img);
+          }
+        };
+        img.onerror = () => resolve();
+        img.src = frameSrc(frameNumber);
+      });
+    };
+
+    const pumpQueue = () => {
+      if (cancelled) return;
+
+      while (activeLoads < maxConcurrentLoads && nextIndex < heroFrameNumbers.length) {
+        const index = nextIndex++;
+        if (arr[index]) continue;
+
+        activeLoads += 1;
+        loadFrameAtIndex(index).finally(() => {
+          activeLoads -= 1;
+          pumpQueue();
+        });
+      }
+    };
+
+    pumpQueue();
+
+    return () => {
+      cancelled = true;
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [heroViewport.width, isMobileHeroLayout, heroFrameNumbers]);
 
   function drawFrame(img) {
     const canvas = canvasRef.current;
@@ -163,6 +229,21 @@ export default function LandingPage() {
     const sw = iw * scale, sh = ih * scale;
     ctx.clearRect(0, 0, cw, ch);
     ctx.drawImage(img, (cw - sw) / 2, (ch - sh) / 2, sw, sh);
+  }
+
+  function getClosestLoadedFrame(index) {
+    const frames = framesRef.current;
+    if (!frames.length) return null;
+    if (frames[index]) return frames[index];
+
+    for (let offset = 1; offset < frames.length; offset += 1) {
+      const left = index - offset;
+      const right = index + offset;
+      if (left >= 0 && frames[left]) return frames[left];
+      if (right < frames.length && frames[right]) return frames[right];
+    }
+
+    return null;
   }
 
   // GSAP ScrollTrigger — drives canvas frame scrub + all overlay animations via direct DOM
@@ -184,8 +265,8 @@ export default function LandingPage() {
           // — Canvas frame — batched to one draw per animation frame.
           // Skip when the end overlay fully covers the canvas (p ≥ 0.94) so the
           // browser isn't compositing canvas draws that are invisible anyway.
-          const idx = Math.min(Math.floor(p * (TOTAL_FRAMES - 1)), TOTAL_FRAMES - 1);
-          const img = framesRef.current[idx];
+          const idx = Math.min(Math.floor(p * (heroFrameTotal - 1)), heroFrameTotal - 1);
+          const img = getClosestLoadedFrame(idx);
           if (img && p < 0.94) {
             if (pendingFrameRef.current) cancelAnimationFrame(pendingFrameRef.current);
             pendingFrameRef.current = requestAnimationFrame(() => {
@@ -261,7 +342,7 @@ export default function LandingPage() {
     init();
     return () => st?.kill();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [heroViewport.height]);
+  }, [heroViewport.height, heroFrameTotal]);
 
   return (
     <>
@@ -393,11 +474,23 @@ export default function LandingPage() {
             {/* End-of-scroll: product details + sign-up card */}
             <div
               ref={endDetailsRef}
-              style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 7%", opacity: 0, pointerEvents: "none", willChange: "opacity", transform: "translateZ(0)" }}
+              style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobileHeroLayout ? "96px 20px 28px" : "0 7%", opacity: 0, pointerEvents: "none", willChange: "opacity", transform: "translateZ(0)" }}
             >
-              <div ref={endInnerRef} style={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "center", willChange: "transform" }}>
+              <div
+                ref={endInnerRef}
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  maxWidth: isMobileHeroLayout ? 420 : "none",
+                  flexDirection: isMobileHeroLayout ? "column" : "row",
+                  justifyContent: "space-between",
+                  alignItems: isMobileHeroLayout ? "stretch" : "center",
+                  gap: isMobileHeroLayout ? 16 : 0,
+                  willChange: "transform",
+                }}
+              >
               {/* Left: product details */}
-              <div style={{ textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 16px rgba(0,0,0,0.85)" }}>
+              <div style={{ textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 16px rgba(0,0,0,0.85)", width: isMobileHeroLayout ? "100%" : "auto" }}>
                 {/* <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.22em", color: C.secondary, textTransform: "uppercase", marginBottom: 14, fontFamily: "Inter, sans-serif" }}>
                   Product Details
                 </div> */}
@@ -408,20 +501,26 @@ export default function LandingPage() {
                   fontFamily: "Inter, sans-serif", marginBottom: 4,
                   filter: "drop-shadow(0 8px 28px rgba(0,0,0,0.72))",
                   willChange: "transform",
+                  textAlign: isMobileHeroLayout ? "center" : "left",
                 }}
                 >
                   <span style={{ color: C.primary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 18px rgba(0,0,0,0.88), 0 0 24px rgba(21,101,192,0.8), 0 0 52px rgba(21,101,192,0.62)" }}>Fite</span>{" "}
                   <span style={{ color: C.secondary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 18px rgba(0,0,0,0.88), 0 0 24px rgba(79,195,247,0.9), 0 0 56px rgba(79,195,247,0.72)" }}>Finance</span>
                 </div>
                 <div className="lp-glass-card-solid" style={{
-                  padding: 24, marginTop: 14, borderRadius: 16, minWidth: 270, maxWidth: 340,
+                  padding: isMobileHeroLayout ? 18 : 24,
+                  marginTop: 14,
+                  borderRadius: 16,
+                  minWidth: 0,
+                  width: "100%",
+                  maxWidth: isMobileHeroLayout ? "100%" : 340,
                   boxShadow: "0 4px 24px rgba(0,0,0,0.65)",
                   border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.3)",
                 }}>
-                  <div style={{ color: C.secondary, fontSize: 15, fontFamily: "Manrope, sans-serif", marginBottom: 12, fontWeight: 600 }}>
+                  <div style={{ color: C.secondary, fontSize: isMobileHeroLayout ? 14 : 15, fontFamily: "Manrope, sans-serif", marginBottom: 12, fontWeight: 600, textAlign: isMobileHeroLayout ? "center" : "left" }}>
                     Practice, don&apos;t guess.
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12, lineHeight: 1.6 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12, lineHeight: 1.6, fontSize: isMobileHeroLayout ? 14 : 16, textAlign: isMobileHeroLayout ? "center" : "left" }}>
                     Train with custom questions, structured mock interviews, and instant feedback so you&apos;re never caught off guard.
                   </div>
                 </div>
@@ -429,14 +528,18 @@ export default function LandingPage() {
 
               {/* Right: sign-up card */}
               <div className="lp-glass-card-solid" style={{
-                padding: 32, borderRadius: 16, minWidth: 270, maxWidth: 340,
+                padding: isMobileHeroLayout ? 22 : 32,
+                borderRadius: 16,
+                minWidth: 0,
+                width: "100%",
+                maxWidth: isMobileHeroLayout ? "100%" : 340,
                 boxShadow: "0 4px 24px rgba(0,0,0,0.65)",
                 border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.3)",
               }}>
-                <h3 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 8px 0", color: C.onSurface, fontFamily: "Inter, sans-serif" }}>
+                <h3 style={{ fontSize: isMobileHeroLayout ? 18 : 20, fontWeight: 700, margin: "0 0 8px 0", color: C.onSurface, fontFamily: "Inter, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
                   {isPaid ? "Welcome Back" : "Start Preparing"}
                 </h3>
-                <p style={{ fontSize: 13, color: C.muted, margin: "0 0 24px 0", fontFamily: "Manrope, sans-serif" }}>
+                <p style={{ fontSize: 13, color: C.muted, margin: "0 0 24px 0", fontFamily: "Manrope, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
                   {isPaid ? "Your premium access is active." : "Built for IB, PE, and hedge fund candidates."}
                 </p>
                 {isLoaded && (
