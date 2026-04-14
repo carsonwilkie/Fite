@@ -474,34 +474,35 @@ export default function LandingPage() {
             {/* End-of-scroll: product details + sign-up card */}
             <div
               ref={endDetailsRef}
-              style={{ position: "absolute", inset: 0, display: "flex", alignItems: isMobileHeroLayout ? "flex-start" : "center", justifyContent: "center", padding: isMobileHeroLayout ? "84px 16px 160px" : "0 7%", opacity: 0, pointerEvents: "none", willChange: "opacity", transform: "translateZ(0)" }}
+              className="end-details-outer"
+              style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 7%", opacity: 0, pointerEvents: "none", willChange: "opacity", transform: "translateZ(0)" }}
             >
               <div
                 ref={endInnerRef}
+                className="end-panels-inner"
                 style={{
                   display: "flex",
                   width: "100%",
-                  maxWidth: isMobileHeroLayout ? 372 : "none",
-                  flexDirection: isMobileHeroLayout ? "column" : "row",
+                  flexDirection: "row",
                   justifyContent: "space-between",
-                  alignItems: isMobileHeroLayout ? "stretch" : "center",
-                  gap: isMobileHeroLayout ? 10 : 0,
+                  alignItems: "center",
                   willChange: "transform",
                 }}
               >
               {/* Left: product details */}
-              <div style={{ textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 16px rgba(0,0,0,0.85)", width: isMobileHeroLayout ? "100%" : "auto" }}>
+              <div className="end-panel-left" style={{ textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 16px rgba(0,0,0,0.85)" }}>
                 {/* <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.22em", color: C.secondary, textTransform: "uppercase", marginBottom: 14, fontFamily: "Inter, sans-serif" }}>
                   Product Details
                 </div> */}
                 <div
                   ref={endBrandRef}
+                  className="end-brand"
                   style={{
-                  fontSize: isMobileHeroLayout ? "clamp(28px, 7vw, 46px)" : "clamp(38px, 6vw, 70px)", fontWeight: 900, letterSpacing: "-0.04em",
+                  fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, letterSpacing: "-0.04em",
                   fontFamily: "Inter, sans-serif", marginBottom: 4,
                   filter: "drop-shadow(0 8px 28px rgba(0,0,0,0.72))",
                   willChange: "transform",
-                  textAlign: isMobileHeroLayout ? "center" : "left",
+                  textAlign: "left",
                 }}
                 >
                   <span style={{ color: C.primary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 18px rgba(0,0,0,0.88), 0 0 24px rgba(21,101,192,0.8), 0 0 52px rgba(21,101,192,0.62)" }}>Fite</span>{" "}
@@ -610,6 +611,25 @@ export default function LandingPage() {
         }
         .explore-btn { animation: explorePulse 2s ease-in-out infinite; }
         .explore-btn:hover { filter: brightness(1.15); transform: translateY(-2px) !important; }
+        @media (max-width: 900px) {
+          .end-details-outer {
+            align-items: flex-start !important;
+            padding: 84px 16px 80px !important;
+          }
+          .end-panels-inner {
+            flex-direction: column !important;
+            max-width: 372px !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+          }
+          .end-panel-left {
+            width: 100% !important;
+          }
+          .end-brand {
+            font-size: clamp(28px, 7vw, 46px) !important;
+            text-align: center !important;
+          }
+        }
       `}</style>
     </>
   );
