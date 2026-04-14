@@ -1,2 +1,8 @@
-import Questions from "../../../../../src/Questions";
-export default Questions;
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+
+export default function QuestionsRedirect() {
+  const router = useRouter();
+  useEffect(() => { router.replace("/dashboard"); }, []);
+  return null;
+}

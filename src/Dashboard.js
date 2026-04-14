@@ -940,7 +940,7 @@ export default function Dashboard() {
 
               {/* Math toggle */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", background: C.surface, borderRadius: 12, border: `1px solid ${C.border}` }}>
-                <span style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Quant / Math</span>
+                <span style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Include Math</span>
                 <motion.button onClick={() => setMathOn(v => !v)} whileTap={{ scale: 0.88 }}
                   style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", position: "relative", backgroundColor: mathOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
                   <motion.div animate={{ x: mathOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}

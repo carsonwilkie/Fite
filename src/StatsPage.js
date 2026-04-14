@@ -44,41 +44,50 @@ function StatCard({ value, sub, accent, delay = 0 }) {
   );
 }
 
-function ScoreBar({ score, index, total }) {
-  const color = score >= 8 ? C.success : score >= 5 ? C.warn : C.danger;
-  const pct   = (score / 10) * 100;
+function DayBar({ avg, count, dateLabel, index, maxAvg }) {
+  const color = avg >= 8 ? C.success : avg >= 5 ? C.warn : C.danger;
+  const pct   = maxAvg > 0 ? (avg / maxAvg) * 100 : 0;
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1, maxWidth: 28 }}>
-      <div style={{ width: "100%", height: 80, display: "flex", alignItems: "flex-end", position: "relative" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1, minWidth: 0 }}>
+      <div style={{ width: "100%", height: 80, display: "flex", alignItems: "flex-end" }}>
         <motion.div
+          key={`${dateLabel}-${avg}`}
           initial={{ height: 0 }}
           animate={{ height: `${pct}%` }}
-          transition={{ duration: 0.6, delay: index * 0.02, ease: [0.22, 1, 0.36, 1] }}
-          style={{ width: "100%", borderRadius: "3px 3px 0 0", background: `linear-gradient(to top, ${color}cc, ${color})`, minHeight: 3 }}
+          transition={{ duration: 0.45, delay: index * 0.025, ease: [0.22, 1, 0.36, 1] }}
+          style={{ width: "100%", borderRadius: "3px 3px 0 0", background: `linear-gradient(to top, ${color}99, ${color})`, minHeight: 3 }}
         />
       </div>
-      <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif", fontWeight: 600 }}>{score}</span>
+      <span style={{ fontSize: 8, color: C.textMuted, fontFamily: "Manrope, sans-serif", fontWeight: 600, whiteSpace: "nowrap" }}>
+        {avg.toFixed(1)}
+      </span>
     </div>
   );
 }
 
-function CategoryBar({ cat, count, max, avg }) {
-  const pct = max > 0 ? (count / max) * 100 : 0;
+function CategoryBar({ cat, count, avg }) {
+  // Bar represents avg score out of 10 (performance, not volume)
+  const pct   = avg !== undefined ? (parseFloat(avg) / 10) * 100 : 0;
+  const color = avg !== undefined ? (parseFloat(avg) >= 7 ? C.success : parseFloat(avg) >= 5 ? C.warn : C.danger) : C.textMuted;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ width: 110, fontSize: 11, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif", flexShrink: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cat}</div>
+      <div style={{ width: 120, fontSize: 11, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif", flexShrink: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cat}</div>
       <div style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: C.surfaceHigh, overflow: "hidden" }}>
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          style={{ height: "100%", background: cyberGrad, borderRadius: 4 }}
-        />
+        {avg !== undefined ? (
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            style={{ height: "100%", background: `linear-gradient(90deg, ${color}88, ${color})`, borderRadius: 4 }}
+          />
+        ) : (
+          <div style={{ height: "100%", width: "10%", background: C.border, borderRadius: 4 }} />
+        )}
       </div>
-      <span style={{ fontSize: 11, fontWeight: 900, color: C.text, width: 24, textAlign: "right", fontFamily: "Manrope, sans-serif" }}>{count}</span>
-      {avg !== undefined && (
-        <span style={{ fontSize: 10, color: avg >= 7 ? C.success : avg >= 5 ? C.warn : C.danger, width: 36, textAlign: "right", fontFamily: "Manrope, sans-serif", fontWeight: 700 }}>{avg}/10</span>
-      )}
+      <span style={{ fontSize: 10, fontWeight: 700, color: avg !== undefined ? color : C.textMuted, width: 38, textAlign: "right", fontFamily: "Manrope, sans-serif" }}>
+        {avg !== undefined ? `${avg}/10` : "—"}
+      </span>
+      <span style={{ fontSize: 10, color: C.textMuted, width: 22, textAlign: "right", fontFamily: "Manrope, sans-serif" }}>{count}q</span>
     </div>
   );
 }
@@ -89,6 +98,7 @@ export default function StatsPage() {
   const { isPaid, loading } = usePaidStatus();
   const [entries, setEntries]             = useState([]);
   const [loadingData, setLoadingData]     = useState(true);
+  const [windowDays, setWindowDays]       = useState(30);
 
   useEffect(() => {
     if (loading) return;
@@ -169,6 +179,29 @@ export default function StatsPage() {
   const priorAvg  = trendOk ? chartScored.slice(-trendN*2, -trendN).reduce((s, e) => s + e.score, 0) / trendN : null;
   const trendPct  = trendOk && priorAvg > 0 ? Math.round(((recentAvg - priorAvg) / priorAvg) * 100) : null;
 
+  // ── Sliding window chart data ─────────────────────────────────────────────
+  const windowStart   = Date.now() - windowDays * 86400000;
+  const windowScored  = scoredEntries.filter(e => e.timestamp >= windowStart);
+  const windowAvg     = windowScored.length > 0
+    ? (windowScored.reduce((s, e) => s + e.score, 0) / windowScored.length).toFixed(1)
+    : null;
+
+  // Group by day → daily avg for chart bars
+  const dailyMap = {};
+  windowScored.forEach(e => {
+    const key = toKey(new Date(e.timestamp));
+    if (!dailyMap[key]) dailyMap[key] = [];
+    dailyMap[key].push(e.score);
+  });
+  const dailyBars = Object.entries(dailyMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, scores]) => ({
+      date,
+      avg: scores.reduce((s, v) => s + v, 0) / scores.length,
+      count: scores.length,
+    }));
+  const chartMaxAvg = dailyBars.length > 0 ? Math.max(...dailyBars.map(d => d.avg)) : 10;
+
   const scoreColor = v => v >= 8 ? C.success : v >= 5 ? C.warn : C.danger;
 
   if (loading || loadingData) {
@@ -237,41 +270,80 @@ export default function StatsPage() {
               <StatCard value={longestStreak} sub="Best Streak" accent={C.gold} delay={0.1} />
             </div>
 
-            {/* ── Score trend ── */}
-            {trendPct !== null && (
+            {/* ── Score chart (slider-controlled) ── */}
+            {scoredEntries.length > 0 && (
               <>
-                <div style={{ marginBottom: 12 }}>{label("Score Trend")}</div>
+                <div style={{ marginBottom: 12 }}>{label("Score History")}</div>
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                  style={{ padding: "18px 22px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 16, marginBottom: 32 }}>
-                  <div style={{ fontSize: 32, fontWeight: 900, color: trendPct >= 0 ? C.success : C.danger }}>
-                    {trendPct >= 0 ? "↑" : "↓"} {Math.abs(trendPct)}%
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>
-                      {trendPct >= 0 ? "Improving" : "Declining"} over last {trendN} questions
-                    </div>
-                    <div style={{ fontSize: 11, color: C.textMuted, marginTop: 3, fontFamily: "Manrope, sans-serif" }}>
-                      Recent avg: {recentAvg?.toFixed(1)} vs prior avg: {priorAvg?.toFixed(1)}
-                    </div>
-                  </div>
-                </motion.div>
-              </>
-            )}
+                  style={{ padding: "20px 22px 18px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, marginBottom: 32 }}>
 
-            {/* ── Score chart ── */}
-            {recentChart.length > 1 && (
-              <>
-                <div style={{ marginBottom: 12 }}>{label(`Score History (last ${recentChart.length})`)}</div>
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-                  style={{ padding: "20px 18px 12px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, marginBottom: 32 }}>
-                  <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 100, paddingBottom: 8 }}>
-                    {recentChart.map((e, i) => <ScoreBar key={i} score={e.score} index={i} total={recentChart.length} />)}
+                  {/* Slider header row */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                    <div>
+                      <div style={{ fontSize: 28, fontWeight: 900, color: windowAvg ? scoreColor(+windowAvg) : C.textMuted, lineHeight: 1 }}>
+                        {windowAvg ?? "—"}
+                        <span style={{ fontSize: 13, color: C.textMuted, fontWeight: 600, marginLeft: 4 }}>/10</span>
+                      </div>
+                      <div style={{ fontSize: 10, color: C.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 4 }}>
+                        avg over last {windowDays} days · {windowScored.length} graded
+                      </div>
+                    </div>
+                    {/* Slider */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, minWidth: 160 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.secondary, fontFamily: "Manrope, sans-serif" }}>
+                        {windowDays} days
+                      </div>
+                      <input
+                        type="range"
+                        min={7}
+                        max={90}
+                        step={1}
+                        value={windowDays}
+                        onChange={e => setWindowDays(+e.target.value)}
+                        style={{ width: 150, accentColor: C.secondary, cursor: "pointer" }}
+                      />
+                      <div style={{ display: "flex", justifyContent: "space-between", width: 150 }}>
+                        <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>7d</span>
+                        <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>90d</span>
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
-                    {[0, 2, 4, 6, 8, 10].map(v => (
-                      <span key={v} style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{v}</span>
-                    ))}
-                  </div>
+
+                  {/* Chart bars */}
+                  {dailyBars.length > 0 ? (
+                    <>
+                      {/* Y-axis labels */}
+                      <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 94, paddingBottom: 0, overflowX: "auto" }}>
+                        {dailyBars.map((d, i) => (
+                          <DayBar key={d.date} avg={d.avg} count={d.count} dateLabel={d.date} index={i} maxAvg={chartMaxAvg} />
+                        ))}
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${C.border}`, marginTop: 4 }}>
+                        <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
+                          {dailyBars[0]?.date}
+                        </span>
+                        <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
+                          {dailyBars[dailyBars.length - 1]?.date}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ textAlign: "center", padding: "24px 0", color: C.textMuted, fontSize: 12, fontFamily: "Manrope, sans-serif" }}>
+                      No graded questions in the last {windowDays} days
+                    </div>
+                  )}
+
+                  {/* Trend vs prior window */}
+                  {trendPct !== null && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16, paddingTop: 14, borderTop: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 18, fontWeight: 900, color: trendPct >= 0 ? C.success : C.danger }}>
+                        {trendPct >= 0 ? "↑" : "↓"} {Math.abs(trendPct)}%
+                      </div>
+                      <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
+                        vs prior {trendN} graded — recent avg {recentAvg?.toFixed(1)}, prior avg {priorAvg?.toFixed(1)}
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               </>
             )}

@@ -1,6 +1,17 @@
 import ReactMarkdown from "react-markdown";
 import { useRouter } from "next/router";
 
+const C = {
+  bg: "#020817",
+  surface: "#0d1b2e",
+  surfaceHigh: "#132033",
+  primary: "#1565C0",
+  secondary: "#4FC3F7",
+  text: "#e2e8f0",
+  textMuted: "#64748b",
+  border: "rgba(79,195,247,0.12)",
+};
+
 const content = `# Terms of Service
 
 **Last updated: April 2026**
@@ -120,60 +131,80 @@ For questions about these Terms, contact us at support@fitefinance.com.`;
 function TermsOfService() {
   const router = useRouter();
   return (
-    <div style={styles.page} className="page-bg page-wrapper">
-      <div style={styles.wrapper} className="wrapper-mobile">
-        <button onClick={() => router.push("/")} style={styles.back}>← Back to Home</button>
-        <div style={styles.content}>
-          <ReactMarkdown>{content}</ReactMarkdown>
+    <>
+      <style jsx global>{`
+        html, body { background: ${C.bg}; margin: 0; }
+        .legal-content h1 { font-size: 26px; font-weight: 800; color: ${C.text}; margin: 0 0 6px; }
+        .legal-content h2 { font-size: 16px; font-weight: 700; color: ${C.secondary}; margin: 28px 0 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .legal-content h3 { font-size: 14px; font-weight: 600; color: ${C.text}; margin: 20px 0 8px; }
+        .legal-content p { font-size: 14px; color: ${C.textMuted}; line-height: 1.75; margin: 0 0 12px; }
+        .legal-content ul { padding-left: 20px; margin: 0 0 12px; }
+        .legal-content li { font-size: 14px; color: ${C.textMuted}; line-height: 1.75; margin-bottom: 4px; }
+        .legal-content strong { color: ${C.text}; font-weight: 600; }
+        .legal-content a { color: ${C.secondary}; text-decoration: none; }
+        .legal-content a:hover { text-decoration: underline; }
+      `}</style>
+      <div style={{
+        minHeight: "100vh",
+        background: C.bg,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        fontFamily: "Inter, sans-serif",
+      }}>
+        {/* Top bar */}
+        <div style={{
+          width: "100%",
+          maxWidth: 760,
+          padding: "20px 24px 0",
+          boxSizing: "border-box",
+        }}>
+          <button
+            onClick={() => router.push("/")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: C.surfaceHigh,
+              border: `1px solid ${C.border}`,
+              borderRadius: 8,
+              color: C.textMuted,
+              fontSize: 13,
+              fontWeight: 600,
+              padding: "7px 14px",
+              cursor: "pointer",
+              fontFamily: "Inter, sans-serif",
+              transition: "color 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = C.text}
+            onMouseLeave={e => e.currentTarget.style.color = C.textMuted}
+          >
+            ← Back
+          </button>
+        </div>
+
+        {/* Content card */}
+        <div style={{
+          width: "100%",
+          maxWidth: 760,
+          margin: "24px 0 60px",
+          padding: "0 24px",
+          boxSizing: "border-box",
+        }}>
+          <div style={{
+            background: C.surface,
+            border: `1px solid ${C.border}`,
+            borderRadius: 16,
+            padding: "40px 44px",
+          }}>
+            <div className="legal-content">
+              <ReactMarkdown>{content}</ReactMarkdown>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    backgroundColor: "transparent",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    padding: "80px 20px 40px 20px",
-    fontFamily: "'Segoe UI', sans-serif",
-  },
-  wrapper: {
-    backgroundColor: "#f0f4f8",
-    borderRadius: "16px",
-    padding: "24px",
-    width: "100%",
-    maxWidth: "728px",
-    boxSizing: "border-box",
-    marginBottom: "16px",
-    boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
-  },
-  back: {
-    display: "inline-block",
-    marginBottom: "16px",
-    padding: "8px 16px",
-    backgroundColor: "#0a2463",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: "'Segoe UI', sans-serif",
-  },
-  content: {
-    backgroundColor: "#ffffff",
-    borderRadius: "12px",
-    padding: "36px",
-    boxShadow: "0 2px 16px rgba(10, 36, 99, 0.08)",
-    color: "#1a1a2e",
-    lineHeight: "1.7",
-    fontSize: "15px",
-  },
-};
 
 export default TermsOfService;

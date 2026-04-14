@@ -51,7 +51,8 @@ export default function App({ Component, pageProps }) {
   const displayedIsLanding =
     displayedView.route === "/" || displayedView.route === "/features" ||
     displayedView.route === "/dashboard" || displayedView.route === "/history" ||
-    displayedView.route === "/stats";
+    displayedView.route === "/stats" || displayedView.route === "/privacy" ||
+    displayedView.route === "/terms" || displayedView.route === "/refunds";
 
   const revealPendingView = () => {
     if (!coverDoneRef.current || !routeReadyRef.current || !pendingViewRef.current) {
