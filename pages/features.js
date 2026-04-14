@@ -201,24 +201,26 @@ export default function FeaturesPage() {
 
       <LandingNav />
 
-      {/* Back CTA — gold pill, contrasts the blue "Explore Features" button on the hero page */}
-      <div style={{ position: "fixed", top: 66, left: "50%", transform: "translateX(-50%)", zIndex: 140, textAlign: "center" }}>
+      {/* Back CTA — a softer inverse of the hero's primary CTA */}
+      <div className="features-home-cta">
         <button
           onClick={() => router.push("/")}
+          className="back-home-btn"
           style={{
-            background: "linear-gradient(45deg, #c9a84c, #e8c96d)",
-            color: "#020817",
-            border: "none",
+            background: "rgba(2, 8, 23, 0.74)",
+            color: "#e2eefc",
+            border: "1px solid rgba(79,195,247,0.38)",
             cursor: "pointer",
             fontFamily: "Inter, sans-serif",
             fontSize: 14,
             fontWeight: 700,
-            padding: "10px 28px",
+            padding: "10px 24px",
             borderRadius: 999,
             letterSpacing: "0.04em",
             whiteSpace: "nowrap",
+            boxShadow: "0 14px 36px rgba(2,8,23,0.26), inset 0 0 0 1px rgba(79,195,247,0.06)",
+            backdropFilter: "blur(16px)",
           }}
-          className="back-home-btn"
         >
           ← Home
         </button>
@@ -228,7 +230,7 @@ export default function FeaturesPage() {
 
         {/* ── FEATURES ──────────────────────────────────────────────────────────── */}
         <section id="features-section" style={{ position: "relative", zIndex: 2, background: C.bg }}>
-          <div style={{ padding: "96px 32px", maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ padding: "clamp(152px, 18vw, 176px) 32px 96px", maxWidth: 1280, margin: "0 auto" }}>
             <SectionScan label="Premium Features" />
             <ScrollReveal direction="left" style={{ marginBottom: 48 }}>
               <h2 style={{ fontSize: "clamp(22px, 3vw, 34px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 16px 0", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
@@ -519,11 +521,28 @@ export default function FeaturesPage() {
       <style>{`
         html, body { background: #020817; }
         @keyframes backHomePulse {
-          0%, 100% { box-shadow: 0 0 28px rgba(201,168,76,0.5), 0 0 8px rgba(232,201,109,0.25); }
-          50%       { box-shadow: 0 0 44px rgba(201,168,76,0.75), 0 0 20px rgba(232,201,109,0.5); }
+          0%, 100% { box-shadow: 0 14px 36px rgba(2,8,23,0.26), 0 0 0 rgba(79,195,247,0.2); }
+          50%      { box-shadow: 0 18px 40px rgba(2,8,23,0.32), 0 0 22px rgba(79,195,247,0.18); }
         }
         .back-home-btn { animation: backHomePulse 2s ease-in-out infinite; }
-        .back-home-btn:hover { filter: brightness(1.12); transform: translateY(-2px); }
+        .back-home-btn:hover { background: rgba(8, 20, 38, 0.9) !important; border-color: rgba(79,195,247,0.6) !important; transform: translateY(-2px); }
+        .features-home-cta {
+          position: fixed;
+          top: 74px;
+          left: 24px;
+          z-index: 140;
+          text-align: left;
+        }
+        @media (max-width: 720px) {
+          .features-home-cta {
+            top: 102px;
+            left: 16px;
+          }
+          .back-home-btn {
+            padding: 9px 22px !important;
+            font-size: 13px !important;
+          }
+        }
       `}</style>
     </>
   );

@@ -51,6 +51,7 @@ export default function LandingPage() {
   const midTagSpawnRef  = useRef(false);
   const endDetailsRef   = useRef(null);
   const endInnerRef     = useRef(null);
+  const endBrandRef     = useRef(null);
   const endSpawnRef     = useRef(false);
   const progressBarRef  = useRef(null);
   const pendingFrameRef = useRef(null); // RAF handle for batched canvas draws
@@ -198,6 +199,9 @@ export default function LandingPage() {
           if (endDetailsRef.current) {
             endDetailsRef.current.style.opacity      = `${endOp}`;
             endDetailsRef.current.style.pointerEvents = endOp > 0.5 ? "auto" : "none";
+          }
+          if (endBrandRef.current) {
+            endBrandRef.current.style.transform = `translateX(${(1 - endOp) * -120}px)`;
           }
           if (endOp > 0.05 && !endSpawnRef.current) {
             endSpawnRef.current = true;
@@ -353,15 +357,20 @@ export default function LandingPage() {
               <div ref={endInnerRef} style={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "center", willChange: "transform" }}>
               {/* Left: product details */}
               <div style={{ textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 16px rgba(0,0,0,0.85)" }}>
-                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.22em", color: C.secondary, textTransform: "uppercase", marginBottom: 14, fontFamily: "Inter, sans-serif" }}>
+                {/* <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.22em", color: C.secondary, textTransform: "uppercase", marginBottom: 14, fontFamily: "Inter, sans-serif" }}>
                   Product Details
-                </div>
-                <div style={{
-                  fontSize: "clamp(28px, 4.5vw, 52px)", fontWeight: 900, letterSpacing: "-0.04em",
+                </div> */}
+                <div
+                  ref={endBrandRef}
+                  style={{
+                  fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, letterSpacing: "-0.04em",
                   fontFamily: "Inter, sans-serif", marginBottom: 4,
-                }}>
-                  <span style={{ color: C.primary,   textShadow: "0 0 24px rgba(21,101,192,0.9)"  }}>Fite</span>{" "}
-                  <span style={{ color: C.secondary, textShadow: "0 0 24px rgba(79,195,247,0.9)"  }}>Finance</span>
+                  filter: "drop-shadow(0 8px 28px rgba(0,0,0,0.72))",
+                  willChange: "transform",
+                }}
+                >
+                  <span style={{ color: C.primary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 18px rgba(0,0,0,0.88), 0 0 24px rgba(21,101,192,0.8), 0 0 52px rgba(21,101,192,0.62)" }}>Fite</span>{" "}
+                  <span style={{ color: C.secondary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 18px rgba(0,0,0,0.88), 0 0 24px rgba(79,195,247,0.9), 0 0 56px rgba(79,195,247,0.72)" }}>Finance</span>
                 </div>
                 <div className="lp-glass-card-solid" style={{
                   padding: 24, marginTop: 14, borderRadius: 16, minWidth: 270, maxWidth: 340,
@@ -427,7 +436,7 @@ export default function LandingPage() {
                 style={{ background: cyberGrad, color: "#fff", border: "none", cursor: "pointer", fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: 700, padding: "14px 36px", borderRadius: 999, boxShadow: "0 0 32px rgba(21,101,192,0.55), 0 0 8px rgba(79,195,247,0.3)", letterSpacing: "0.04em" }}
                 className="explore-btn"
               >
-                Explore Features ↓
+                Explore Features
               </button>
             </div>
 

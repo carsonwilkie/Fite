@@ -15,17 +15,62 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 
 // Durations (ms)
-const ENTRY_MS = 500;   // bottom-up reveal
+const ENTRY_MS = 500;   // close current page / default reveal
+const HERO_REVEAL_MS = 520;
+const COVER_PAUSE_MS = 80;
+const HERO_COVER_PAUSE_MS = 0;
+
+function isHeroRoute(route) {
+  return route === "/" || route.startsWith("/?") || route.startsWith("/#");
+}
+
+function getCoverPauseMs(route) {
+  return isHeroRoute(route) ? HERO_COVER_PAUSE_MS : COVER_PAUSE_MS;
+}
 
 export default function App({ Component, pageProps }) {
   const router  = useRouter();
-  const isLanding = router.pathname === "/" || router.pathname === "/features";
+  const coverStartedAtRef = useRef(0);
+  const phaseRef = useRef("idle");
+  const routeReadyRef = useRef(false);
+  const coverDoneRef = useRef(false);
+  const pendingViewRef = useRef(null);
+  const revealPauseTimerRef = useRef(null);
 
   // ─── Page transition overlay ────────────────────────────────────────────────
   // y: CSS translateY value for the overlay
   // anim: whether a CSS transition should run
   const [y, setY]       = useState("0%");    // start covering
   const [anim, setAnim] = useState(false);   // no transition on first paint
+  const [transitionMs, setTransitionMs] = useState(ENTRY_MS);
+  const [displayedView, setDisplayedView] = useState(() => ({
+    Component,
+    pageProps,
+    route: router.asPath,
+  }));
+  const displayedIsLanding =
+    displayedView.route === "/" || displayedView.route === "/features";
+
+  const revealPendingView = () => {
+    if (!coverDoneRef.current || !routeReadyRef.current || !pendingViewRef.current) {
+      return;
+    }
+
+    const nextView = pendingViewRef.current;
+    pendingViewRef.current = null;
+    routeReadyRef.current = false;
+    phaseRef.current = "revealing";
+    setDisplayedView(nextView);
+
+    clearTimeout(revealPauseTimerRef.current);
+    revealPauseTimerRef.current = setTimeout(() => {
+      setTransitionMs(isHeroRoute(nextView.route) ? HERO_REVEAL_MS : ENTRY_MS);
+      setAnim(true);
+      setY("-100%");
+      phaseRef.current = "idle";
+      revealPauseTimerRef.current = null;
+    }, getCoverPauseMs(nextView.route));
+  };
 
   // Initial entry: reveal bottom-up after 60 ms
   useEffect(() => {
@@ -38,27 +83,47 @@ export default function App({ Component, pageProps }) {
 
   // Route-change transitions
   useEffect(() => {
+    let coverTimer;
     let revealTimer;
 
     const handleStart = () => {
+      clearTimeout(coverTimer);
       clearTimeout(revealTimer);
-      // Snap cover instantly — prevents new-page content flashing through a
-      // partially-descended overlay on fast (pre-cached) navigations.
-      setAnim(false);
+      clearTimeout(revealPauseTimerRef.current);
+      coverStartedAtRef.current = Date.now();
+      routeReadyRef.current = false;
+      coverDoneRef.current = false;
+      phaseRef.current = "covering";
+      // Sweep the current page closed before we reverse the cover to reveal the next one.
+      setTransitionMs(ENTRY_MS);
+      setAnim(true);
       setY("0%");
+      coverTimer = setTimeout(() => {
+        coverDoneRef.current = true;
+        revealPendingView();
+      }, ENTRY_MS);
     };
 
     const handleComplete = () => {
-      // New page is in the DOM (hidden under cover); reveal after a short beat.
+      routeReadyRef.current = true;
+      const elapsed = Date.now() - coverStartedAtRef.current;
+      if (elapsed >= ENTRY_MS) {
+        coverDoneRef.current = true;
+      }
       revealTimer = setTimeout(() => {
-        setAnim(true);
-        setY("-100%");
-      }, 80);
+        revealPendingView();
+      }, 0);
     };
 
     const handleError = () => {
       // Navigation cancelled — remove cover
+      clearTimeout(coverTimer);
       clearTimeout(revealTimer);
+      clearTimeout(revealPauseTimerRef.current);
+      routeReadyRef.current = false;
+      coverDoneRef.current = false;
+      pendingViewRef.current = null;
+      phaseRef.current = "idle";
       setAnim(true);
       setY("-100%");
     };
@@ -70,12 +135,44 @@ export default function App({ Component, pageProps }) {
       router.events.off("routeChangeStart",    handleStart);
       router.events.off("routeChangeComplete", handleComplete);
       router.events.off("routeChangeError",    handleError);
+      clearTimeout(coverTimer);
       clearTimeout(revealTimer);
+      clearTimeout(revealPauseTimerRef.current);
     };
   }, [router.events]);
 
+  useEffect(() => {
+    const incomingView = {
+      Component,
+      pageProps,
+      route: router.asPath,
+    };
+
+    if (displayedView.route === incomingView.route) {
+      if (
+        displayedView.Component !== incomingView.Component ||
+        displayedView.pageProps !== incomingView.pageProps
+      ) {
+        setDisplayedView(incomingView);
+      }
+      return;
+    }
+
+    pendingViewRef.current = incomingView;
+
+    if (phaseRef.current === "idle") {
+      setDisplayedView(incomingView);
+      pendingViewRef.current = null;
+      routeReadyRef.current = false;
+      coverDoneRef.current = false;
+      return;
+    }
+
+    revealPendingView();
+  }, [Component, pageProps, router.asPath, displayedView.route, displayedView.Component, displayedView.pageProps]);
+
   if (!PUBLISHABLE_KEY) {
-    return <Component {...pageProps} />;
+    return <displayedView.Component {...displayedView.pageProps} />;
   }
 
   return (
@@ -84,8 +181,8 @@ export default function App({ Component, pageProps }) {
         <Analytics />
         <SpeedInsights />
         <ScrollToTop />
-        {!isLanding && <Navbar />}
-        <Component {...pageProps} />
+        {!displayedIsLanding && <Navbar />}
+        <displayedView.Component {...displayedView.pageProps} />
 
         {/* ── Global page-transition overlay ─────────────────────────────────── */}
         <div
@@ -97,7 +194,7 @@ export default function App({ Component, pageProps }) {
             background: "#020817",
             transform: `translateY(${y})`,
             transition: anim
-              ? `transform ${ENTRY_MS}ms cubic-bezier(0.76, 0, 0.24, 1)`
+              ? `transform ${transitionMs}ms cubic-bezier(0.76, 0, 0.24, 1)`
               : "none",
             pointerEvents: y === "0%" ? "all" : "none",
             willChange: "transform",
