@@ -891,6 +891,7 @@ export default function Dashboard() {
           >
             <span style={{ color: C.primary }}>Fite</span>{" "}
             <span style={{ color: C.secondary }}>Finance</span>
+            {isPaid && <span style={{ color: C.gold, fontWeight: 900, marginLeft: 2 }}>+</span>}
           </motion.div>
           <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: C.textMuted, marginTop: 4, opacity: 0.55, fontFamily: "Manrope, sans-serif" }}>
             Executive Suite
@@ -960,6 +961,7 @@ export default function Dashboard() {
               >
                 <span style={{ color: C.primary }}>Fite</span>{" "}
                 <span style={{ color: C.secondary }}>Finance</span>
+                {isPaid && <span style={{ color: C.gold, fontWeight: 900, marginLeft: 2 }}>+</span>}
               </motion.div>
               <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: C.textMuted, opacity: 0.55, fontFamily: "Manrope, sans-serif" }}>
                 {mode === "interview" ? "Interview" : "Practice"}

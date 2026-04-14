@@ -572,6 +572,7 @@ export default function FeaturesPage() {
               <Link href="/privacy" className="lp-footer-link">Privacy</Link>
               <Link href="/terms"   className="lp-footer-link">Terms</Link>
               <Link href="/refunds" className="lp-footer-link">Refunds</Link>
+              <a href="mailto:support@fitefinance.com" className="lp-footer-link">Support</a>
             </div>
           </div>
         </footer>
