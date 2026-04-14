@@ -33,6 +33,7 @@ export default function LandingPage() {
   const { isLoaded } = useUser();
   const { isPaid } = usePaidStatus();
   const handleUpgrade = useUpgrade();
+  const [heroViewport, setHeroViewport] = useState({ width: 0, height: 0 });
 
   // Canvas / hero refs
   const heroSectionRef = useRef(null);
@@ -58,11 +59,50 @@ export default function LandingPage() {
 
   // Mount-only state
   const [heroTextIn, setHeroTextIn] = useState(false);
+  const heroViewportHeight = heroViewport.height || null;
+  const heroSceneHeight = heroViewportHeight ? `${heroViewportHeight}px` : "100vh";
+  const heroScrollHeight = heroViewportHeight ? `${heroViewportHeight * 6}px` : "600vh";
 
   // Hero text entrance — delayed so the global transition cover has partially lifted first
   useEffect(() => {
     const t = setTimeout(() => setHeroTextIn(true), 540);
     return () => clearTimeout(t);
+  }, []);
+
+  // Lock the hero viewport size on touch devices so mobile browser chrome
+  // doesn't keep resizing the pinned scene while the user scrolls.
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const isTouchViewport = () =>
+      window.matchMedia?.("(hover: none) and (pointer: coarse)")?.matches || window.innerWidth <= 900;
+
+    const updateHeroViewport = () => {
+      const width = Math.round(window.innerWidth);
+      const height = Math.round(window.innerHeight);
+
+      setHeroViewport((prev) => {
+        if (!isTouchViewport()) {
+          return { width, height };
+        }
+
+        // On mobile, ignore height-only resizes caused by collapsing browser UI.
+        if (!prev.width || Math.abs(width - prev.width) > 24) {
+          return { width, height };
+        }
+
+        return prev;
+      });
+    };
+
+    updateHeroViewport();
+    window.addEventListener("resize", updateHeroViewport);
+    window.addEventListener("orientationchange", updateHeroViewport);
+
+    return () => {
+      window.removeEventListener("resize", updateHeroViewport);
+      window.removeEventListener("orientationchange", updateHeroViewport);
+    };
   }, []);
 
   // "Explore" click — navigate to features/supplemental page
@@ -74,21 +114,20 @@ export default function LandingPage() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const resize = () => {
-      // Cap DPR at 1.5 — Retina at 2× means 4× pixels per drawImage call.
-      // CSS scaling handles display; canvas doesn't need full DPR precision for video frames.
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      canvas.width  = Math.round(window.innerWidth  * dpr);
-      canvas.height = Math.round(window.innerHeight * dpr);
-      ctxRef.current = null;
-      const f = framesRef.current[0];
-      if (f) drawFrame(f); // ImageBitmap has no .complete — check truthiness
-    };
-    resize();
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
+    const width = heroViewport.width || window.innerWidth;
+    const height = heroViewport.height || window.innerHeight;
+    if (!width || !height) return;
+
+    // Cap DPR at 1.5 — Retina at 2× means 4× pixels per drawImage call.
+    // CSS scaling handles display; canvas doesn't need full DPR precision for video frames.
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width  = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctxRef.current = null;
+    const f = framesRef.current[0];
+    if (f) drawFrame(f); // ImageBitmap has no .complete — check truthiness
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [heroViewport.width, heroViewport.height]);
 
   // Frame preload — convert to ImageBitmap so drawImage pulls from GPU memory
   // instead of re-decoding the JPEG every frame.
@@ -216,11 +255,13 @@ export default function LandingPage() {
           }
         },
       });
+
+      ScrollTrigger.refresh();
     }
     init();
     return () => st?.kill();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [heroViewport.height]);
 
   return (
     <>
@@ -234,8 +275,8 @@ export default function LandingPage() {
       <div style={{ color: C.onSurface }}>
 
         {/* ── HERO — scroll-pinned canvas ────────────────────────────────────── */}
-        <section ref={heroSectionRef} style={{ position: "relative", height: "600vh" }}>
-          <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden" }}>
+        <section ref={heroSectionRef} style={{ position: "relative", height: heroScrollHeight }}>
+          <div style={{ position: "sticky", top: 0, height: heroSceneHeight, overflow: "hidden" }}>
 
             {/* Canvas */}
             <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", background: "#020817" }} />
