@@ -47,10 +47,12 @@ export default function LandingNav() {
             </>
           </SignedOut>
           <SignedIn>
-            <button onClick={() => router.push("/practice")} style={primaryBtn}>
-              Practice
-            </button>
-            <UserButton />
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <button onClick={() => router.push("/practice")} style={primaryBtn}>
+                Practice
+              </button>
+              <UserButton />
+            </div>
           </SignedIn>
         </div>
       </nav>

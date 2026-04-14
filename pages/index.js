@@ -552,11 +552,6 @@ export default function LandingPage() {
                       <SignUpButton mode="modal">
                         <button className="lp-btn-upgrade" style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Upgrade to Premium</button>
                       </SignUpButton>
-                      {!isMobileHeroLayout && (
-                        <p style={{ fontSize: 11, textAlign: "center", color: C.muted, margin: "10px 0 0", fontFamily: "Manrope, sans-serif", opacity: 0.7 }}>
-                          Unlock all for $3 / month
-                        </p>
-                      )}
                     </SignedOut>
                     <SignedIn>
                       {isPaid ? (
@@ -568,6 +563,11 @@ export default function LandingPage() {
                         </>
                       )}
                     </SignedIn>
+                    {!isPaid && !isMobileHeroLayout && (
+                      <p style={{ fontSize: 11, textAlign: "center", color: C.muted, margin: "10px 0 0", fontFamily: "Manrope, sans-serif", opacity: 0.7 }}>
+                        Unlock all features for $3 / month
+                      </p>
+                    )}
                   </>
                 )}
               </div>
