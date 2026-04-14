@@ -114,6 +114,15 @@ export default function App({ Component, pageProps }) {
         coverDoneRef.current = true;
       }
       revealTimer = setTimeout(() => {
+        // Same-page navigation: no pending view, just remove the cover
+        if (!pendingViewRef.current) {
+          phaseRef.current = "idle";
+          routeReadyRef.current = false;
+          coverDoneRef.current = false;
+          setAnim(true);
+          setY("-100%");
+          return;
+        }
         revealPendingView();
       }, 0);
     };

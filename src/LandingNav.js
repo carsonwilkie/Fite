@@ -17,7 +17,7 @@ export default function LandingNav() {
     <>
       <nav aria-label="Main navigation" className="landing-nav">
         <div className="landing-nav__brand-wrap">
-          <button onClick={() => router.push("/")} className="landing-nav__brand">
+          <button onClick={() => { if (router.pathname !== "/") router.push("/"); }} className="landing-nav__brand">
             <span style={{ color: C_PRIMARY, textShadow: "0 1px 3px rgba(0,0,0,0.9), 0 0 24px rgba(21,101,192,0.9)" }}>Fite</span>
             {" "}
             <span style={{ color: C_SECONDARY, textShadow: "0 1px 3px rgba(0,0,0,0.9), 0 0 24px rgba(79,195,247,0.9)" }}>Finance</span>

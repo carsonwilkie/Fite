@@ -278,7 +278,7 @@ export default function HistoryDark() {
 
           {/* Math + Sort row */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", width: 64, flexShrink: 0 }}>Quant</span>
+            <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", width: 64, flexShrink: 0 }}>Math</span>
             <div style={{ display: "flex", gap: 6, flex: 1 }}>
               {["With Math", "No Math"].map(m => (
                 <FilterChip key={m} label={m} active={selectedMath === m} onClick={() => startTransition(() => setSelectedMath(selectedMath === m ? "" : m))} />

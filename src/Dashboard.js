@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
-import { useUser, UserButton } from "@clerk/clerk-react";
+import { useUser, UserButton, useClerk } from "@clerk/clerk-react";
 import { motion, AnimatePresence } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
@@ -183,32 +183,70 @@ function ControlLabel({ children }) {
   );
 }
 
-function SessionIntel({ count, avgScore, readiness }) {
-  const color = readiness >= 70 ? C.success : readiness >= 40 ? C.warn : C.secondary;
-  const ringSize = 112;
-  const cx = ringSize / 2;
-  const r  = cx - 8;
-  const circ = 2 * Math.PI * r;
+function SessionIntel({ count, avgScore, readiness, compact = false }) {
+  const color    = readiness >= 70 ? C.success : readiness >= 40 ? C.warn : C.secondary;
+  const ringSize = compact ? 72 : 112;
+  const sw       = compact ? 6 : 8;
+  const cx       = ringSize / 2;
+  const r        = cx - sw;
+  const circ     = 2 * Math.PI * r;
+
+  if (compact) {
+    return (
+      <div style={{ margin: "0 10px 8px", padding: "12px 14px", borderRadius: 12, background: "rgba(15,23,42,0.6)", border: `1px solid ${C.border}`, position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: -20, right: -20, width: 60, height: 60, background: `radial-gradient(circle, ${C.primary}25, transparent 70%)`, pointerEvents: "none" }} />
+        <div style={{ fontSize: 8, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 10, display: "flex", justifyContent: "space-between" }}>
+          Session Intel
+          <span style={{ color: color, fontWeight: 700 }}>Live</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {/* Compact ring */}
+          <div style={{ width: ringSize, height: ringSize, position: "relative", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width={ringSize} height={ringSize} style={{ transform: "rotate(-90deg)", position: "absolute", top: 0, left: 0 }}>
+              <circle cx={cx} cy={cx} r={r} fill="none" stroke={C.surfaceHigh} strokeWidth={sw} />
+              <motion.circle cx={cx} cy={cx} r={r} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round"
+                strokeDasharray={circ}
+                animate={{ strokeDashoffset: circ * (1 - readiness / 100) }}
+                transition={{ duration: 1, ease: "easeOut" }}
+              />
+            </svg>
+            <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+              <div style={{ fontSize: 18, fontWeight: 900, color: C.text, lineHeight: 1 }}>{readiness}</div>
+              <div style={{ fontSize: 7, fontWeight: 900, color: color, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>Ready</div>
+            </div>
+          </div>
+          {/* Stats */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <div style={{ fontSize: 8, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>Questions</div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: C.text, lineHeight: 1.1 }}>{count}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 8, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>Avg Score</div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: avgScore !== null ? color : C.textMuted, lineHeight: 1.1 }}>
+                {avgScore !== null ? avgScore : "—"}
+                {avgScore !== null && <span style={{ fontSize: 9, color: C.textMuted, fontWeight: 400 }}>/10</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "20px 20px 24px", borderTop: `1px solid ${C.border}`, backgroundColor: C.surfaceLow }}>
       <div style={{ padding: 20, borderRadius: 16, background: "rgba(15,23,42,0.5)", backdropFilter: "blur(12px)", border: `1px solid ${C.border}`, position: "relative", overflow: "hidden" }}>
-        {/* Gradient decoration */}
         <div style={{ position: "absolute", top: -30, right: -30, width: 80, height: 80, background: `radial-gradient(circle, ${C.primary}30, transparent 70%)`, pointerEvents: "none" }} />
-
         <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.22em", textTransform: "uppercase", color: C.text, fontFamily: "Manrope, sans-serif", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           Session Intel
           <span style={{ fontSize: 9, color: C.textMuted, fontWeight: 400 }}>Live</span>
         </div>
-
-        {/* Score ring */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
           <div style={{ width: ringSize, height: ringSize, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width={ringSize} height={ringSize} style={{ transform: "rotate(-90deg)", position: "absolute", top: 0, left: 0 }}>
-              <circle cx={cx} cy={cx} r={r} fill="none" stroke={C.surfaceHigh} strokeWidth="8" />
-              <motion.circle
-                cx={cx} cy={cx} r={r}
-                fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
+              <circle cx={cx} cy={cx} r={r} fill="none" stroke={C.surfaceHigh} strokeWidth={sw} />
+              <motion.circle cx={cx} cy={cx} r={r} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round"
                 strokeDasharray={circ}
                 animate={{ strokeDashoffset: circ * (1 - readiness / 100) }}
                 transition={{ duration: 1, ease: "easeOut" }}
@@ -220,7 +258,6 @@ function SessionIntel({ count, avgScore, readiness }) {
             </div>
           </div>
         </div>
-
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, paddingTop: 14, borderTop: `1px solid ${C.border}` }}>
           <div>
             <div style={{ fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>Questions</div>
@@ -684,6 +721,7 @@ function InterviewCanvas({ loadingInterviewGenerate, interviewProgress, intervie
 export default function Dashboard() {
   const router    = useRouter();
   const { user }  = useUser();
+  const { openUserProfile } = useClerk();
   const { isPaid } = usePaidStatus();
   const price      = usePrice();
   const handleUpgrade = useUpgrade();
@@ -846,10 +884,14 @@ export default function Dashboard() {
       >
         {/* Brand */}
         <div style={{ padding: "28px 24px 16px" }}>
-          <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1 }}>
+          <motion.div
+            onClick={() => router.push("/")}
+            whileTap={{ scale: 0.95 }}
+            style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1, cursor: "pointer", display: "inline-block" }}
+          >
             <span style={{ color: C.primary }}>Fite</span>{" "}
             <span style={{ color: C.secondary }}>Finance</span>
-          </div>
+          </motion.div>
           <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: C.textMuted, marginTop: 4, opacity: 0.55, fontFamily: "Manrope, sans-serif" }}>
             Executive Suite
           </div>
@@ -874,9 +916,17 @@ export default function Dashboard() {
           </div>
         </nav>
 
+        {/* Session Intel */}
+        <SessionIntel compact count={sessionCount} avgScore={sessionAvgScore} readiness={readiness} />
+
         {/* User section */}
         <div style={{ padding: "14px 14px 20px" }}>
-          <div style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(21,101,192,0.06)", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+          <motion.div
+            onClick={() => openUserProfile()}
+            whileHover={{ background: "rgba(21,101,192,0.14)", borderColor: `rgba(79,195,247,0.3)` }}
+            whileTap={{ scale: 0.97 }}
+            style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(21,101,192,0.06)", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10, cursor: "pointer", transition: "background 0.15s, border-color 0.15s" }}
+          >
             <UserButton />
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: C.text }}>
@@ -886,7 +936,7 @@ export default function Dashboard() {
                 {isPaid ? "Premium" : "Free Plan"}
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </motion.aside>
 
@@ -916,15 +966,6 @@ export default function Dashboard() {
               </div>
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <motion.div
-                onClick={() => router.push("/")}
-                whileTap={{ scale: 0.95 }}
-                style={{ fontSize: 17, fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1, cursor: "pointer" }}
-              >
-                <span style={{ color: C.primary }}>Fite</span>{" "}
-                <span style={{ color: C.secondary }}>Finance</span>
-              </motion.div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", background: "rgba(21,101,192,0.1)", borderRadius: 999, border: `1px solid rgba(21,101,192,0.2)` }}>
               <motion.span
                 animate={{ opacity: [1, 0.4, 1] }}
@@ -934,7 +975,6 @@ export default function Dashboard() {
               <span style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>
                 Live: Finance_GPT_V4
               </span>
-            </div>
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1019,16 +1059,20 @@ export default function Dashboard() {
               </div>
 
               {/* Timer toggle */}
-              <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+              <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${isPaid ? C.border : "rgba(201,168,76,0.2)"}`, overflow: "hidden", opacity: isPaid ? 1 : 0.7 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px" }}>
-                  <span style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Timer</span>
-                  <motion.button onClick={() => { const next = !timerOn; setTimerOn(next); if (!next) stopTimer(); }} whileTap={{ scale: 0.88 }}
-                    style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", position: "relative", backgroundColor: timerOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
-                    <motion.div animate={{ x: timerOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                  <span style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>
+                    Timer{!isPaid && <span style={{ marginLeft: 6, color: C.gold, textTransform: "none", letterSpacing: 0 }}> — Premium</span>}
+                  </span>
+                  <motion.button
+                    onClick={() => { if (!isPaid) { handleUpgrade(); return; } const next = !timerOn; setTimerOn(next); if (!next) stopTimer(); }}
+                    whileTap={{ scale: 0.88 }}
+                    style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: isPaid ? "pointer" : "not-allowed", position: "relative", backgroundColor: isPaid && timerOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
+                    <motion.div animate={{ x: isPaid && timerOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
                       style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
                   </motion.button>
                 </div>
-                {timerOn && (
+                {isPaid && timerOn && (
                   <div style={{ padding: "0 12px 12px", display: "flex", gap: 6 }}>
                     {TIMER_PRESETS.map(sec => (
                       <motion.button key={sec}
@@ -1071,8 +1115,6 @@ export default function Dashboard() {
               </motion.button>
             </div>
 
-            {/* Session Intel */}
-            <SessionIntel count={sessionCount} avgScore={sessionAvgScore} readiness={readiness} />
           </motion.section>
 
           {/* ── Question Canvas ── */}
@@ -1180,20 +1222,24 @@ export default function Dashboard() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 320, damping: 32 }}
-              style={{ position: "fixed", bottom: 0, left: 0, right: 0, backgroundColor: C.surface, borderRadius: "20px 20px 0 0", zIndex: 400, maxHeight: "88vh", overflowY: "auto", paddingBottom: 32 }}
+              style={{ position: "fixed", bottom: 0, left: 0, right: 0, backgroundColor: C.surface, borderRadius: "20px 20px 0 0", zIndex: 400, maxHeight: "88vh", display: "flex", flexDirection: "column" }}
             >
-              {/* Handle */}
-              <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 8px" }}>
-                <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: `${C.textMuted}40` }} />
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 20px 16px" }}>
-                <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>Session Config</span>
-                <motion.button onClick={() => setDrawerOpen(false)} whileTap={{ scale: 0.88 }} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-                  <Icon name="close" size={20} style={{ color: C.textMuted }} />
-                </motion.button>
+              {/* Sticky header — always visible, never scrolls away */}
+              <div style={{ flexShrink: 0, borderRadius: "20px 20px 0 0", backgroundColor: C.surface, borderBottom: `1px solid ${C.border}` }}>
+                <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 6px" }}>
+                  <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: `${C.textMuted}40` }} />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 20px 14px" }}>
+                  <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>Session Config</span>
+                  <motion.button onClick={() => setDrawerOpen(false)} whileTap={{ scale: 0.88 }}
+                    style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${C.border}`, background: C.surfaceHigh, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Icon name="close" size={20} style={{ color: C.text }} />
+                  </motion.button>
+                </div>
               </div>
 
-              <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 20 }}>
+              {/* Scrollable content */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px 40px", display: "flex", flexDirection: "column", gap: 20 }}>
                 {/* Mode toggle */}
                 <div>
                   <ControlLabel>Simulation Mode</ControlLabel>
@@ -1244,16 +1290,20 @@ export default function Dashboard() {
                 </div>
 
                 {/* Timer toggle */}
-                <div style={{ background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+                <div style={{ background: C.surfaceLow, borderRadius: 12, border: `1px solid ${isPaid ? C.border : "rgba(201,168,76,0.2)"}`, overflow: "hidden", opacity: isPaid ? 1 : 0.7 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px" }}>
-                    <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Timer</span>
-                    <motion.button onClick={() => { const next = !timerOn; setTimerOn(next); if (!next) stopTimer(); }} whileTap={{ scale: 0.88 }}
-                      style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", position: "relative", backgroundColor: timerOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
-                      <motion.div animate={{ x: timerOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                    <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>
+                      Timer{!isPaid && <span style={{ marginLeft: 6, color: C.gold, textTransform: "none", letterSpacing: 0 }}> — Premium</span>}
+                    </span>
+                    <motion.button
+                      onClick={() => { if (!isPaid) { handleUpgrade(); return; } const next = !timerOn; setTimerOn(next); if (!next) stopTimer(); }}
+                      whileTap={{ scale: 0.88 }}
+                      style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: isPaid ? "pointer" : "not-allowed", position: "relative", backgroundColor: isPaid && timerOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
+                      <motion.div animate={{ x: isPaid && timerOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
                         style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
                     </motion.button>
                   </div>
-                  {timerOn && (
+                  {isPaid && timerOn && (
                     <div style={{ padding: "0 12px 12px", display: "flex", gap: 6 }}>
                       {TIMER_PRESETS.map(sec => (
                         <motion.button key={sec}
