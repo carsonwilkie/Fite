@@ -489,7 +489,7 @@ export default function FeaturesPage() {
                   Recommended
                 </div>
                 <div style={{ marginBottom: 32 }}>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 4px 0", fontFamily: "Inter, sans-serif" }}>Premium Tier</h3>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 4px 0", fontFamily: "Inter, sans-serif" }}>Fite Premium</h3>
                   <p style={{ color: C.muted, fontSize: 14, margin: 0, fontFamily: "Manrope, sans-serif" }}>Advanced Mastery</p>
                 </div>
                 <div style={{ fontSize: 42, fontWeight: 900, margin: "0 0 32px 0", color: C.secondary, fontFamily: "Inter, sans-serif" }}>
