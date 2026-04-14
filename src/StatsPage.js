@@ -219,6 +219,7 @@ export default function StatsPage() {
           <div style={{ width: 1, height: 16, backgroundColor: C.border }} />
           <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase", color: C.text, fontFamily: "Manrope, sans-serif" }}>Performance Stats</span>
         </div>
+        <span style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{entries.length} entries</span>
         <motion.button
           onClick={() => router.push("/history")}
           whileTap={{ scale: 0.97 }}
