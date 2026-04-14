@@ -60,6 +60,8 @@ export default function LandingPage() {
   const endInnerRef     = useRef(null);
   const endBrandRef     = useRef(null);
   const endSpawnRef     = useRef(false);
+  const endPracticeRef  = useRef(null); // left feature card
+  const endSignupRef    = useRef(null); // right sign-up card
   const progressBarRef  = useRef(null);
   const pendingFrameRef = useRef(null); // RAF handle for batched canvas draws
 
@@ -325,14 +327,20 @@ export default function LandingPage() {
           }
           if (endOp > 0.05 && !endSpawnRef.current) {
             endSpawnRef.current = true;
-            const inner = endInnerRef.current;
-            if (inner) {
-              // Split remove/add across frames — no forced layout reflow needed.
-              inner.classList.remove("end-details-spawn");
-              requestAnimationFrame(() => inner.classList.add("end-details-spawn"));
+            const practice = endPracticeRef.current;
+            const signup   = endSignupRef.current;
+            if (practice) {
+              practice.classList.remove("practice-panel-in");
+              requestAnimationFrame(() => practice.classList.add("practice-panel-in"));
+            }
+            if (signup) {
+              signup.classList.remove("signup-panel-in");
+              requestAnimationFrame(() => signup.classList.add("signup-panel-in"));
             }
           } else if (endOp < 0.01) {
             endSpawnRef.current = false;
+            endPracticeRef.current?.classList.remove("practice-panel-in");
+            endSignupRef.current?.classList.remove("signup-panel-in");
           }
         },
       });
@@ -508,34 +516,66 @@ export default function LandingPage() {
                   <span style={{ color: C.primary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 18px rgba(0,0,0,0.88), 0 0 24px rgba(21,101,192,0.8), 0 0 52px rgba(21,101,192,0.62)" }}>Fite</span>{" "}
                   <span style={{ color: C.secondary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 18px rgba(0,0,0,0.88), 0 0 24px rgba(79,195,247,0.9), 0 0 56px rgba(79,195,247,0.72)" }}>Finance</span>
                 </div>
-                <div className="lp-glass-card-solid" style={{
-                  padding: isMobileHeroLayout ? 14 : 24,
-                  marginTop: isMobileHeroLayout ? 8 : 14,
-                  borderRadius: 16,
-                  minWidth: 0,
-                  width: "100%",
-                  maxWidth: isMobileHeroLayout ? "100%" : 340,
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.65)",
-                  border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.3)",
-                }}>
-                  <div style={{ color: C.secondary, fontSize: isMobileHeroLayout ? 12 : 15, fontFamily: "Manrope, sans-serif", marginBottom: isMobileHeroLayout ? 6 : 12, fontWeight: 600, textAlign: isMobileHeroLayout ? "center" : "left" }}>
+                <div
+                  ref={endPracticeRef}
+                  style={{
+                    marginTop: isMobileHeroLayout ? 8 : 14,
+                    borderRadius: 14,
+                    padding: isMobileHeroLayout ? "14px 14px 14px 16px" : "22px 22px 22px 20px",
+                    background: "rgba(4,10,28,0.78)",
+                    backdropFilter: "blur(16px)",
+                    borderTop: "1px solid rgba(79,195,247,0.1)",
+                    borderRight: "1px solid rgba(79,195,247,0.1)",
+                    borderBottom: "1px solid rgba(79,195,247,0.1)",
+                    borderLeft: "3px solid rgba(79,195,247,0.7)",
+                    boxShadow: "0 4px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(79,195,247,0.07)",
+                    minWidth: 0,
+                    width: "100%",
+                    maxWidth: isMobileHeroLayout ? "100%" : 340,
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div style={{
+                    color: C.secondary,
+                    fontSize: isMobileHeroLayout ? 12 : 14,
+                    fontFamily: "Manrope, sans-serif",
+                    fontWeight: 700,
+                    letterSpacing: "0.01em",
+                    marginBottom: isMobileHeroLayout ? 10 : 16,
+                    textShadow: "0 0 18px rgba(79,195,247,0.45)",
+                  }}>
                     Practice, don&apos;t guess.
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8, lineHeight: isMobileHeroLayout ? 1.32 : 1.6, fontSize: isMobileHeroLayout ? 12 : 16, textAlign: isMobileHeroLayout ? "center" : "left" }}>
-                    Train with custom questions, structured mock interviews, and instant feedback so you&apos;re never caught off guard.
+                  <div style={{ display: "flex", flexDirection: "column", gap: isMobileHeroLayout ? 8 : 13 }}>
+                    {[
+                      ["8 Interview Categories", "IB, PE, AM, Consulting & more"],
+                      ["AI-Powered Grading",     "Instant feedback on every answer"],
+                      ["Mock Interview Mode",    "Structured scenarios with scoring"],
+                    ].map(([title, sub]) => (
+                      <div key={title} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                        <span style={{ color: "rgba(79,195,247,0.65)", fontSize: 9, marginTop: isMobileHeroLayout ? 3 : 4, flexShrink: 0, lineHeight: 1 }}>▸</span>
+                        <div>
+                          <div style={{ fontSize: isMobileHeroLayout ? 11 : 13, fontWeight: 700, color: C.onSurface, fontFamily: "Inter, sans-serif", lineHeight: 1.3 }}>{title}</div>
+                          <div style={{ fontSize: isMobileHeroLayout ? 10 : 11, color: C.muted, fontFamily: "Manrope, sans-serif", marginTop: 2, lineHeight: 1.3, opacity: 0.8 }}>{sub}</div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
 
               {/* Right: sign-up card */}
-              <div className="lp-glass-card-solid" style={{
+              <div ref={endSignupRef} className="lp-glass-card-solid" style={{
                 padding: isMobileHeroLayout ? 18 : 32,
                 borderRadius: 16,
                 minWidth: 0,
                 width: "100%",
                 maxWidth: isMobileHeroLayout ? "100%" : 340,
-                boxShadow: "0 4px 24px rgba(0,0,0,0.65)",
-                border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.3)",
+                boxSizing: "border-box",
+                boxShadow: isPaid
+                  ? "0 4px 32px rgba(0,0,0,0.65), 0 0 0 1px rgba(201,168,76,0.15), 0 0 40px rgba(201,168,76,0.08)"
+                  : "0 4px 32px rgba(0,0,0,0.65), 0 0 0 1px rgba(21,101,192,0.15), 0 0 40px rgba(21,101,192,0.1)",
+                border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.35)",
               }}>
                 <h3 style={{ fontSize: isMobileHeroLayout ? 16 : 20, fontWeight: 700, margin: "0 0 6px 0", color: C.onSurface, fontFamily: "Inter, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
                   {isPaid ? "Welcome Back" : "Start Preparing"}
@@ -611,23 +651,52 @@ export default function LandingPage() {
         }
         .explore-btn { animation: explorePulse 2s ease-in-out infinite; }
         .explore-btn:hover { filter: brightness(1.15); transform: translateY(-2px) !important; }
+
+        /* — Left feature card: sweeps in from the left — */
+        @keyframes practiceIn {
+          from { opacity: 0; transform: translateX(-56px) skewX(-3deg); }
+          to   { opacity: 1; transform: translateX(0)     skewX(0deg); }
+        }
+        .practice-panel-in {
+          animation: practiceIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* — Right sign-up card: lifts up from below with a slight scale — */
+        @keyframes signupIn {
+          from { opacity: 0; transform: translateY(52px) scale(0.94); }
+          to   { opacity: 1; transform: translateY(0)    scale(1); }
+        }
+        .signup-panel-in {
+          opacity: 0;
+          animation: signupIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.12s forwards;
+        }
+
+        /* — Mobile layout — */
         @media (max-width: 900px) {
           .end-details-outer {
             align-items: flex-start !important;
-            padding: 84px 16px 80px !important;
+            padding: 84px 12px 80px !important;
+            overflow: hidden !important;
           }
           .end-panels-inner {
             flex-direction: column !important;
-            max-width: 372px !important;
+            width: 100% !important;
+            max-width: 100% !important;
             align-items: stretch !important;
             gap: 10px !important;
+            box-sizing: border-box !important;
           }
           .end-panel-left {
             width: 100% !important;
+            box-sizing: border-box !important;
           }
           .end-brand {
             font-size: clamp(28px, 7vw, 46px) !important;
             text-align: center !important;
+          }
+          .end-panels-inner .lp-glass-card-solid {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
           }
         }
       `}</style>
