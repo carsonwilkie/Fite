@@ -975,7 +975,7 @@ export default function Dashboard() {
                 style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: C.secondary, display: "inline-block" }}
               />
               <span style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>
-                Live: Finance_GPT_V4
+                Live: FITE_GPT_V2
               </span>
             </div>
           )}
