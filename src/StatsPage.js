@@ -98,7 +98,7 @@ export default function StatsPage() {
   const { isPaid, loading } = usePaidStatus();
   const [entries, setEntries]             = useState([]);
   const [loadingData, setLoadingData]     = useState(true);
-  const [windowDays, setWindowDays]       = useState(30);
+  const [windowN, setWindowN]             = useState(20);
 
   useEffect(() => {
     if (loading) return;
@@ -170,37 +170,21 @@ export default function StatsPage() {
   entries.forEach(e => { if (e.difficulty && diffCounts[e.difficulty] !== undefined) diffCounts[e.difficulty]++; });
   const maxDiff = Math.max(...Object.values(diffCounts), 1);
 
-  // Score trend
+  // ── Chart + trend data ───────────────────────────────────────────────────
   const chartScored = [...scoredEntries].sort((a, b) => a.timestamp - b.timestamp);
-  const recentChart = chartScored.slice(-20);
-  const trendN = Math.min(5, Math.floor(chartScored.length / 2));
-  const trendOk = trendN >= 1 && chartScored.length >= 4;
+  const maxN        = chartScored.length;
+  const clampedN    = Math.min(windowN, maxN);
+  const windowBars  = chartScored.slice(-clampedN);
+  const windowAvg   = windowBars.length > 0
+    ? (windowBars.reduce((s, e) => s + e.score, 0) / windowBars.length).toFixed(1)
+    : null;
+
+  // Score trend (fixed half-window comparison)
+  const trendN    = Math.min(5, Math.floor(chartScored.length / 2));
+  const trendOk   = trendN >= 1 && chartScored.length >= 4;
   const recentAvg = trendOk ? chartScored.slice(-trendN).reduce((s, e) => s + e.score, 0) / trendN : null;
   const priorAvg  = trendOk ? chartScored.slice(-trendN*2, -trendN).reduce((s, e) => s + e.score, 0) / trendN : null;
   const trendPct  = trendOk && priorAvg > 0 ? Math.round(((recentAvg - priorAvg) / priorAvg) * 100) : null;
-
-  // ── Sliding window chart data ─────────────────────────────────────────────
-  const windowStart   = Date.now() - windowDays * 86400000;
-  const windowScored  = scoredEntries.filter(e => e.timestamp >= windowStart);
-  const windowAvg     = windowScored.length > 0
-    ? (windowScored.reduce((s, e) => s + e.score, 0) / windowScored.length).toFixed(1)
-    : null;
-
-  // Group by day → daily avg for chart bars
-  const dailyMap = {};
-  windowScored.forEach(e => {
-    const key = toKey(new Date(e.timestamp));
-    if (!dailyMap[key]) dailyMap[key] = [];
-    dailyMap[key].push(e.score);
-  });
-  const dailyBars = Object.entries(dailyMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, scores]) => ({
-      date,
-      avg: scores.reduce((s, v) => s + v, 0) / scores.length,
-      count: scores.length,
-    }));
-  const chartMaxAvg = dailyBars.length > 0 ? Math.max(...dailyBars.map(d => d.avg)) : 10;
 
   const scoreColor = v => v >= 8 ? C.success : v >= 5 ? C.warn : C.danger;
 
@@ -270,13 +254,22 @@ export default function StatsPage() {
               <StatCard value={longestStreak} sub="Best Streak" accent={C.gold} delay={0.1} />
             </div>
 
-            {/* ── Score chart (slider-controlled) ── */}
-            {scoredEntries.length > 0 && (
-              <>
-                <div style={{ marginBottom: 12 }}>{label("Score History")}</div>
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                  style={{ padding: "20px 22px 18px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, marginBottom: 32 }}>
+            {/* ── Score chart (slider-controlled by # questions) ── */}
+            <div style={{ marginBottom: 12 }}>{label("Score History")}</div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+              style={{ padding: "20px 22px 18px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, marginBottom: 32 }}>
 
+              {maxN < 2 ? (
+                <div style={{ textAlign: "center", padding: "32px 0" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
+                    Grade at least 2 questions to see your score history.
+                  </div>
+                  <div style={{ fontSize: 11, color: C.textMuted, marginTop: 6, fontFamily: "Manrope, sans-serif", opacity: 0.6 }}>
+                    Answer questions and submit your response for grading.
+                  </div>
+                </div>
+              ) : (
+                <>
                   {/* Slider header row */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                     <div>
@@ -285,53 +278,61 @@ export default function StatsPage() {
                         <span style={{ fontSize: 13, color: C.textMuted, fontWeight: 600, marginLeft: 4 }}>/10</span>
                       </div>
                       <div style={{ fontSize: 10, color: C.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 4 }}>
-                        avg over last {windowDays} days · {windowScored.length} graded
+                        avg over last {clampedN} question{clampedN !== 1 ? "s" : ""}
                       </div>
                     </div>
                     {/* Slider */}
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, minWidth: 160 }}>
                       <div style={{ fontSize: 11, fontWeight: 700, color: C.secondary, fontFamily: "Manrope, sans-serif" }}>
-                        {windowDays} days
+                        {clampedN} question{clampedN !== 1 ? "s" : ""}
                       </div>
                       <input
                         type="range"
-                        min={7}
-                        max={90}
+                        min={2}
+                        max={maxN}
                         step={1}
-                        value={windowDays}
-                        onChange={e => setWindowDays(+e.target.value)}
+                        value={clampedN}
+                        onChange={e => setWindowN(+e.target.value)}
                         style={{ width: 150, accentColor: C.secondary, cursor: "pointer" }}
                       />
                       <div style={{ display: "flex", justifyContent: "space-between", width: 150 }}>
-                        <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>7d</span>
-                        <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>90d</span>
+                        <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>2</span>
+                        <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{maxN}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Chart bars */}
-                  {dailyBars.length > 0 ? (
-                    <>
-                      {/* Y-axis labels */}
-                      <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 94, paddingBottom: 0, overflowX: "auto" }}>
-                        {dailyBars.map((d, i) => (
-                          <DayBar key={d.date} avg={d.avg} count={d.count} dateLabel={d.date} index={i} maxAvg={chartMaxAvg} />
-                        ))}
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${C.border}`, marginTop: 4 }}>
-                        <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
-                          {dailyBars[0]?.date}
-                        </span>
-                        <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
-                          {dailyBars[dailyBars.length - 1]?.date}
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ textAlign: "center", padding: "24px 0", color: C.textMuted, fontSize: 12, fontFamily: "Manrope, sans-serif" }}>
-                      No graded questions in the last {windowDays} days
-                    </div>
-                  )}
+                  {/* Chart bars — one per question */}
+                  <div style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 90, overflowX: "auto" }}>
+                    {windowBars.map((e, i) => {
+                      const pct   = (e.score / 10) * 100;
+                      const color = scoreColor(e.score);
+                      return (
+                        <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, flex: 1, minWidth: 8 }}>
+                          <div style={{ width: "100%", height: 80, display: "flex", alignItems: "flex-end" }}>
+                            <motion.div
+                              key={`${clampedN}-${i}`}
+                              initial={{ height: 0 }}
+                              animate={{ height: `${pct}%` }}
+                              transition={{ duration: 0.4, delay: i * 0.02, ease: [0.22, 1, 0.36, 1] }}
+                              style={{ width: "100%", borderRadius: "2px 2px 0 0", background: `linear-gradient(to top, ${color}99, ${color})`, minHeight: 2 }}
+                            />
+                          </div>
+                          <span style={{ fontSize: 8, color: C.textMuted, fontFamily: "Manrope, sans-serif", fontWeight: 600 }}>{e.score}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* X-axis: first and last question number in window */}
+                  <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${C.border}`, marginTop: 4 }}>
+                    <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
+                      Q{maxN - clampedN + 1}
+                    </span>
+                    <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
+                      Q{maxN} (latest)
+                    </span>
+                  </div>
 
                   {/* Trend vs prior window */}
                   {trendPct !== null && (
@@ -344,9 +345,9 @@ export default function StatsPage() {
                       </div>
                     </div>
                   )}
-                </motion.div>
-              </>
-            )}
+                </>
+              )}
+            </motion.div>
 
             {/* ── Category breakdown ── */}
             {catRows.length > 0 && (

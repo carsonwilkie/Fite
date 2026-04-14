@@ -77,7 +77,35 @@ function ScoreRing({ score, color, size = 112 }) {
 
 const TIMER_PRESETS = [60, 120, 180, 300];
 
-function TimerDisplay({ timeLeft, timerDuration, paused, onPause, onResume }) {
+function TimerDisplay({ timeLeft, timerDuration, paused, onPause, onResume, onStart, timerOn }) {
+  // When timer is enabled but not yet started, show a Start button
+  if (timerOn && timeLeft === null) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 18px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, marginBottom: 8 }}
+      >
+        <div style={{ width: 56, height: 56, borderRadius: "50%", border: `2px dashed ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon name="timer" size={24} style={{ color: C.textMuted }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 3 }}>Timer Ready</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.textMuted, fontFamily: "Inter, sans-serif" }}>
+            {Math.floor(timerDuration / 60)}m {timerDuration % 60 > 0 ? `${timerDuration % 60}s` : ""} — press start when ready
+          </div>
+        </div>
+        <motion.button
+          onClick={onStart}
+          whileTap={{ scale: 0.9 }}
+          style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid rgba(79,195,247,0.4)`, background: "rgba(79,195,247,0.1)", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flexShrink: 0, color: C.secondary, fontSize: 11, fontWeight: 900, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em" }}
+        >
+          <Icon name="play_arrow" size={18} style={{ color: C.secondary }} />
+          Start
+        </motion.button>
+      </motion.div>
+    );
+  }
   if (timeLeft === null) return null;
   const pct   = timerDuration > 0 ? timeLeft / timerDuration : 0;
   const color = pct > 0.5 ? C.success : pct > 0.25 ? C.warn : C.danger;
@@ -212,7 +240,7 @@ function SessionIntel({ count, avgScore, readiness }) {
 }
 
 // ─── Question Canvas (right panel, question mode) ─────────────────────────────
-function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback, score, graded, answerRevealed, loadingQuestion, loadingAnswer, loadingFeedback, streamProgress, wordCount, isPaid, category, difficulty, math, onGetAnswer, onGrade, onNewQuestion, onUpgrade, price, questionsUsed, getScoreColor, getScoreBg, timeLeft, timerDuration, timerPaused, onPauseTimer, onResumeTimer }) {
+function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback, score, graded, answerRevealed, loadingQuestion, loadingAnswer, loadingFeedback, streamProgress, wordCount, isPaid, category, difficulty, math, onGetAnswer, onGrade, onNewQuestion, onUpgrade, price, questionsUsed, getScoreColor, getScoreBg, timeLeft, timerDuration, timerPaused, onPauseTimer, onResumeTimer, onStartTimer, timerOn, snapshotCategory, snapshotDifficulty, snapshotMath }) {
   const isLimitMsg = question?.includes("you've reached") || question?.includes("You've reached") || question?.includes("seen all recent");
 
   // Empty / loading state
@@ -259,18 +287,18 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
         style={{ display: "flex", flexDirection: "column", gap: 32 }}
       >
         {/* Timer display */}
-        <TimerDisplay timeLeft={timeLeft} timerDuration={timerDuration} paused={timerPaused} onPause={onPauseTimer} onResume={onResumeTimer} />
+        <TimerDisplay timeLeft={timeLeft} timerDuration={timerDuration} paused={timerPaused} onPause={onPauseTimer} onResume={onResumeTimer} onStart={onStartTimer} timerOn={timerOn} />
 
-        {/* Question header badges */}
+        {/* Question header badges — locked to snapshot values at generation time */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <span style={{ padding: "4px 12px", background: "rgba(79,195,247,0.1)", color: C.secondary, fontSize: 10, fontWeight: 900, fontFamily: "Manrope, sans-serif", borderRadius: 6, letterSpacing: "0.15em", textTransform: "uppercase", border: `1px solid rgba(79,195,247,0.2)` }}>
-            {category === "All" ? "Finance" : category}
+            {(snapshotCategory || category) === "All" ? "Finance" : (snapshotCategory || category)}
           </span>
           <span style={{ padding: "4px 12px", background: "rgba(21,101,192,0.08)", color: C.textMuted, fontSize: 10, fontWeight: 900, fontFamily: "Manrope, sans-serif", borderRadius: 6, letterSpacing: "0.15em", textTransform: "uppercase", border: `1px solid ${C.border}` }}>
-            {difficulty}
+            {snapshotDifficulty || difficulty}
           </span>
           <span style={{ padding: "4px 12px", background: "rgba(21,101,192,0.08)", color: C.textMuted, fontSize: 10, fontWeight: 900, fontFamily: "Manrope, sans-serif", borderRadius: 6, letterSpacing: "0.15em", textTransform: "uppercase", border: `1px solid ${C.border}` }}>
-            {math}
+            {snapshotMath || math}
           </span>
         </div>
 
@@ -708,6 +736,11 @@ export default function Dashboard() {
   const [loadingDebrief,           setLoadingDebrief]           = useState(false);
   const [interviewAnswersRevealed, setInterviewAnswersRevealed] = useState(false);
 
+  // Snapshot of settings at question generation time (so toggling controls doesn't affect displayed badges)
+  const [snapshotCategory,   setSnapshotCategory]   = useState(null);
+  const [snapshotDifficulty, setSnapshotDifficulty] = useState(null);
+  const [snapshotMath,       setSnapshotMath]       = useState(null);
+
   // Timer state
   const [timerOn,       setTimerOn]       = useState(false);
   const [timerDuration, setTimerDuration] = useState(120);
@@ -761,6 +794,10 @@ export default function Dashboard() {
   // ─── Question handlers ───────────────────────────────────────────────────
   const getQuestion = async () => {
     resetQuestion();
+    // Snapshot current settings so badge display is frozen for this question
+    setSnapshotCategory(category);
+    setSnapshotDifficulty(difficulty);
+    setSnapshotMath(mathOn ? "With Math" : "No Math");
     setLoadingQuestion(true);
     const EST = difficulty === "Easy" ? 150 : difficulty === "Hard" ? 350 : 250;
     try {
@@ -774,7 +811,6 @@ export default function Dashboard() {
       if (newQ) { saveQuestion(newQ); fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "answer", question: newQ, category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, userId: user?.id }) }).then(r => r.json()).then(d => setAnswer(d.result)); }
       await new Promise(r => setTimeout(r, 600));
       setQuestion(newQ || "You've seen all recent questions in this category! Try a different one.");
-      if (timerOnRef.current && newQ) startTimer();
     } catch (e) { console.error(e); }
     setLoadingQuestion(false);
     setSessionCount(c => c + 1);
@@ -867,15 +903,28 @@ export default function Dashboard() {
           {/* Left: brand (mobile) or live indicator (desktop) */}
           {isMobile ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1 }}>
+              <motion.div
+                onClick={() => router.push("/")}
+                whileTap={{ scale: 0.95 }}
+                style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1, cursor: "pointer" }}
+              >
                 <span style={{ color: C.primary }}>Fite</span>{" "}
                 <span style={{ color: C.secondary }}>Finance</span>
-              </div>
+              </motion.div>
               <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: C.textMuted, opacity: 0.55, fontFamily: "Manrope, sans-serif" }}>
                 {mode === "interview" ? "Interview" : "Practice"}
               </div>
             </div>
           ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <motion.div
+                onClick={() => router.push("/")}
+                whileTap={{ scale: 0.95 }}
+                style={{ fontSize: 17, fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1, cursor: "pointer" }}
+              >
+                <span style={{ color: C.primary }}>Fite</span>{" "}
+                <span style={{ color: C.secondary }}>Finance</span>
+              </motion.div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", background: "rgba(21,101,192,0.1)", borderRadius: 999, border: `1px solid rgba(21,101,192,0.2)` }}>
               <motion.span
                 animate={{ opacity: [1, 0.4, 1] }}
@@ -885,6 +934,7 @@ export default function Dashboard() {
               <span style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>
                 Live: Finance_GPT_V4
               </span>
+            </div>
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1046,6 +1096,8 @@ export default function Dashboard() {
                   timeLeft={timerOn ? timeLeft : null}
                   timerDuration={timerDuration} timerPaused={timerPaused}
                   onPauseTimer={pauseTimer} onResumeTimer={resumeTimer}
+                  onStartTimer={startTimer} timerOn={timerOn}
+                  snapshotCategory={snapshotCategory} snapshotDifficulty={snapshotDifficulty} snapshotMath={snapshotMath}
                 />
               ) : (
                 <InterviewCanvas
