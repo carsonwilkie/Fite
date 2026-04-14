@@ -458,7 +458,7 @@ export default function LandingPage() {
                   margin: "0 0 28px 0",
                   textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 20px rgba(0,0,0,0.9), 0 8px 50px rgba(0,0,0,0.6)",
                 }}>
-                  Built for every skill level<br />
+                  Built for every industry and skill level.<br />
                   <span style={{
                     color: C.secondary,
                     fontStyle: "italic",
@@ -474,18 +474,18 @@ export default function LandingPage() {
             {/* End-of-scroll: product details + sign-up card */}
             <div
               ref={endDetailsRef}
-              style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobileHeroLayout ? "96px 20px 28px" : "0 7%", opacity: 0, pointerEvents: "none", willChange: "opacity", transform: "translateZ(0)" }}
+              style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobileHeroLayout ? "88px 18px 180px" : "0 7%", opacity: 0, pointerEvents: "none", willChange: "opacity", transform: "translateZ(0)" }}
             >
               <div
                 ref={endInnerRef}
                 style={{
                   display: "flex",
                   width: "100%",
-                  maxWidth: isMobileHeroLayout ? 420 : "none",
+                  maxWidth: isMobileHeroLayout ? 360 : "none",
                   flexDirection: isMobileHeroLayout ? "column" : "row",
                   justifyContent: "space-between",
                   alignItems: isMobileHeroLayout ? "stretch" : "center",
-                  gap: isMobileHeroLayout ? 16 : 0,
+                  gap: isMobileHeroLayout ? 12 : 0,
                   willChange: "transform",
                 }}
               >
@@ -497,7 +497,7 @@ export default function LandingPage() {
                 <div
                   ref={endBrandRef}
                   style={{
-                  fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, letterSpacing: "-0.04em",
+                  fontSize: isMobileHeroLayout ? "clamp(30px, 7vw, 52px)" : "clamp(38px, 6vw, 70px)", fontWeight: 900, letterSpacing: "-0.04em",
                   fontFamily: "Inter, sans-serif", marginBottom: 4,
                   filter: "drop-shadow(0 8px 28px rgba(0,0,0,0.72))",
                   willChange: "transform",
@@ -508,8 +508,8 @@ export default function LandingPage() {
                   <span style={{ color: C.secondary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 18px rgba(0,0,0,0.88), 0 0 24px rgba(79,195,247,0.9), 0 0 56px rgba(79,195,247,0.72)" }}>Finance</span>
                 </div>
                 <div className="lp-glass-card-solid" style={{
-                  padding: isMobileHeroLayout ? 18 : 24,
-                  marginTop: 14,
+                  padding: isMobileHeroLayout ? 16 : 24,
+                  marginTop: isMobileHeroLayout ? 10 : 14,
                   borderRadius: 16,
                   minWidth: 0,
                   width: "100%",
@@ -517,10 +517,10 @@ export default function LandingPage() {
                   boxShadow: "0 4px 24px rgba(0,0,0,0.65)",
                   border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.3)",
                 }}>
-                  <div style={{ color: C.secondary, fontSize: isMobileHeroLayout ? 14 : 15, fontFamily: "Manrope, sans-serif", marginBottom: 12, fontWeight: 600, textAlign: isMobileHeroLayout ? "center" : "left" }}>
+                  <div style={{ color: C.secondary, fontSize: isMobileHeroLayout ? 13 : 15, fontFamily: "Manrope, sans-serif", marginBottom: isMobileHeroLayout ? 8 : 12, fontWeight: 600, textAlign: isMobileHeroLayout ? "center" : "left" }}>
                     Practice, don&apos;t guess.
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12, lineHeight: 1.6, fontSize: isMobileHeroLayout ? 14 : 16, textAlign: isMobileHeroLayout ? "center" : "left" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, lineHeight: isMobileHeroLayout ? 1.45 : 1.6, fontSize: isMobileHeroLayout ? 13 : 16, textAlign: isMobileHeroLayout ? "center" : "left" }}>
                     Train with custom questions, structured mock interviews, and instant feedback so you&apos;re never caught off guard.
                   </div>
                 </div>
@@ -528,7 +528,7 @@ export default function LandingPage() {
 
               {/* Right: sign-up card */}
               <div className="lp-glass-card-solid" style={{
-                padding: isMobileHeroLayout ? 22 : 32,
+                padding: isMobileHeroLayout ? 18 : 32,
                 borderRadius: 16,
                 minWidth: 0,
                 width: "100%",
@@ -536,32 +536,32 @@ export default function LandingPage() {
                 boxShadow: "0 4px 24px rgba(0,0,0,0.65)",
                 border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.3)",
               }}>
-                <h3 style={{ fontSize: isMobileHeroLayout ? 18 : 20, fontWeight: 700, margin: "0 0 8px 0", color: C.onSurface, fontFamily: "Inter, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
+                <h3 style={{ fontSize: isMobileHeroLayout ? 17 : 20, fontWeight: 700, margin: "0 0 8px 0", color: C.onSurface, fontFamily: "Inter, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
                   {isPaid ? "Welcome Back" : "Start Preparing"}
                 </h3>
-                <p style={{ fontSize: 13, color: C.muted, margin: "0 0 24px 0", fontFamily: "Manrope, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
-                  {isPaid ? "Your premium access is active." : "Built for IB, PE, and hedge fund candidates."}
+                <p style={{ fontSize: isMobileHeroLayout ? 12 : 13, color: C.muted, margin: isMobileHeroLayout ? "0 0 18px 0" : "0 0 24px 0", fontFamily: "Manrope, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
+                  {isPaid ? "Your premium access is active." : "Built for every industry and skill level."}
                 </p>
                 {isLoaded && (
                   <>
                     <SignedOut>
                       <SignUpButton mode="modal">
-                        <button className="lp-btn-mission">Start Practicing</button>
+                        <button className="lp-btn-mission" style={isMobileHeroLayout ? { padding: "12px 22px", fontSize: 15 } : undefined}>Start Practicing</button>
                       </SignUpButton>
                       <SignUpButton mode="modal">
-                        <button className="lp-btn-upgrade">Upgrade to Premium</button>
+                        <button className="lp-btn-upgrade" style={isMobileHeroLayout ? { padding: "12px 22px", fontSize: 15 } : undefined}>Upgrade to Premium</button>
                       </SignUpButton>
-                      <p style={{ fontSize: 11, textAlign: "center", color: C.muted, margin: "10px 0 0", fontFamily: "Manrope, sans-serif", opacity: 0.7 }}>
+                      <p style={{ fontSize: isMobileHeroLayout ? 10 : 11, textAlign: "center", color: C.muted, margin: "10px 0 0", fontFamily: "Manrope, sans-serif", opacity: 0.7 }}>
                         Unlock all for $3/mo · no card to start
                       </p>
                     </SignedOut>
                     <SignedIn>
                       {isPaid ? (
-                        <button className="lp-btn-mission-gold" onClick={() => router.push("/practice")}>Start Practicing</button>
+                        <button className="lp-btn-mission-gold" onClick={() => router.push("/practice")} style={isMobileHeroLayout ? { padding: "12px 22px", fontSize: 15 } : undefined}>Start Practicing</button>
                       ) : (
                         <>
-                          <button className="lp-btn-mission" onClick={() => router.push("/practice")}>Start Practicing</button>
-                          <button className="lp-btn-upgrade" onClick={handleUpgrade}>Upgrade to Premium</button>
+                          <button className="lp-btn-mission" onClick={() => router.push("/practice")} style={isMobileHeroLayout ? { padding: "12px 22px", fontSize: 15 } : undefined}>Start Practicing</button>
+                          <button className="lp-btn-upgrade" onClick={handleUpgrade} style={isMobileHeroLayout ? { padding: "12px 22px", fontSize: 15 } : undefined}>Upgrade to Premium</button>
                         </>
                       )}
                     </SignedIn>
@@ -573,11 +573,11 @@ export default function LandingPage() {
 
             {/* Explore CTA — always visible */}
             <div
-              style={{ position: "absolute", bottom: "6%", left: "50%", transform: "translateX(-50%)", textAlign: "center", zIndex: 30 }}
+              style={{ position: "absolute", bottom: isMobileHeroLayout ? "5.5%" : "6%", left: "50%", transform: "translateX(-50%)", textAlign: "center", zIndex: 30, width: isMobileHeroLayout ? "calc(100% - 44px)" : "auto", maxWidth: isMobileHeroLayout ? 360 : "none" }}
             >
               <button
                 onClick={handleExplore}
-                style={{ background: cyberGrad, color: "#fff", border: "none", cursor: "pointer", fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: 700, padding: "14px 36px", borderRadius: 999, boxShadow: "0 0 32px rgba(21,101,192,0.55), 0 0 8px rgba(79,195,247,0.3)", letterSpacing: "0.04em" }}
+                style={{ background: cyberGrad, color: "#fff", border: "none", cursor: "pointer", fontFamily: "Inter, sans-serif", fontSize: isMobileHeroLayout ? 14 : 15, fontWeight: 700, padding: isMobileHeroLayout ? "12px 28px" : "14px 36px", borderRadius: 999, boxShadow: "0 0 32px rgba(21,101,192,0.55), 0 0 8px rgba(79,195,247,0.3)", letterSpacing: "0.04em", width: isMobileHeroLayout ? "100%" : "auto" }}
                 className="explore-btn"
               >
                 Explore Features
