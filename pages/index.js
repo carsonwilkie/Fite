@@ -521,7 +521,7 @@ export default function LandingPage() {
                   style={{
                     marginTop: isMobileHeroLayout ? 8 : 14,
                     borderRadius: 14,
-                    padding: isMobileHeroLayout ? "14px 14px 14px 16px" : "22px 22px 22px 20px",
+                    padding: isMobileHeroLayout ? "14px 14px 14px 16px" : "26px 26px 26px 24px",
                     background: "rgba(4,10,28,0.78)",
                     backdropFilter: "blur(16px)",
                     borderTop: "1px solid rgba(79,195,247,0.1)",
@@ -531,22 +531,22 @@ export default function LandingPage() {
                     boxShadow: "0 4px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(79,195,247,0.07)",
                     minWidth: 0,
                     width: "100%",
-                    maxWidth: isMobileHeroLayout ? "100%" : 340,
+                    maxWidth: isMobileHeroLayout ? "100%" : 420,
                     boxSizing: "border-box",
                   }}
                 >
                   <div style={{
                     color: C.secondary,
-                    fontSize: isMobileHeroLayout ? 12 : 14,
+                    fontSize: isMobileHeroLayout ? 12 : 15,
                     fontFamily: "Manrope, sans-serif",
                     fontWeight: 700,
                     letterSpacing: "0.01em",
-                    marginBottom: isMobileHeroLayout ? 10 : 16,
+                    marginBottom: isMobileHeroLayout ? 10 : 20,
                     textShadow: "0 0 18px rgba(79,195,247,0.45)",
                   }}>
                     Practice, don&apos;t guess.
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: isMobileHeroLayout ? 8 : 13 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: isMobileHeroLayout ? 8 : 16 }}>
                     {[
                       ["8 Interview Categories", "IB, PE, AM, Consulting & more"],
                       ["AI-Powered Grading",     "Instant feedback on every answer"],
@@ -555,8 +555,8 @@ export default function LandingPage() {
                       <div key={title} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                         <span style={{ color: "rgba(79,195,247,0.65)", fontSize: 9, marginTop: isMobileHeroLayout ? 3 : 4, flexShrink: 0, lineHeight: 1 }}>▸</span>
                         <div>
-                          <div style={{ fontSize: isMobileHeroLayout ? 11 : 13, fontWeight: 700, color: C.onSurface, fontFamily: "Inter, sans-serif", lineHeight: 1.3 }}>{title}</div>
-                          <div style={{ fontSize: isMobileHeroLayout ? 10 : 11, color: C.muted, fontFamily: "Manrope, sans-serif", marginTop: 2, lineHeight: 1.3, opacity: 0.8 }}>{sub}</div>
+                          <div style={{ fontSize: isMobileHeroLayout ? 11 : 14, fontWeight: 700, color: C.onSurface, fontFamily: "Inter, sans-serif", lineHeight: 1.3 }}>{title}</div>
+                          <div style={{ fontSize: isMobileHeroLayout ? 10 : 12, color: C.muted, fontFamily: "Manrope, sans-serif", marginTop: 2, lineHeight: 1.3, opacity: 0.8 }}>{sub}</div>
                         </div>
                       </div>
                     ))}
@@ -566,21 +566,21 @@ export default function LandingPage() {
 
               {/* Right: sign-up card */}
               <div ref={endSignupRef} className="lp-glass-card-solid" style={{
-                padding: isMobileHeroLayout ? 18 : 32,
+                padding: isMobileHeroLayout ? 18 : 40,
                 borderRadius: 16,
                 minWidth: 0,
                 width: "100%",
-                maxWidth: isMobileHeroLayout ? "100%" : 340,
+                maxWidth: isMobileHeroLayout ? "100%" : 420,
                 boxSizing: "border-box",
                 boxShadow: isPaid
                   ? "0 4px 32px rgba(0,0,0,0.65), 0 0 0 1px rgba(201,168,76,0.15), 0 0 40px rgba(201,168,76,0.08)"
                   : "0 4px 32px rgba(0,0,0,0.65), 0 0 0 1px rgba(21,101,192,0.15), 0 0 40px rgba(21,101,192,0.1)",
                 border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.35)",
               }}>
-                <h3 style={{ fontSize: isMobileHeroLayout ? 16 : 20, fontWeight: 700, margin: "0 0 6px 0", color: C.onSurface, fontFamily: "Inter, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
+                <h3 style={{ fontSize: isMobileHeroLayout ? 16 : 24, fontWeight: 700, margin: "0 0 6px 0", color: C.onSurface, fontFamily: "Inter, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
                   {isPaid ? "Welcome Back" : "Start Preparing"}
                 </h3>
-                <p style={{ fontSize: isMobileHeroLayout ? 11 : 13, color: C.muted, margin: isMobileHeroLayout ? "0 0 14px 0" : "0 0 24px 0", fontFamily: "Manrope, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
+                <p style={{ fontSize: isMobileHeroLayout ? 11 : 14, color: C.muted, margin: isMobileHeroLayout ? "0 0 14px 0" : "0 0 28px 0", fontFamily: "Manrope, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
                   {isPaid ? "Your premium access is active." : "Built for every industry and skill level."}
                 </p>
                 {isLoaded && (

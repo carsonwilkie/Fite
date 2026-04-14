@@ -49,7 +49,7 @@ export default function App({ Component, pageProps }) {
     route: router.asPath,
   }));
   const displayedIsLanding =
-    displayedView.route === "/" || displayedView.route === "/features";
+    displayedView.route === "/" || displayedView.route === "/features" || displayedView.route === "/dashboard";
 
   const revealPendingView = () => {
     if (!coverDoneRef.current || !routeReadyRef.current || !pendingViewRef.current) {
