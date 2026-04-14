@@ -610,6 +610,17 @@ export default function Dashboard() {
   const price      = usePrice();
   const handleUpgrade = useUpgrade();
 
+  // Mobile state
+  const [isMobile,    setIsMobile]    = useState(false);
+  const [drawerOpen,  setDrawerOpen]  = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   // Config state
   const [mode,         setMode]         = useState("question");
   const [difficulty,   setDifficulty]   = useState("Medium");
@@ -708,12 +719,12 @@ export default function Dashboard() {
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", backgroundColor: C.bg, color: C.text, fontFamily: "Inter, sans-serif" }}>
 
-      {/* ── Sidebar ── */}
+      {/* ── Sidebar (desktop only) ── */}
       <motion.aside
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        style={{ width: 220, flexShrink: 0, height: "100vh", backgroundColor: C.surfaceLow, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column", zIndex: 50, overflowY: "auto" }}
+        style={{ width: 220, flexShrink: 0, height: "100vh", backgroundColor: C.surfaceLow, borderRight: `1px solid ${C.border}`, display: isMobile ? "none" : "flex", flexDirection: "column", zIndex: 50, overflowY: "auto" }}
       >
         {/* Brand */}
         <div style={{ padding: "28px 24px 16px" }}>
@@ -768,23 +779,46 @@ export default function Dashboard() {
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          style={{ flexShrink: 0, height: 72, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 36px", backgroundColor: `${C.bg}dd`, backdropFilter: "blur(20px)", borderBottom: `1px solid ${C.border}`, zIndex: 40 }}
+          style={{ flexShrink: 0, height: isMobile ? 56 : 72, display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobile ? "0 16px" : "0 36px", backgroundColor: `${C.bg}dd`, backdropFilter: "blur(20px)", borderBottom: `1px solid ${C.border}`, zIndex: 40 }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", background: "rgba(21,101,192,0.1)", borderRadius: 999, border: `1px solid rgba(21,101,192,0.2)` }}>
-            <motion.span
-              animate={{ opacity: [1, 0.4, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: C.secondary, display: "inline-block" }}
-            />
-            <span style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>
-              Live: Finance_GPT_V4
-            </span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            {!isPaid && (
+          {/* Left: brand (mobile) or live indicator (desktop) */}
+          {isMobile ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1 }}>
+                <span style={{ color: C.primary }}>Fite</span>{" "}
+                <span style={{ color: C.secondary }}>Finance</span>
+              </div>
+              <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: C.textMuted, opacity: 0.55, fontFamily: "Manrope, sans-serif" }}>
+                {mode === "interview" ? "Interview" : "Practice"}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", background: "rgba(21,101,192,0.1)", borderRadius: 999, border: `1px solid rgba(21,101,192,0.2)` }}>
+              <motion.span
+                animate={{ opacity: [1, 0.4, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: C.secondary, display: "inline-block" }}
+              />
+              <span style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>
+                Live: Finance_GPT_V4
+              </span>
+            </div>
+          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {!isPaid && !isMobile && (
               <motion.button onClick={handleUpgrade} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
                 style={{ padding: "8px 18px", borderRadius: 999, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #f5d06a, #c9a84c)", color: "#fff", fontSize: 11, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", boxShadow: "0 4px 16px rgba(201,168,76,0.4)" }}>
                 Upgrade
+              </motion.button>
+            )}
+            {/* Mobile: configure button */}
+            {isMobile && (
+              <motion.button
+                onClick={() => setDrawerOpen(true)}
+                whileTap={{ scale: 0.9 }}
+                style={{ width: 40, height: 40, borderRadius: 10, border: `1px solid ${C.border}`, background: "rgba(21,101,192,0.1)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+              >
+                <Icon name="tune" size={20} style={{ color: C.secondary }} />
               </motion.button>
             )}
           </div>
@@ -793,12 +827,12 @@ export default function Dashboard() {
         {/* Main body: control panel + canvas */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
-          {/* ── Control Panel ── */}
+          {/* ── Control Panel (desktop only; mobile uses drawer) ── */}
           <motion.section
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.45, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            style={{ width: 300, flexShrink: 0, display: "flex", flexDirection: "column", backgroundColor: C.surfaceLow, borderRight: `1px solid ${C.border}`, overflowY: "auto" }}
+            style={{ width: 300, flexShrink: 0, display: isMobile ? "none" : "flex", flexDirection: "column", backgroundColor: C.surfaceLow, borderRight: `1px solid ${C.border}`, overflowY: "auto" }}
           >
             <div style={{ flex: 1, padding: "24px 18px", display: "flex", flexDirection: "column", gap: 22 }}>
 
@@ -891,7 +925,7 @@ export default function Dashboard() {
             transition={{ duration: 0.5, delay: 0.2 }}
             style={{ flex: 1, overflowY: "auto", backgroundColor: C.bg, position: "relative" }}
           >
-            <div style={{ maxWidth: 840, margin: "0 auto", padding: "40px 44px 120px" }}>
+            <div style={{ maxWidth: 840, margin: "0 auto", padding: isMobile ? "20px 16px 120px" : "40px 44px 120px" }}>
               {mode === "question" ? (
                 <QuestionCanvas
                   question={question} answer={answer} userAnswer={userAnswer} setUserAnswer={setUserAnswer}
@@ -933,6 +967,162 @@ export default function Dashboard() {
           ))}
         </footer>
       </div>
+
+      {/* ── Mobile Bottom Nav ── */}
+      {isMobile && (
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 64, backgroundColor: C.surfaceLow, borderTop: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-around", zIndex: 200, backdropFilter: "blur(16px)" }}>
+          {[
+            { icon: "chat",     label: "Question",  action: () => setMode("question") ,  active: mode === "question" },
+            { icon: "groups",   label: "Interview", action: () => setMode("interview"),  active: mode === "interview" },
+            { icon: "history",  label: "History",   action: () => isPaid ? router.push("/history") : null, active: false, muted: !isPaid },
+            { icon: "person",   label: "Account",   action: null, active: false },
+          ].map(({ icon, label, action, active, muted }) => (
+            <motion.button
+              key={label}
+              onClick={action}
+              whileTap={{ scale: 0.88 }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: action ? "pointer" : "default", padding: "6px 12px", borderRadius: 10 }}
+            >
+              {label === "Account" ? (
+                <div style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <UserButton />
+                </div>
+              ) : (
+                <Icon name={icon} size={22} style={{ color: active ? C.secondary : muted ? `${C.textMuted}40` : C.textMuted }} />
+              )}
+              <span style={{ fontSize: 9, fontWeight: 700, color: active ? C.secondary : muted ? `${C.textMuted}40` : C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                {label}
+              </span>
+            </motion.button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Mobile Settings Drawer ── */}
+      <AnimatePresence>
+        {isMobile && drawerOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              key="drawer-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDrawerOpen(false)}
+              style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.6)", zIndex: 300 }}
+            />
+            {/* Drawer */}
+            <motion.div
+              key="drawer-panel"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              style={{ position: "fixed", bottom: 0, left: 0, right: 0, backgroundColor: C.surface, borderRadius: "20px 20px 0 0", zIndex: 400, maxHeight: "88vh", overflowY: "auto", paddingBottom: 32 }}
+            >
+              {/* Handle */}
+              <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 8px" }}>
+                <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: `${C.textMuted}40` }} />
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 20px 16px" }}>
+                <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>Session Config</span>
+                <motion.button onClick={() => setDrawerOpen(false)} whileTap={{ scale: 0.88 }} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+                  <Icon name="close" size={20} style={{ color: C.textMuted }} />
+                </motion.button>
+              </div>
+
+              <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 20 }}>
+                {/* Mode toggle */}
+                <div>
+                  <ControlLabel>Simulation Mode</ControlLabel>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3, padding: 4, background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}` }}>
+                    {[["question","Question"],["interview","Interview"]].map(([m, lbl]) => (
+                      <motion.button key={m} onClick={() => setMode(m)} whileTap={{ scale: 0.96 }}
+                        style={{ padding: "12px 0", fontSize: 12, fontWeight: 900, borderRadius: 9, border: "none", cursor: "pointer", fontFamily: "Manrope, sans-serif", letterSpacing: "0.04em", transition: "all 0.2s", backgroundColor: mode === m ? C.primary : "transparent", color: mode === m ? "#fff" : C.textMuted, boxShadow: mode === m ? "0 4px 12px rgba(21,101,192,0.35)" : "none" }}>
+                        {lbl}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Difficulty */}
+                <div>
+                  <ControlLabel>Difficulty Level</ControlLabel>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {DIFFICULTIES.map(d => (
+                      <motion.button key={d} onClick={() => setDifficulty(d)} whileTap={{ scale: 0.92 }}
+                        style={{ flex: 1, padding: "11px 0", fontSize: 11, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: 8, cursor: "pointer", fontFamily: "Manrope, sans-serif", transition: "all 0.2s", background: difficulty === d ? cyberGrad : "transparent", color: difficulty === d ? "#fff" : C.textMuted, border: difficulty === d ? "none" : `1px solid ${C.border}`, boxShadow: difficulty === d ? "0 4px 14px rgba(21,101,192,0.35)" : "none" }}>
+                        {d}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Categories */}
+                <div>
+                  <ControlLabel>Focus Category</ControlLabel>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+                    {CATEGORIES.map(cat => (
+                      <motion.button key={cat} onClick={() => setCategory(cat)} whileTap={{ scale: 0.94 }}
+                        style={{ padding: "11px 10px", fontSize: 11, fontWeight: 800, textAlign: "left", borderRadius: 9, cursor: "pointer", fontFamily: "Manrope, sans-serif", letterSpacing: "0.02em", textTransform: "uppercase", transition: "all 0.18s", backgroundColor: category === cat ? "rgba(21,101,192,0.15)" : C.surfaceLow, color: category === cat ? C.secondary : C.textMuted, border: category === cat ? `1px solid ${C.borderActive}` : `1px solid ${C.border}`, lineHeight: 1.3 }}>
+                        {CATEGORY_LABELS[cat] || cat}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Math toggle */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}` }}>
+                  <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Quant / Math</span>
+                  <motion.button onClick={() => setMathOn(v => !v)} whileTap={{ scale: 0.88 }}
+                    style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", position: "relative", backgroundColor: mathOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
+                    <motion.div animate={{ x: mathOn ? 20 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                      style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
+                  </motion.button>
+                </div>
+
+                {/* Custom descriptor */}
+                <div>
+                  <ControlLabel>
+                    Custom Descriptor
+                    {!isPaid && <span style={{ marginLeft: 6, color: C.gold }}> — Premium</span>}
+                  </ControlLabel>
+                  <input
+                    type="text"
+                    placeholder={isPaid ? "e.g. LBO Modeling focus..." : "Upgrade to unlock"}
+                    value={customPrompt}
+                    onChange={e => isPaid && setCustomPrompt(e.target.value)}
+                    disabled={!isPaid}
+                    style={{ width: "100%", padding: "14px 16px", backgroundColor: C.surfaceLow, border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, color: isPaid ? C.text : `${C.textMuted}50`, fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box", cursor: isPaid ? "text" : "not-allowed" }}
+                  />
+                </div>
+
+                {/* Upgrade banner (free users) */}
+                {!isPaid && (
+                  <motion.button onClick={handleUpgrade} whileTap={{ scale: 0.97 }}
+                    style={{ width: "100%", padding: "14px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #f5d06a, #c9a84c)", color: "#fff", fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "Manrope, sans-serif", boxShadow: "0 6px 20px rgba(201,168,76,0.4)" }}>
+                    ⭐ Upgrade to Premium
+                  </motion.button>
+                )}
+
+                {/* Generate button */}
+                <motion.button
+                  onClick={() => { setDrawerOpen(false); setTimeout(() => mode === "question" ? getQuestion() : generateInterview(), 100); }}
+                  disabled={isLoading}
+                  whileTap={!isLoading ? { scale: 0.97 } : {}}
+                  style={{ width: "100%", padding: "18px 0", borderRadius: 12, border: "none", cursor: isLoading ? "not-allowed" : "pointer", background: isLoading ? "rgba(21,101,192,0.25)" : cyberGrad, color: isLoading ? C.textMuted : "#fff", fontSize: 13, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.15em", fontFamily: "Manrope, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: isLoading ? "none" : "0 8px 24px rgba(21,101,192,0.4)", opacity: isLoading ? 0.65 : 1 }}
+                >
+                  <Icon name={mode === "interview" ? "groups" : "rocket_launch"} size={18} />
+                  {isLoading ? "Generating..." : mode === "interview" ? "Generate Interview" : "Generate Question"}
+                </motion.button>
+
+                {/* Session Intel */}
+                <SessionIntel count={sessionCount} avgScore={sessionAvgScore} readiness={readiness} />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Dashboard markdown styles */}
       <style jsx global>{`
