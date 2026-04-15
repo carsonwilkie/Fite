@@ -102,7 +102,7 @@ function Success() {
             className="header-mobile"
           >
             <motion.img
-              src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
+              src={isPaid ? "/Fite_Logo_Premium.png" : "/Fite_Logo.png"}
               alt="logo"
               style={{ height: "64px", width: "64px", cursor: "pointer" }}
               className="logo-img-mobile"

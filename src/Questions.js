@@ -507,7 +507,7 @@ function Questions() {
         <div style={styles.container}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }} className="header-mobile">
             <img
-              src={isPaid ? "/Fite_Logo_Premium.png" : "/favicon.png"}
+              src={isPaid ? "/Fite_Logo_Premium.png" : "/Fite_Logo.png"}
               alt="logo"
               style={{ height: "64px", width: "64px", cursor: "pointer" }}
               className="logo-img-mobile"
