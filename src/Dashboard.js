@@ -801,6 +801,7 @@ export default function Dashboard() {
   const [streamProgress,  setStreamProgress]  = useState(0);
   const [questionsUsed,   setQuestionsUsed]   = useState(null);
   const answerRef = useRef(answer);
+  const profileCardRef = useRef(null);
   useEffect(() => { answerRef.current = answer; }, [answer]);
 
   // Interview state
@@ -911,6 +912,10 @@ export default function Dashboard() {
   const handleInterviewDebrief = async () => { if (!interviewSession) return; setLoadingDebrief(true); try { const r = await fetch("/api/interview-debrief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scenario: interviewSession.scenario, questions: interviewSession.questions.map((q,i) => ({ question: q.question, idealAnswer: q.idealAnswer, userAnswer: interviewUserAnswers[i] || "No answer submitted.", score: interviewResponses[i]?.score ?? null })), category, difficulty }) }); const d = await r.json(); setInterviewDebrief(d.feedback); } catch (e) { console.error(e); } setLoadingDebrief(false); };
 
   const handleManageSub = async () => { if (!user?.id) return; const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, returnPath: router.asPath }) }); const d = await r.json(); if (d.url) window.location.href = d.url; };
+  const toggleProfilePanel = () => {
+    const trigger = profileCardRef.current?.querySelector("button, [role='button']");
+    trigger?.click();
+  };
 
   const isLoading = loadingQuestion || loadingInterviewGenerate;
   const interviewOverallScore = interviewResponses.length > 0 ? Math.round((interviewResponses.reduce((a,r) => a+(r.score??0),0)/interviewResponses.length)*10)/10 : null;
@@ -977,10 +982,22 @@ export default function Dashboard() {
         {/* User section */}
         <div style={{ padding: "14px 14px 20px" }}>
           <motion.div
+            ref={profileCardRef}
+            role="button"
+            tabIndex={0}
+            onClick={toggleProfilePanel}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                toggleProfilePanel();
+              }
+            }}
             whileHover={{ background: "rgba(21,101,192,0.14)", borderColor: `rgba(79,195,247,0.3)` }}
-            style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(21,101,192,0.06)", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10, transition: "background 0.15s, border-color 0.15s" }}
+            style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(21,101,192,0.06)", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10, transition: "background 0.15s, border-color 0.15s", cursor: "pointer", userSelect: "none" }}
           >
-            <UserButton />
+            <div onClick={(e) => e.stopPropagation()}>
+              <UserButton />
+            </div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: C.text }}>
                 {user?.firstName || "User"}
@@ -1079,6 +1096,7 @@ export default function Dashboard() {
 
           {/* ── Control Panel (desktop only; mobile uses drawer) ── */}
           <motion.section
+            className="hide-scrollbar"
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.45, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
@@ -1322,7 +1340,7 @@ export default function Dashboard() {
               </div>
 
               {/* Scrollable content */}
-              <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px 40px", display: "flex", flexDirection: "column", gap: 20 }}>
+              <div className="hide-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "20px 20px 40px", display: "flex", flexDirection: "column", gap: 20 }}>
                 {/* Mode toggle */}
                 <div>
                   <ControlLabel>Simulation Mode</ControlLabel>

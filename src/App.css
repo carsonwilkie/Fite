@@ -1411,3 +1411,12 @@ img, span, button {
 }
 
 /* Navbar glassmorphism — applied via inline style when scrolled */
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
