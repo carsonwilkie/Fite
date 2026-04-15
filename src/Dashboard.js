@@ -933,15 +933,14 @@ export default function Dashboard() {
         {/* Session Intel */}
         <SessionIntel compact count={sessionCount} avgScore={sessionAvgScore} readiness={readiness} />
 
-        {/* User section */}
-        <div style={{ padding: "14px 14px 20px" }}>
+        {/* User section — label forwards a real trusted click to the UserButton */}
+        <label style={{ display: "block", padding: "14px 14px 20px", cursor: "pointer" }}>
           <motion.div
             onMouseDown={(e) => { if (isClerkPopupOpen()) e.stopPropagation(); }}
             onPointerDown={(e) => { if (isClerkPopupOpen()) e.stopPropagation(); }}
-            onClick={() => sidebarUserBtnRef.current?.querySelector("button")?.click()}
             whileHover={{ background: "rgba(21,101,192,0.14)", borderColor: `rgba(79,195,247,0.3)` }}
             whileTap={{ scale: 0.97 }}
-            style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(21,101,192,0.06)", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10, cursor: "pointer", transition: "background 0.15s, border-color 0.15s" }}
+            style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(21,101,192,0.06)", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10, transition: "background 0.15s, border-color 0.15s" }}
           >
             <div ref={sidebarUserBtnRef} onMouseDown={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()}>
               <UserButton />
@@ -955,7 +954,7 @@ export default function Dashboard() {
               </div>
             </div>
           </motion.div>
-        </div>
+        </label>
       </motion.aside>
 
       {/* ── Right side ── */}

@@ -466,7 +466,7 @@ export default function LandingPage() {
                   margin: "0 0 28px 0",
                   textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 20px rgba(0,0,0,0.9), 0 8px 50px rgba(0,0,0,0.6)",
                 }}>
-                  Built for every industry and skill level.<br />
+                  Built for every student at any skill level.<br />
                   <span style={{
                     color: C.secondary,
                     fontStyle: "italic",
