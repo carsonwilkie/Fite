@@ -227,14 +227,16 @@ export default function StatsPage() {
           <div style={{ width: 1, height: 16, backgroundColor: C.border }} />
           <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase", color: C.text, fontFamily: "Manrope, sans-serif" }}>Performance Stats</span>
         </div>
-        <span style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{entries.length} entries</span>
-        <motion.button
-          onClick={() => router.push("/history")}
-          whileTap={{ scale: 0.97 }}
-          style={{ padding: "7px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.textMuted, fontSize: 11, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer", letterSpacing: "0.06em" }}
-        >
-          View History →
-        </motion.button>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{entries.length} entries</span>
+          <motion.button
+            onClick={() => router.push("/history")}
+            whileTap={{ scale: 0.97 }}
+            style={{ padding: "7px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.textMuted, fontSize: 11, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer", letterSpacing: "0.06em" }}
+          >
+            View History →
+          </motion.button>
+        </div>
       </div>
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px 80px" }}>
@@ -408,12 +410,49 @@ export default function StatsPage() {
 
                   {/* Trend vs prior window */}
                   {trendPct !== null && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16, paddingTop: 14, borderTop: `1px solid ${C.border}` }}>
-                      <div style={{ fontSize: 18, fontWeight: 900, color: trendPct >= 0 ? C.success : C.danger }}>
-                        {trendPct >= 0 ? "↑" : "↓"} {Math.abs(trendPct)}%
+                    <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.15em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 12 }}>
+                        Recent Trend
                       </div>
-                      <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
-                        vs prior {trendN} graded — recent avg {recentAvg?.toFixed(1)}, prior avg {priorAvg?.toFixed(1)}
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        {/* Prior window */}
+                        <div style={{ flex: 1, padding: "10px 12px", borderRadius: 8, background: C.surfaceLow, border: `1px solid ${C.border}` }}>
+                          <div style={{ fontSize: 8, fontWeight: 800, color: C.textMuted, fontFamily: "Manrope, sans-serif", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 5 }}>
+                            Prior · Q{maxN - trendN * 2 + 1}–Q{maxN - trendN}
+                          </div>
+                          <div style={{ fontSize: 22, fontWeight: 900, color: scoreColor(priorAvg), lineHeight: 1 }}>
+                            {priorAvg?.toFixed(1)}<span style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, marginLeft: 3 }}>/10</span>
+                          </div>
+                          <div style={{ fontSize: 10, color: C.textMuted, marginTop: 4, fontFamily: "Manrope, sans-serif" }}>{trendN} graded questions</div>
+                        </div>
+
+                        {/* Arrow */}
+                        <div style={{ textAlign: "center", flexShrink: 0 }}>
+                          <div style={{ fontSize: 20, fontWeight: 900, color: trendPct >= 0 ? C.success : C.danger, lineHeight: 1 }}>
+                            {trendPct >= 0 ? "↑" : "↓"}
+                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: trendPct >= 0 ? C.success : C.danger }}>
+                            {Math.abs(trendPct)}%
+                          </div>
+                        </div>
+
+                        {/* Recent window */}
+                        <div style={{ flex: 1, padding: "10px 12px", borderRadius: 8, background: C.surfaceLow, border: `1px solid ${(trendPct >= 0 ? C.success : C.danger)}40` }}>
+                          <div style={{ fontSize: 8, fontWeight: 800, color: C.textMuted, fontFamily: "Manrope, sans-serif", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 5 }}>
+                            Recent · Q{maxN - trendN + 1}–Q{maxN}
+                          </div>
+                          <div style={{ fontSize: 22, fontWeight: 900, color: scoreColor(recentAvg), lineHeight: 1 }}>
+                            {recentAvg?.toFixed(1)}<span style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, marginLeft: 3 }}>/10</span>
+                          </div>
+                          <div style={{ fontSize: 10, color: C.textMuted, marginTop: 4, fontFamily: "Manrope, sans-serif" }}>{trendN} graded questions</div>
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 10, lineHeight: 1.55 }}>
+                        {trendPct >= 0
+                          ? `Your last ${trendN} graded questions averaged ${recentAvg?.toFixed(1)}/10 — up ${Math.abs(trendPct)}% from the ${trendN} before them (avg ${priorAvg?.toFixed(1)}).`
+                          : `Your last ${trendN} graded questions averaged ${recentAvg?.toFixed(1)}/10 — down ${Math.abs(trendPct)}% from the ${trendN} before them (avg ${priorAvg?.toFixed(1)}).`
+                        }
                       </div>
                     </div>
                   )}
