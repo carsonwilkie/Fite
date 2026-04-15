@@ -829,9 +829,7 @@ export default function Dashboard() {
   const [timeLeft,      setTimeLeft]      = useState(null);
   const [timerPaused,   setTimerPaused]   = useState(false);
   const timerIntervalRef  = useRef(null);
-  const timerOnRef        = useRef(false);
   const timerDurationRef  = useRef(120);
-  useEffect(() => { timerOnRef.current = timerOn; }, [timerOn]);
   useEffect(() => { timerDurationRef.current = timerDuration; }, [timerDuration]);
 
   const runInterval = () => {

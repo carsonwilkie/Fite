@@ -3,7 +3,6 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { PaidStatusProvider } from "../src/PaidStatusContext";
-import Navbar from "../src/Navbar";
 import ScrollToTop from "../src/ScrollToTop";
 import { useRouter } from "next/router";
 import "../src/index.css";
@@ -48,12 +47,6 @@ export default function App({ Component, pageProps }) {
     pageProps,
     route: router.asPath,
   }));
-  const displayedBasePath = displayedView.route.split("?")[0];
-  const displayedIsLanding =
-    displayedBasePath === "/" || displayedBasePath === "/features" ||
-    displayedBasePath === "/dashboard" || displayedBasePath === "/history" ||
-    displayedBasePath === "/stats" || displayedBasePath === "/privacy" ||
-    displayedBasePath === "/terms" || displayedBasePath === "/refunds";
 
   const revealPendingView = () => {
     if (!coverDoneRef.current || !routeReadyRef.current || !pendingViewRef.current) {
@@ -185,7 +178,6 @@ export default function App({ Component, pageProps }) {
         <Analytics />
         <SpeedInsights />
         <ScrollToTop />
-        {!displayedIsLanding && <Navbar />}
         <displayedView.Component {...displayedView.pageProps} />
 
         {/* ── Global page-transition overlay ─────────────────────────────────── */}
