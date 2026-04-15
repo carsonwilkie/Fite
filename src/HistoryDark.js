@@ -154,6 +154,7 @@ export default function HistoryDark() {
   const [selectedMath,      setSelectedMath]      = useState("");
   const [sortOrder,         setSortOrder]         = useState("newest");
   const [, startTransition] = useTransition();
+  const highlightHandledRef = useRef(false);
 
   useEffect(() => {
     if (loading) return;
@@ -163,6 +164,25 @@ export default function HistoryDark() {
       .then(r => r.json())
       .then(d => { setEntries(d.entries || []); setLoadingData(false); });
   }, [user, isPaid, loading, router]);
+
+  // Auto-expand and scroll to a highlighted entry when arriving from Stats
+  useEffect(() => {
+    const highlightTs = router.query.highlight ? Number(router.query.highlight) : null;
+    if (!highlightTs || entries.length === 0 || highlightHandledRef.current) return;
+    highlightHandledRef.current = true;
+    setSearch("");
+    setSelectedCategory("");
+    setSelectedDifficulty("");
+    setSelectedMath("");
+    setSortOrder("newest");
+    const sorted = [...entries].sort((a, b) => b.timestamp - a.timestamp);
+    const idx = sorted.findIndex(e => e.timestamp === highlightTs);
+    if (idx === -1) return;
+    setExpandedIndex(idx);
+    setTimeout(() => {
+      document.getElementById(`entry-${idx}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
+  }, [router.query.highlight, entries]);
 
   const getDateStr = ts => new Date(ts).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 

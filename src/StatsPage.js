@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/clerk-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
 
 const C = {
@@ -105,6 +105,7 @@ export default function StatsPage() {
   const [entries, setEntries]             = useState([]);
   const [loadingData, setLoadingData]     = useState(true);
   const [windowN, setWindowN]             = useState(20);
+  const [hoveredBar, setHoveredBar]       = useState(null);
 
   useEffect(() => {
     if (loading) return;
@@ -316,30 +317,87 @@ export default function StatsPage() {
                     </div>
                   </div>
 
-                  {/* Chart bars — one per question */}
-                  <div style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 90, overflowX: "auto" }}>
-                    {windowBars.map((e, i) => {
-                      const pct   = (e.score / 10) * 100;
-                      const color = scoreColor(e.score);
+                  {/* Hover tooltip */}
+                  <AnimatePresence>
+                    {hoveredBar !== null && windowBars[hoveredBar] && (() => {
+                      const he     = windowBars[hoveredBar];
+                      const hcol   = scoreColor(he.score);
+                      const dateStr = new Date(he.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                      const qTrunc  = he.question?.length > 100 ? he.question.slice(0, 97) + "…" : (he.question || "");
                       return (
-                        <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, flex: 1, minWidth: 8 }}>
-                          <div style={{ width: "100%", height: 80, display: "flex", alignItems: "flex-end" }}>
-                            <motion.div
-                              key={`${clampedN}-${i}`}
-                              initial={{ height: 0 }}
-                              animate={{ height: `${pct}%` }}
-                              transition={{ duration: 0.4, delay: i * 0.02, ease: [0.22, 1, 0.36, 1] }}
-                              style={{ width: "100%", borderRadius: "2px 2px 0 0", background: `linear-gradient(to top, ${color}99, ${color})`, minHeight: 2 }}
-                            />
+                        <motion.div
+                          key="bar-tooltip"
+                          initial={{ opacity: 0, y: -6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.15 }}
+                          onClick={() => router.push(`/history?highlight=${he.timestamp}`)}
+                          style={{ padding: "10px 13px", borderRadius: 10, backgroundColor: C.surfaceHigh, border: `1px solid ${C.borderActive}`, marginBottom: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}
+                        >
+                          <div style={{ width: 34, height: 34, borderRadius: "50%", border: `2px solid ${hcol}`, background: `${hcol}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <span style={{ fontSize: 12, fontWeight: 900, color: hcol }}>{he.score}</span>
                           </div>
-                          <span style={{ fontSize: 8, color: C.textMuted, fontFamily: "Manrope, sans-serif", fontWeight: 600 }}>{e.score}</span>
-                        </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 12, fontWeight: 600, color: C.text, margin: "0 0 4px 0", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{qTrunc}</p>
+                            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                              {he.category  && <span style={{ fontSize: 9, fontWeight: 800, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{he.category}</span>}
+                              {he.difficulty && <span style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>· {he.difficulty}</span>}
+                              <span style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>· {dateStr}</span>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: 10, color: C.secondary, fontFamily: "Manrope, sans-serif", fontWeight: 700, letterSpacing: "0.04em", flexShrink: 0 }}>View →</span>
+                        </motion.div>
                       );
-                    })}
+                    })()}
+                  </AnimatePresence>
+
+                  {/* Y-axis + chart bars */}
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 0 }}>
+                    {/* Y-axis labels */}
+                    <div style={{ width: 22, height: 80, position: "relative", flexShrink: 0, marginRight: 4 }}>
+                      {[10, 8, 6, 4, 2].map(tick => (
+                        <div key={tick} style={{ position: "absolute", right: 0, bottom: `${(tick / 10) * 100}%`, transform: "translateY(50%)", fontSize: 8, color: C.textMuted, fontFamily: "Manrope, sans-serif", fontWeight: 700, lineHeight: 1, userSelect: "none", textAlign: "right" }}>
+                          {tick}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Bars + gridlines */}
+                    <div style={{ flex: 1, position: "relative", height: 80 }}>
+                      {/* Gridlines */}
+                      {[10, 8, 6, 4, 2].map(tick => (
+                        <div key={tick} style={{ position: "absolute", left: 0, right: 0, bottom: `${(tick / 10) * 100}%`, height: 1, background: C.border, pointerEvents: "none", zIndex: 0 }} />
+                      ))}
+                      {/* Scrollable bars */}
+                      <div style={{ display: "flex", gap: 3, alignItems: "flex-end", height: "100%", overflowX: "auto", position: "relative", zIndex: 1 }}>
+                        {windowBars.map((e, i) => {
+                          const pct   = (e.score / 10) * 100;
+                          const color = scoreColor(e.score);
+                          const isHov = hoveredBar === i;
+                          return (
+                            <div
+                              key={i}
+                              style={{ display: "flex", alignItems: "flex-end", flex: 1, minWidth: 8, height: "100%", cursor: "pointer" }}
+                              onMouseEnter={() => setHoveredBar(i)}
+                              onMouseLeave={() => setHoveredBar(null)}
+                              onClick={() => router.push(`/history?highlight=${e.timestamp}`)}
+                            >
+                              <motion.div
+                                key={`${clampedN}-${i}`}
+                                initial={{ height: 0 }}
+                                animate={{ height: `${pct}%` }}
+                                transition={{ duration: 0.4, delay: i * 0.02, ease: [0.22, 1, 0.36, 1] }}
+                                style={{ width: "100%", borderRadius: "2px 2px 0 0", background: isHov ? `linear-gradient(to top, ${color}, ${color}ee)` : `linear-gradient(to top, ${color}88, ${color}cc)`, minHeight: 2, boxShadow: isHov ? `0 0 8px ${color}70` : "none", transition: "background 0.12s, box-shadow 0.12s" }}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
 
                   {/* X-axis: first and last question number in window */}
-                  <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${C.border}`, marginTop: 4 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${C.border}`, marginTop: 4, marginLeft: 26 }}>
                     <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
                       Q{maxN - clampedN + 1}
                     </span>
