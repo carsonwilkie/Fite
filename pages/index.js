@@ -387,48 +387,59 @@ export default function LandingPage() {
             {/* Hero text overlay */}
             <div ref={heroOverlayRef} style={{ position: "absolute", bottom: "18%", left: "7%", zIndex: 10 }}>
               <div style={{
-                display: "inline-block", padding: "4px 12px", borderRadius: 999,
-                background: "rgba(21,101,192,0.2)", border: "1px solid rgba(21,101,192,0.4)",
-                color: C.secondary, fontSize: 10, fontWeight: 700,
-                textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 20,
-                fontFamily: "Manrope, sans-serif",
-                opacity: heroTextIn ? 1 : 0,
-                transform: heroTextIn ? "translateY(0)" : "translateY(14px)",
-                transition: "opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s",
+                background: "rgba(2,8,23,0.52)",
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
+                borderRadius: 18,
+                padding: "22px 28px 26px",
+                border: "1px solid rgba(79,195,247,0.1)",
+                boxShadow: "0 8px 40px rgba(0,0,0,0.55)",
               }}>
-                Next-Gen Interview Preparation
-              </div>
+                <div style={{
+                  display: "inline-block", padding: "4px 12px", borderRadius: 999,
+                  background: "rgba(21,101,192,0.28)", border: "1px solid rgba(21,101,192,0.55)",
+                  color: C.secondary, fontSize: 10, fontWeight: 700,
+                  textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 20,
+                  fontFamily: "Manrope, sans-serif",
+                  opacity: heroTextIn ? 1 : 0,
+                  transform: heroTextIn ? "translateY(0)" : "translateY(14px)",
+                  transition: "opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s",
+                  textShadow: "0 0 12px rgba(79,195,247,0.5)",
+                }}>
+                  Next-Gen Interview Preparation
+                </div>
 
-              <div style={{ fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, lineHeight: 1.05, letterSpacing: "-0.04em", color: C.onSurface, fontFamily: "Inter, sans-serif", maxWidth: 600 }}>
-                <div
-                  ref={line1Ref}
-                  style={{
-                    willChange: "transform",
-                    opacity: heroTextIn ? 1 : 0,
-                    transition: heroTextIn ? "opacity 0.6s ease 0.15s" : "opacity 0.6s ease 0.15s",
-                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 12px rgba(0,0,0,0.85), 0 6px 40px rgba(0,0,0,0.55)",
-                  }}
-                >
-                  Master Your
-                </div>
-                <div
-                  ref={line2Ref}
-                  style={{ willChange: "transform", transformOrigin: "left center", opacity: heroTextIn ? 1 : 0, transition: heroTextIn ? "opacity 0.6s ease 0.22s" : "opacity 0.6s ease 0.22s" }}
-                >
-                  <span style={{
-                    color: C.secondary, fontStyle: "italic",
-                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 12px rgba(0,0,0,0.8), 0 0 40px rgba(79,195,247,0.45)",
-                  }}>Technicals</span>
-                </div>
-                <div
-                  ref={line3Ref}
-                  style={{
-                    willChange: "transform",
-                    opacity: heroTextIn ? 1 : 0,
-                    transition: heroTextIn ? "opacity 0.6s ease 0.3s" : "opacity 0.6s ease 0.3s",
-                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 12px rgba(0,0,0,0.85), 0 6px 40px rgba(0,0,0,0.55)",
-                  }}
-                >
+                <div style={{ fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, lineHeight: 1.05, letterSpacing: "-0.04em", color: C.onSurface, fontFamily: "Inter, sans-serif", maxWidth: 600 }}>
+                  <div
+                    ref={line1Ref}
+                    style={{
+                      willChange: "transform",
+                      opacity: heroTextIn ? 1 : 0,
+                      transition: heroTextIn ? "opacity 0.6s ease 0.15s" : "opacity 0.6s ease 0.15s",
+                      textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 16px rgba(0,0,0,0.95), 0 6px 40px rgba(0,0,0,0.7)",
+                    }}
+                  >
+                    Master Your
+                  </div>
+                  <div
+                    ref={line2Ref}
+                    style={{ willChange: "transform", transformOrigin: "left center", opacity: heroTextIn ? 1 : 0, transition: heroTextIn ? "opacity 0.6s ease 0.22s" : "opacity 0.6s ease 0.22s" }}
+                  >
+                    <span style={{
+                      color: C.secondary, fontStyle: "italic",
+                      textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 16px rgba(0,0,0,0.95), 0 0 40px rgba(79,195,247,0.65), 0 0 80px rgba(79,195,247,0.3)",
+                    }}>Technicals</span>
+                  </div>
+                  <div
+                    ref={line3Ref}
+                    style={{
+                      willChange: "transform",
+                      opacity: heroTextIn ? 1 : 0,
+                      transition: heroTextIn ? "opacity 0.6s ease 0.3s" : "opacity 0.6s ease 0.3s",
+                      textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 16px rgba(0,0,0,0.95), 0 6px 40px rgba(0,0,0,0.7)",
+                    }}
+                  >
+                  </div>
                 </div>
               </div>
 
@@ -448,13 +459,21 @@ export default function LandingPage() {
               ref={midTagRef}
               style={{ position: "absolute", top: "40%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", opacity: 0, pointerEvents: "none", width: "88%", maxWidth: 640, zIndex: 10 }}
             >
-              <div ref={midTagInnerRef}>
+              <div ref={midTagInnerRef} style={{
+                background: "rgba(2,8,23,0.58)",
+                backdropFilter: "blur(18px)",
+                WebkitBackdropFilter: "blur(18px)",
+                borderRadius: 20,
+                padding: "32px 36px",
+                border: "1px solid rgba(79,195,247,0.1)",
+                boxShadow: "0 8px 48px rgba(0,0,0,0.65)",
+              }}>
                 {/* Overline */}
                 <div style={{
                   fontSize: 9, fontWeight: 800, letterSpacing: "0.28em",
                   color: C.secondary, textTransform: "uppercase",
-                  fontFamily: "Inter, sans-serif", marginBottom: 20, opacity: 0.65,
-                  textShadow: "0 0 12px rgba(79,195,247,0.4)",
+                  fontFamily: "Inter, sans-serif", marginBottom: 20, opacity: 0.75,
+                  textShadow: "0 0 16px rgba(79,195,247,0.6)",
                 }}>
                 </div>
 
@@ -464,14 +483,14 @@ export default function LandingPage() {
                   color: C.onSurface, fontFamily: "Inter, sans-serif",
                   letterSpacing: "-0.04em", lineHeight: 1.1,
                   margin: "0 0 28px 0",
-                  textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 20px rgba(0,0,0,0.9), 0 8px 50px rgba(0,0,0,0.6)",
+                  textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 24px rgba(0,0,0,0.95), 0 8px 50px rgba(0,0,0,0.7)",
                 }}>
                   Built for every student at any skill level.<br />
                   <span style={{
                     color: C.secondary,
                     fontStyle: "italic",
                     fontWeight: 800,
-                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 20px rgba(0,0,0,0.9), 0 0 35px rgba(79,195,247,0.35)",
+                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 24px rgba(0,0,0,0.95), 0 0 40px rgba(79,195,247,0.55), 0 0 80px rgba(79,195,247,0.25)",
                   }}>
                     don&apos;t leave it to chance.
                   </span>
@@ -498,23 +517,28 @@ export default function LandingPage() {
                 }}
               >
               {/* Left: product details */}
-              <div className="end-panel-left" style={{ textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 16px rgba(0,0,0,0.85)" }}>
-                {/* <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.22em", color: C.secondary, textTransform: "uppercase", marginBottom: 14, fontFamily: "Inter, sans-serif" }}>
-                  Product Details
-                </div> */}
+              <div className="end-panel-left" style={{
+                background: "rgba(2,8,23,0.55)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                borderRadius: 20,
+                padding: "28px 30px",
+                border: "1px solid rgba(79,195,247,0.1)",
+                boxShadow: "0 8px 48px rgba(0,0,0,0.6)",
+              }}>
                 <div
                   ref={endBrandRef}
                   className="end-brand"
                   style={{
                   fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, letterSpacing: "-0.04em",
                   fontFamily: "Inter, sans-serif", marginBottom: 4,
-                  filter: "drop-shadow(0 8px 28px rgba(0,0,0,0.72))",
+                  filter: "drop-shadow(0 8px 32px rgba(0,0,0,0.85))",
                   willChange: "transform",
                   textAlign: "left",
                 }}
                 >
-                  <span style={{ color: C.primary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 18px rgba(0,0,0,0.88), 0 0 24px rgba(21,101,192,0.8), 0 0 52px rgba(21,101,192,0.62)" }}>Fite</span>{" "}
-                  <span style={{ color: C.secondary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 18px rgba(0,0,0,0.88), 0 0 24px rgba(79,195,247,0.9), 0 0 56px rgba(79,195,247,0.72)" }}>Finance</span>
+                  <span style={{ color: C.primary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 20px rgba(0,0,0,0.95), 0 0 28px rgba(21,101,192,0.9), 0 0 60px rgba(21,101,192,0.7)" }}>Fite</span>{" "}
+                  <span style={{ color: C.secondary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 20px rgba(0,0,0,0.95), 0 0 28px rgba(79,195,247,0.95), 0 0 65px rgba(79,195,247,0.8)" }}>Finance</span>
                 </div>
                 <div
                   ref={endPracticeRef}
