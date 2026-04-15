@@ -273,7 +273,7 @@ export default function StatsPage() {
 
             {/* ── Score chart (slider-controlled by # questions) ── */}
             {label("Score History")}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            <motion.div layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, layout: { duration: 0.28, ease: [0.22, 1, 0.36, 1] } }}
               style={{ padding: "20px 22px 18px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, marginBottom: 32 }}>
 
               {maxN < 2 ? (
@@ -328,11 +328,12 @@ export default function StatsPage() {
                       const qTrunc  = he.question?.length > 100 ? he.question.slice(0, 97) + "…" : (he.question || "");
                       return (
                         <motion.div
+                          layout
                           key="bar-tooltip"
-                          initial={{ opacity: 0, y: -6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                          initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1], layout: { duration: 0.28, ease: [0.22, 1, 0.36, 1] } }}
                           onClick={() => router.push(`/history?highlight=${he.timestamp}`)}
                           style={{ padding: "10px 13px", borderRadius: 10, backgroundColor: C.surfaceHigh, border: `1px solid ${C.borderActive}`, marginBottom: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}
                         >
@@ -354,7 +355,7 @@ export default function StatsPage() {
                   </AnimatePresence>
 
                   {/* Y-axis + chart bars */}
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
+                  <motion.div layout transition={{ layout: { duration: 0.28, ease: [0.22, 1, 0.36, 1] } }} style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
                     {/* Y-axis labels — height matches bar area only */}
                     <div style={{ width: 22, height: 80, position: "relative", flexShrink: 0, marginRight: 4 }}>
                       {[10, 8, 6, 4, 2].map(tick => (
@@ -405,21 +406,21 @@ export default function StatsPage() {
                         })}
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* X-axis: first and last question number in window */}
-                  <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${C.border}`, marginTop: 4, marginLeft: 26 }}>
+                  <motion.div layout transition={{ layout: { duration: 0.28, ease: [0.22, 1, 0.36, 1] } }} style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${C.border}`, marginTop: 4, marginLeft: 26 }}>
                     <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
                       Q{maxN - clampedN + 1}
                     </span>
                     <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>
                       Q{maxN} (latest)
                     </span>
-                  </div>
+                  </motion.div>
 
                   {/* Trend vs prior window */}
                   {trendPct !== null && (
-                    <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${C.border}` }}>
+                    <motion.div layout transition={{ layout: { duration: 0.28, ease: [0.22, 1, 0.36, 1] } }} style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${C.border}` }}>
                       <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.15em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 12 }}>
                         Recent Trend
                       </div>
@@ -463,7 +464,7 @@ export default function StatsPage() {
                           : `Your last ${trendN} graded questions averaged ${recentAvg?.toFixed(1)}/10 — down ${Math.abs(trendPct)}% from the ${trendN} before them (avg ${priorAvg?.toFixed(1)}).`
                         }
                       </div>
-                    </div>
+                    </motion.div>
                   )}
                 </>
               )}
