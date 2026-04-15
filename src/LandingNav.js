@@ -18,6 +18,11 @@ export default function LandingNav() {
       <nav aria-label="Main navigation" className="landing-nav">
         <div className="landing-nav__brand-wrap">
           <button onClick={() => { if (router.pathname !== "/") router.push("/"); }} className="landing-nav__brand">
+            <img
+              src={isPaid ? "/Fite_Premium_NB.png" : "/favicon.png"}
+              alt="Fite Finance logo"
+              className="landing-nav__logo"
+            />
             <span style={{ color: C_PRIMARY, textShadow: "0 1px 3px rgba(0,0,0,0.9), 0 0 24px rgba(21,101,192,0.9)" }}>Fite</span>
             {" "}
             <span style={{ color: C_SECONDARY, textShadow: "0 1px 3px rgba(0,0,0,0.9), 0 0 24px rgba(79,195,247,0.9)" }}>Finance</span>
@@ -90,6 +95,16 @@ export default function LandingNav() {
           letter-spacing: -0.04em;
           line-height: 1;
           white-space: nowrap;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .landing-nav__logo {
+          height: 28px;
+          width: 28px;
+          border-radius: 5px;
+          flex-shrink: 0;
         }
 
         .landing-nav__center {
@@ -132,6 +147,11 @@ export default function LandingNav() {
 
           .landing-nav__brand {
             font-size: 17px;
+          }
+
+          .landing-nav__logo {
+            height: 24px;
+            width: 24px;
           }
         }
       `}</style>

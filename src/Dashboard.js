@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
-import { useUser, UserButton, useClerk, SignInButton, SignUpButton } from "@clerk/clerk-react";
+import { useUser, UserButton, SignInButton, SignUpButton } from "@clerk/clerk-react";
 import { motion, AnimatePresence } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
@@ -721,8 +721,8 @@ function InterviewCanvas({ loadingInterviewGenerate, interviewProgress, intervie
 export default function Dashboard() {
   const router    = useRouter();
   const { user, isSignedIn } = useUser();
-  const { openUserProfile } = useClerk();
   const { isPaid } = usePaidStatus();
+  const sidebarUserBtnRef = useRef(null);
   const price      = usePrice();
   const handleUpgrade = useUpgrade();
 
@@ -884,17 +884,28 @@ export default function Dashboard() {
       >
         {/* Brand */}
         <div style={{ padding: "28px 24px 16px" }}>
-          <motion.div
-            onClick={() => router.push("/")}
-            whileTap={{ scale: 0.95 }}
-            style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1, cursor: "pointer", display: "inline-block" }}
-          >
-            <span style={{ color: C.primary }}>Fite</span>{" "}
-            <span style={{ color: C.secondary }}>Finance</span>
-            {isPaid && <span style={{ color: C.gold, fontWeight: 900, marginLeft: 2 }}>+</span>}
-          </motion.div>
-          <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: C.textMuted, marginTop: 4, opacity: 0.55, fontFamily: "Manrope, sans-serif" }}>
-            Practice Suite
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <motion.img
+              src={isPaid ? "/Fite_Premium_NB.png" : "/favicon.png"}
+              alt="logo"
+              onClick={() => router.push("/")}
+              whileTap={{ scale: 0.95 }}
+              style={{ height: 36, width: 36, cursor: "pointer", borderRadius: 6 }}
+            />
+            <div>
+              <motion.div
+                onClick={() => router.push("/")}
+                whileTap={{ scale: 0.95 }}
+                style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1, cursor: "pointer", display: "inline-block" }}
+              >
+                <span style={{ color: C.primary }}>Fite</span>{" "}
+                <span style={{ color: C.secondary }}>Finance</span>
+                {isPaid && <span style={{ color: C.gold, fontWeight: 900, marginLeft: 2 }}>+</span>}
+              </motion.div>
+              <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: C.textMuted, marginTop: 3, opacity: 0.55, fontFamily: "Manrope, sans-serif" }}>
+                Practice Suite
+              </div>
+            </div>
           </div>
         </div>
 
@@ -923,12 +934,14 @@ export default function Dashboard() {
         {/* User section */}
         <div style={{ padding: "14px 14px 20px" }}>
           <motion.div
-            onClick={() => openUserProfile()}
+            onClick={() => sidebarUserBtnRef.current?.querySelector("button")?.click()}
             whileHover={{ background: "rgba(21,101,192,0.14)", borderColor: `rgba(79,195,247,0.3)` }}
             whileTap={{ scale: 0.97 }}
             style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(21,101,192,0.06)", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10, cursor: "pointer", transition: "background 0.15s, border-color 0.15s" }}
           >
-            <UserButton />
+            <div ref={sidebarUserBtnRef} onClick={e => e.stopPropagation()}>
+              <UserButton />
+            </div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: C.text }}>
                 {user?.firstName || "User"}
@@ -954,6 +967,13 @@ export default function Dashboard() {
           {/* Left: brand (mobile) or live indicator (desktop) */}
           {isMobile ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <motion.img
+                src={isPaid ? "/Fite_Logo_Premium.png" : "/Fite_Logo_New.png"}
+                alt="logo"
+                onClick={() => router.push("/")}
+                whileTap={{ scale: 0.95 }}
+                style={{ height: 30, width: 30, cursor: "pointer", borderRadius: 5 }}
+              />
               <motion.div
                 onClick={() => router.push("/")}
                 whileTap={{ scale: 0.95 }}

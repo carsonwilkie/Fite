@@ -3,11 +3,29 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
-import PremiumBadge from "./PremiumBadge";
 
-// Confetti particle shapes
-const CONFETTI_COLORS = ["#c9a84c", "#0a2463", "#4a6fa5", "#f5d06a", "#a87c2a", "#4FC3F7"];
-const CONFETTI_COUNT = 18;
+// ─── Design tokens (matches Dashboard.js) ────────────────────────────────────
+const C = {
+  bg:             "#020817",
+  surface:        "#0d1b2a",
+  surfaceHigh:    "#1b263b",
+  surfaceLow:     "#0b1120",
+  primary:        "#1565C0",
+  secondary:      "#4FC3F7",
+  gold:           "#c9a84c",
+  goldLight:      "#f5d06a",
+  goldDark:       "#a87c2a",
+  text:           "#f8fafc",
+  textMuted:      "#94a3b8",
+  border:         "rgba(21, 101, 192, 0.18)",
+  borderActive:   "rgba(79, 195, 247, 0.45)",
+};
+
+const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
+
+// ─── Confetti ─────────────────────────────────────────────────────────────────
+const CONFETTI_COLORS = [C.gold, C.secondary, C.primary, C.goldLight, C.goldDark, "#4FC3F7"];
+const CONFETTI_COUNT = 22;
 
 function ConfettiParticle({ delay, color, x, size, duration }) {
   return (
@@ -25,7 +43,7 @@ function ConfettiParticle({ delay, color, x, size, duration }) {
       }}
       initial={{ y: -20, opacity: 1, rotate: 0, scale: 1 }}
       animate={{
-        y: [null, 60, 120],
+        y: [null, 60, 140],
         opacity: [1, 1, 0],
         rotate: [0, 180, 360],
         scale: [1, 0.8, 0.4],
@@ -35,25 +53,43 @@ function ConfettiParticle({ delay, color, x, size, duration }) {
   );
 }
 
+const FEATURES = [
+  { label: "Unlimited Questions", icon: "all_inclusive" },
+  { label: "AI Answer Grading",   icon: "psychology" },
+  { label: "Question History",    icon: "history" },
+  { label: "Interview Mode",      icon: "record_voice_over" },
+  { label: "Custom Descriptors",  icon: "tune" },
+];
+
+function Icon({ name, size = 18 }) {
+  return (
+    <span
+      className="material-symbols-outlined"
+      style={{ fontSize: size, lineHeight: 1, verticalAlign: "middle" }}
+    >
+      {name}
+    </span>
+  );
+}
+
 function Success() {
   const router = useRouter();
   const { isPaid, loading } = usePaidStatus();
   const [showConfetti, setShowConfetti] = useState(true);
 
-  // Confetti particles seeded
   const [particles] = useState(() =>
     Array.from({ length: CONFETTI_COUNT }, (_, i) => ({
       id: i,
-      delay: i * 0.06,
+      delay: i * 0.05,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      x: (i * 5.3 + 2) % 96,
+      x: (i * 4.3 + 2) % 96,
       size: 8 + (i % 3) * 4,
       duration: 1.0 + (i % 3) * 0.3,
     }))
   );
 
   useEffect(() => {
-    const t = setTimeout(() => setShowConfetti(false), 2200);
+    const t = setTimeout(() => setShowConfetti(false), 2400);
     return () => clearTimeout(t);
   }, []);
 
@@ -64,7 +100,7 @@ function Success() {
   }
 
   return (
-    <div style={styles.page} className="page-bg page-wrapper">
+    <div style={styles.page}>
       {/* Confetti overlay */}
       {showConfetti && (
         <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 200, overflow: "hidden" }}>
@@ -74,171 +110,197 @@ function Success() {
         </div>
       )}
 
+      {/* Ambient glow */}
+      <div style={{
+        position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0,
+        background: "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(21,101,192,0.18) 0%, transparent 70%)",
+      }} />
+
       <motion.div
-        initial={{ opacity: 0, scale: 0.88, y: 20 }}
+        initial={{ opacity: 0, scale: 0.92, y: 24 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.05 }}
-        style={{
-          backgroundColor: "#f0f4f8",
-          borderRadius: "16px",
-          padding: "24px",
-          width: "100%",
-          maxWidth: "728px",
-          boxSizing: "border-box",
-          marginBottom: "16px",
-          boxShadow: "0 0 40px 10px rgba(0, 0, 0, 0.4)",
-          position: "relative",
-          zIndex: 1,
-        }}
-        className="wrapper-mobile success-wrapper"
+        style={styles.card}
       >
-        <div style={styles.container}>
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-            style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}
-            className="header-mobile"
-          >
-            <motion.img
-              src={isPaid ? "/Fite_Logo_Premium.png" : "/Fite_Logo.png"}
-              alt="logo"
-              style={{ height: "64px", width: "64px", cursor: "pointer" }}
-              className="logo-img-mobile"
-              onClick={() => router.push("/")}
-              initial={{ rotate: -20, scale: 0.5 }}
-              animate={{ rotate: 0, scale: 1 }}
-              transition={{ type: "spring", stiffness: 280, damping: 18, delay: 0.15 }}
-            />
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <h1 style={{ ...styles.logo, cursor: "pointer" }} className="logo-mobile" onClick={() => router.push("/")}>Fite Finance</h1>
-                {isPaid && <PremiumBadge />}
-              </div>
-              <p style={styles.tagline} className="tagline-mobile">The finance site sharpening your interview skills</p>
+        {/* Logo row */}
+        <motion.div
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
+          style={styles.logoRow}
+        >
+          <motion.img
+            src="/Fite_Premium_NB.png"
+            alt="Fite Finance logo"
+            style={{ height: 52, width: 52, cursor: "pointer", borderRadius: 10, flexShrink: 0 }}
+            onClick={() => router.push("/")}
+            initial={{ rotate: -20, scale: 0.5 }}
+            animate={{ rotate: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 280, damping: 18, delay: 0.15 }}
+          />
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{ fontSize: 24, fontWeight: 800, color: C.text, cursor: "pointer", fontFamily: "Manrope, sans-serif" }}
+                onClick={() => router.push("/")}
+              >
+                Fite Finance
+              </span>
+              {/* Inline premium badge */}
+              <span style={{
+                fontSize: 9, fontWeight: 900, letterSpacing: "0.12em", textTransform: "uppercase",
+                padding: "2px 8px", borderRadius: 20,
+                background: `linear-gradient(135deg, ${C.goldLight}, ${C.gold}, ${C.goldDark})`,
+                color: "#1a0e00",
+              }}>
+                Premium
+              </span>
             </div>
-          </motion.div>
+            <p style={{ fontSize: 13, color: C.textMuted, margin: 0, fontFamily: "Inter, sans-serif" }}>
+              The finance site sharpening your interview skills
+            </p>
+          </div>
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-            style={styles.card}
-          >
-            {/* Gold ring pulse behind checkmark */}
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+        {/* Divider */}
+        <div style={{ height: 1, background: C.border, margin: "20px 0" }} />
+
+        {/* Main content */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.28 }}
+          style={{ textAlign: "center" }}
+        >
+          {/* Checkmark */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.42 }}
+              style={{
+                width: 72, height: 72, borderRadius: "50%",
+                background: `linear-gradient(135deg, ${C.goldLight} 0%, ${C.gold} 50%, ${C.goldDark} 100%)`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: `0 0 36px rgba(201,168,76,0.45)`,
+                position: "relative",
+              }}
+            >
               <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.45 }}
                 style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #f5d06a 0%, #c9a84c 50%, #a87c2a 100%)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 0 32px rgba(201,168,76,0.5)",
-                  position: "relative",
+                  position: "absolute", inset: -5, borderRadius: "50%",
+                  border: `2px solid rgba(201,168,76,0.5)`,
+                }}
+                animate={{ scale: [1, 1.35, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+                <motion.path
+                  d="M5 13l4 4L19 7"
+                  stroke="#fff"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.5, delay: 0.52, ease: "easeOut" }}
+                />
+              </svg>
+            </motion.div>
+          </div>
+
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: C.text, margin: "0 0 12px 0", fontFamily: "Manrope, sans-serif" }}>
+            You're all set!
+          </h2>
+          <p style={{ fontSize: 15, color: C.textMuted, lineHeight: 1.65, margin: 0, fontFamily: "Inter, sans-serif" }}>
+            Welcome to{" "}
+            <span style={{ color: C.gold, fontWeight: 700 }}>Fite Finance Premium</span>
+            . You now have unlimited access to all finance interview questions and tools.
+          </p>
+
+          {/* Feature pills */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.65, duration: 0.4 }}
+            style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: 24, marginBottom: 8 }}
+          >
+            {FEATURES.map(({ label, icon }, i) => (
+              <motion.span
+                key={label}
+                initial={{ opacity: 0, scale: 0.82 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.65 + i * 0.07, type: "spring", stiffness: 300, damping: 22 }}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  fontSize: 11, fontWeight: 700,
+                  padding: "5px 11px", borderRadius: 20,
+                  background: C.surfaceHigh,
+                  color: C.secondary,
+                  border: `1px solid ${C.border}`,
+                  letterSpacing: "0.3px",
+                  fontFamily: "Manrope, sans-serif",
                 }}
               >
-                {/* Animated ring */}
-                <motion.div
-                  style={{
-                    position: "absolute",
-                    inset: -4,
-                    borderRadius: "50%",
-                    border: "2px solid rgba(201,168,76,0.6)",
-                  }}
-                  animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0, 0.6] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                />
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-                  <motion.path
-                    d="M5 13l4 4L19 7"
-                    stroke="#fff"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.5, delay: 0.55, ease: "easeOut" }}
-                  />
-                </svg>
-              </motion.div>
-            </div>
-
-            <h2 style={styles.title}>You're all set!</h2>
-            <p style={styles.text}>
-              Welcome to{" "}
-              <span style={{ color: "#c9a84c", fontWeight: "700", position: "relative" }}>
-                Fite Finance Premium
-              </span>
-              . You now have unlimited access to all finance interview questions.
-            </p>
-
-            {/* Feature pills */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7, duration: 0.4 }}
-              style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center", marginTop: "20px", marginBottom: "4px" }}
-            >
-              {["Unlimited Questions", "AI Answer Grading", "Question History", "Interview Mode", "Custom Descriptors"].map((feat, i) => (
-                <motion.span
-                  key={feat}
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.7 + i * 0.07, type: "spring", stiffness: 300, damping: 22 }}
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: "700",
-                    padding: "4px 10px",
-                    borderRadius: "20px",
-                    backgroundColor: "#e8edf5",
-                    color: "#0a2463",
-                    letterSpacing: "0.3px",
-                  }}
-                >
-                  {feat}
-                </motion.span>
-              ))}
-            </motion.div>
-
-            <motion.button
-              className="primary-btn"
-              style={{ marginTop: "24px" }}
-              onClick={() => router.push("/")}
-              whileHover={{ scale: 1.02, boxShadow: "0 6px 20px rgba(10,36,99,0.25)" }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.1, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            >
-              Start Practicing
-            </motion.button>
+                <Icon name={icon} size={13} />
+                {label}
+              </motion.span>
+            ))}
           </motion.div>
-        </div>
+
+          {/* CTA button */}
+          <motion.button
+            style={{
+              marginTop: 28,
+              padding: "13px 36px",
+              borderRadius: 10,
+              border: "none",
+              background: cyberGrad,
+              color: "#fff",
+              fontSize: 14,
+              fontWeight: 800,
+              fontFamily: "Manrope, sans-serif",
+              letterSpacing: "0.04em",
+              cursor: "pointer",
+              boxShadow: "0 4px 20px rgba(21,101,192,0.4)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+            onClick={() => router.push("/")}
+            whileHover={{ scale: 1.03, boxShadow: "0 6px 28px rgba(21,101,192,0.55)" }}
+            whileTap={{ scale: 0.97 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Icon name="bolt" size={17} />
+            Start Practicing
+          </motion.button>
+        </motion.div>
       </motion.div>
 
+      {/* Footer */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.4 }}
+        transition={{ delay: 0.9, duration: 0.4 }}
+        style={{ textAlign: "center", zIndex: 1 }}
       >
-        <p style={{ textAlign: "center", fontSize: "12px", color: "#4a6fa5", marginTop: "40px", marginBottom: "12px", fontStyle: "italic" }}>
-          For help, contact <a href="mailto:support@fitefinance.com" style={{ color: "#4a6fa5" }}>support@fitefinance.com</a>
+        <p style={{ fontSize: 12, color: C.textMuted, marginTop: 32, marginBottom: 10, fontStyle: "italic", fontFamily: "Inter, sans-serif" }}>
+          For help, contact{" "}
+          <a href="mailto:support@fitefinance.com" style={{ color: C.secondary, textDecoration: "none" }}>
+            support@fitefinance.com
+          </a>
         </p>
-        <p style={{ textAlign: "center", fontSize: "11px", color: "#4a6fa5", marginTop: "12px", marginBottom: "12px" }}>
-          <Link href="/privacy" style={{ color: "#4a6fa5" }}>Privacy Policy</Link>
-          <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
-          <Link href="/terms" style={{ color: "#4a6fa5" }}>Terms of Service</Link>
-          <span style={{ fontSize: "25px", verticalAlign: "middle" }}> · </span>
-          <Link href="/refunds" style={{ color: "#4a6fa5" }}>Refund Policy</Link>
+        <p style={{ fontSize: 11, color: C.textMuted, marginTop: 10, marginBottom: 10, fontFamily: "Inter, sans-serif" }}>
+          <Link href="/privacy" style={{ color: C.textMuted, textDecoration: "none" }}>Privacy Policy</Link>
+          <span style={{ fontSize: 22, verticalAlign: "middle", margin: "0 4px" }}> · </span>
+          <Link href="/terms" style={{ color: C.textMuted, textDecoration: "none" }}>Terms of Service</Link>
+          <span style={{ fontSize: 22, verticalAlign: "middle", margin: "0 4px" }}> · </span>
+          <Link href="/refunds" style={{ color: C.textMuted, textDecoration: "none" }}>Refund Policy</Link>
         </p>
-        <p className="byline-bottom" style={{ textAlign: "center", fontSize: "12px", fontWeight: "bold", color: "#5a060d", fontFamily: "'Snell Roundhand', cursive", wordSpacing: "2px", marginTop: "4px", marginBottom: "12px", display: "none" }}>
+        <p className="byline-bottom" style={{ fontSize: 12, fontWeight: "bold", color: "#5a060d", fontFamily: "'Snell Roundhand', cursive", wordSpacing: "2px", marginTop: 4, marginBottom: 12, display: "none" }}>
           by Colgate's finest
         </p>
       </motion.div>
@@ -249,49 +311,32 @@ function Success() {
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundColor: "transparent",
+    backgroundColor: C.bg,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
-    padding: "80px 20px 40px 20px",
+    padding: "72px 20px 40px",
     fontFamily: "'Segoe UI', sans-serif",
-  },
-  container: {
-    width: "100%",
-    maxWidth: "680px",
-  },
-  logo: {
-    fontSize: "32px",
-    fontWeight: "700",
-    color: "#0a2463",
-    margin: "0 0 6px 0",
-    cursor: "default",
-  },
-  tagline: {
-    fontSize: "15px",
-    color: "#4a6fa5",
-    margin: 0,
-    cursor: "default",
+    position: "relative",
   },
   card: {
-    backgroundColor: "#ffffff",
-    borderRadius: "12px",
-    padding: "36px",
-    boxShadow: "0 2px 16px rgba(10, 36, 99, 0.08)",
-    textAlign: "center",
+    backgroundColor: C.surface,
+    borderRadius: 16,
+    padding: "28px 32px",
+    width: "100%",
+    maxWidth: 640,
+    boxSizing: "border-box",
+    marginBottom: 16,
+    border: `1px solid ${C.border}`,
+    boxShadow: "0 8px 48px rgba(0,0,0,0.55)",
+    position: "relative",
+    zIndex: 1,
   },
-  title: {
-    fontSize: "24px",
-    fontWeight: "700",
-    color: "#0a2463",
-    margin: "0 0 16px 0",
-  },
-  text: {
-    fontSize: "16px",
-    color: "#4a6fa5",
-    lineHeight: "1.6",
-    margin: 0,
+  logoRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
   },
 };
 

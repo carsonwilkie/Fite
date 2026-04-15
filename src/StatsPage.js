@@ -208,6 +208,13 @@ export default function StatsPage() {
       {/* Top bar */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", backgroundColor: `${C.bg}ee`, backdropFilter: "blur(20px)", borderBottom: `1px solid ${C.border}` }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <motion.img
+            src={isPaid ? "/Fite_Premium_NB.png" : "/favicon.png"}
+            alt="logo"
+            onClick={() => router.push("/")}
+            whileTap={{ scale: 0.95 }}
+            style={{ height: 32, width: 32, cursor: "pointer", borderRadius: 6, flexShrink: 0 }}
+          />
           <motion.button
             onClick={() => router.push("/dashboard")}
             whileHover={{ x: -2 }}

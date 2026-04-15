@@ -356,7 +356,7 @@ export default function LandingPage() {
     <>
       <Head>
         <title>Fite Finance | Precision in Preparation</title>
-        <meta name="description" content="AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your IB, PE, or HF interview." />
+        <meta name="description" content="AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview." />
       </Head>
 
       <LandingNav />
@@ -581,7 +581,7 @@ export default function LandingPage() {
                   {isPaid ? "Welcome Back" : "Start Preparing"}
                 </h3>
                 <p style={{ fontSize: isMobileHeroLayout ? 11 : 14, color: C.muted, margin: isMobileHeroLayout ? "0 0 14px 0" : "0 0 28px 0", fontFamily: "Manrope, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
-                  {isPaid ? "Your premium access is active." : "Built for every industry and skill level."}
+                  {isPaid ? "Your premium access is active." : "Built for every student at any skill level."}
                 </p>
                 {isLoaded && (
                   <>

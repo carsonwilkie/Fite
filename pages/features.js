@@ -256,7 +256,7 @@ export default function FeaturesPage() {
     <>
       <Head>
         <title>Fite Finance | Features</title>
-        <meta name="description" content="Explore Fite Finance — AI grading, mock interview mode, history tracking, and more. Built for IB, PE, and hedge fund candidates." />
+        <meta name="description" content="Explore Fite Finance — AI grading, mock interview mode, history tracking, and more. Built for every student at any skill level." />
       </Head>
 
       <LandingNav />
@@ -565,7 +565,7 @@ export default function FeaturesPage() {
                 {isPaid && <span style={{ color: C.gold, fontWeight: 900 }}>+</span>}
               </div>
               <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.12em", color: C.muted, margin: 0, fontFamily: "Manrope, sans-serif" }}>
-                © 2025 Fite Finance. Precision in Preparation.
+                © 2026 Fite Finance
               </p>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 32 }}>
