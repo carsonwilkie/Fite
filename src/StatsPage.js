@@ -332,7 +332,7 @@ export default function StatsPage() {
                           initial={{ opacity: 0, y: -6 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -6 }}
-                          transition={{ duration: 0.15 }}
+                          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                           onClick={() => router.push(`/history?highlight=${he.timestamp}`)}
                           style={{ padding: "10px 13px", borderRadius: 10, backgroundColor: C.surfaceHigh, border: `1px solid ${C.borderActive}`, marginBottom: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}
                         >
@@ -354,8 +354,8 @@ export default function StatsPage() {
                   </AnimatePresence>
 
                   {/* Y-axis + chart bars */}
-                  <div style={{ display: "flex", alignItems: "flex-end", gap: 0 }}>
-                    {/* Y-axis labels */}
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
+                    {/* Y-axis labels — height matches bar area only */}
                     <div style={{ width: 22, height: 80, position: "relative", flexShrink: 0, marginRight: 4 }}>
                       {[10, 8, 6, 4, 2].map(tick => (
                         <div key={tick} style={{ position: "absolute", right: 0, bottom: `${(tick / 10) * 100}%`, transform: "translateY(50%)", fontSize: 8, color: C.textMuted, fontFamily: "Manrope, sans-serif", fontWeight: 700, lineHeight: 1, userSelect: "none", textAlign: "right" }}>
@@ -364,33 +364,42 @@ export default function StatsPage() {
                       ))}
                     </div>
 
-                    {/* Bars + gridlines */}
-                    <div style={{ flex: 1, position: "relative", height: 80 }}>
-                      {/* Gridlines */}
+                    {/* Bars + gridlines + Q-number labels */}
+                    <div style={{ flex: 1, position: "relative" }}>
+                      {/* Gridlines — top-anchored to 80px bar area */}
                       {[10, 8, 6, 4, 2].map(tick => (
-                        <div key={tick} style={{ position: "absolute", left: 0, right: 0, bottom: `${(tick / 10) * 100}%`, height: 1, background: C.border, pointerEvents: "none", zIndex: 0 }} />
+                        <div key={tick} style={{ position: "absolute", left: 0, right: 0, top: `${(1 - tick / 10) * 80}px`, height: 1, background: C.border, pointerEvents: "none", zIndex: 0 }} />
                       ))}
-                      {/* Scrollable bars */}
-                      <div style={{ display: "flex", gap: 3, alignItems: "flex-end", height: "100%", overflowX: "auto", position: "relative", zIndex: 1 }}>
+                      {/* Scrollable bars + labels — onMouseLeave on container so moving between bars doesn't flash */}
+                      <div
+                        style={{ display: "flex", gap: 3, overflowX: "auto", position: "relative", zIndex: 1 }}
+                        onMouseLeave={() => setHoveredBar(null)}
+                      >
                         {windowBars.map((e, i) => {
+                          const qNum  = maxN - clampedN + 1 + i;
                           const pct   = (e.score / 10) * 100;
                           const color = scoreColor(e.score);
                           const isHov = hoveredBar === i;
                           return (
-                            <div
-                              key={i}
-                              style={{ display: "flex", alignItems: "flex-end", flex: 1, minWidth: 8, height: "100%", cursor: "pointer" }}
-                              onMouseEnter={() => setHoveredBar(i)}
-                              onMouseLeave={() => setHoveredBar(null)}
-                              onClick={() => router.push(`/history?highlight=${e.timestamp}`)}
-                            >
-                              <motion.div
-                                key={`${clampedN}-${i}`}
-                                initial={{ height: 0 }}
-                                animate={{ height: `${pct}%` }}
-                                transition={{ duration: 0.4, delay: i * 0.02, ease: [0.22, 1, 0.36, 1] }}
-                                style={{ width: "100%", borderRadius: "2px 2px 0 0", background: isHov ? `linear-gradient(to top, ${color}, ${color}ee)` : `linear-gradient(to top, ${color}88, ${color}cc)`, minHeight: 2, boxShadow: isHov ? `0 0 8px ${color}70` : "none", transition: "background 0.12s, box-shadow 0.12s" }}
-                              />
+                            <div key={i} style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 8 }}>
+                              {/* Bar */}
+                              <div style={{ height: 80, display: "flex", alignItems: "flex-end" }}>
+                                <motion.div
+                                  key={`${clampedN}-${i}`}
+                                  initial={{ height: 0 }}
+                                  animate={{ height: `${pct}%` }}
+                                  transition={{ duration: 0.4, delay: i * 0.02, ease: [0.22, 1, 0.36, 1] }}
+                                  onMouseEnter={() => setHoveredBar(i)}
+                                  onClick={() => router.push(`/history?highlight=${e.timestamp}`)}
+                                  style={{ width: "100%", borderRadius: "2px 2px 0 0", background: isHov ? `linear-gradient(to top, ${color}, ${color}ee)` : `linear-gradient(to top, ${color}88, ${color}cc)`, minHeight: 2, boxShadow: isHov ? `0 0 8px ${color}70` : "none", transition: "background 0.18s, box-shadow 0.18s", cursor: "pointer" }}
+                                />
+                              </div>
+                              {/* Q number */}
+                              <div style={{ textAlign: "center", paddingTop: 3 }}>
+                                <span style={{ fontSize: 7, color: isHov ? C.secondary : C.textMuted, fontFamily: "Manrope, sans-serif", fontWeight: 700, lineHeight: 1 }}>
+                                  {qNum}
+                                </span>
+                              </div>
                             </div>
                           );
                         })}

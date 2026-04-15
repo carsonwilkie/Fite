@@ -48,11 +48,12 @@ export default function App({ Component, pageProps }) {
     pageProps,
     route: router.asPath,
   }));
+  const displayedBasePath = displayedView.route.split("?")[0];
   const displayedIsLanding =
-    displayedView.route === "/" || displayedView.route === "/features" ||
-    displayedView.route === "/dashboard" || displayedView.route === "/history" ||
-    displayedView.route === "/stats" || displayedView.route === "/privacy" ||
-    displayedView.route === "/terms" || displayedView.route === "/refunds";
+    displayedBasePath === "/" || displayedBasePath === "/features" ||
+    displayedBasePath === "/dashboard" || displayedBasePath === "/history" ||
+    displayedBasePath === "/stats" || displayedBasePath === "/privacy" ||
+    displayedBasePath === "/terms" || displayedBasePath === "/refunds";
 
   const revealPendingView = () => {
     if (!coverDoneRef.current || !routeReadyRef.current || !pendingViewRef.current) {
