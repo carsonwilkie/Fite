@@ -183,6 +183,50 @@ function ControlLabel({ children }) {
   );
 }
 
+const TOGGLE_TRACK_WIDTH = 44;
+const TOGGLE_TRACK_HEIGHT = 24;
+const TOGGLE_THUMB_SIZE = 20;
+const TOGGLE_INSET = 2;
+const TOGGLE_TRAVEL = TOGGLE_TRACK_WIDTH - TOGGLE_THUMB_SIZE - TOGGLE_INSET * 2;
+
+function ToggleSwitch({ checked, onClick, disabled = false }) {
+  return (
+    <motion.button
+      type="button"
+      aria-pressed={checked}
+      onClick={onClick}
+      whileTap={disabled ? undefined : { scale: 0.88 }}
+      style={{
+        width: TOGGLE_TRACK_WIDTH,
+        height: TOGGLE_TRACK_HEIGHT,
+        borderRadius: 999,
+        border: "none",
+        cursor: disabled ? "not-allowed" : "pointer",
+        position: "relative",
+        backgroundColor: checked ? C.secondary : C.surfaceHigh,
+        transition: "background-color 0.22s",
+        flexShrink: 0,
+        padding: 0,
+      }}
+    >
+      <motion.div
+        animate={{ x: checked ? TOGGLE_TRAVEL : 0 }}
+        transition={{ type: "spring", stiffness: 380, damping: 26 }}
+        style={{
+          position: "absolute",
+          top: TOGGLE_INSET,
+          left: TOGGLE_INSET,
+          width: TOGGLE_THUMB_SIZE,
+          height: TOGGLE_THUMB_SIZE,
+          borderRadius: "50%",
+          backgroundColor: "#fff",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.35)",
+        }}
+      />
+    </motion.button>
+  );
+}
+
 function SessionIntel({ count, avgScore, readiness, compact = false }) {
   const color    = readiness >= 70 ? C.success : readiness >= 40 ? C.warn : C.secondary;
   const ringSize = compact ? 72 : 112;
@@ -1084,11 +1128,7 @@ export default function Dashboard() {
               {/* Math toggle */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", background: C.surface, borderRadius: 12, border: `1px solid ${C.border}` }}>
                 <span style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Include Math</span>
-                <motion.button onClick={() => setMathOn(v => !v)} whileTap={{ scale: 0.88 }}
-                  style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", position: "relative", backgroundColor: mathOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
-                  <motion.div animate={{ x: mathOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
-                    style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
-                </motion.button>
+                <ToggleSwitch checked={mathOn} onClick={() => setMathOn(v => !v)} />
               </div>
 
               {/* Timer toggle */}
@@ -1097,13 +1137,11 @@ export default function Dashboard() {
                   <span style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>
                     Timer{!isPaid && <span style={{ marginLeft: 6, color: C.gold, textTransform: "none", letterSpacing: 0 }}> — Premium</span>}
                   </span>
-                  <motion.button
+                  <ToggleSwitch
+                    checked={isPaid && timerOn}
                     onClick={() => { if (!isPaid) { handleUpgrade(); return; } const next = !timerOn; setTimerOn(next); if (!next) stopTimer(); }}
-                    whileTap={{ scale: 0.88 }}
-                    style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: isPaid ? "pointer" : "not-allowed", position: "relative", backgroundColor: isPaid && timerOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
-                    <motion.div animate={{ x: isPaid && timerOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
-                      style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
-                  </motion.button>
+                    disabled={!isPaid}
+                  />
                 </div>
                 {isPaid && timerOn && (
                   <div style={{ padding: "0 12px 12px", display: "flex", gap: 6 }}>
@@ -1327,11 +1365,7 @@ export default function Dashboard() {
                 {/* Math toggle */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}` }}>
                   <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Include Math</span>
-                  <motion.button onClick={() => setMathOn(v => !v)} whileTap={{ scale: 0.88 }}
-                    style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", position: "relative", backgroundColor: mathOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
-                    <motion.div animate={{ x: mathOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
-                      style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
-                  </motion.button>
+                  <ToggleSwitch checked={mathOn} onClick={() => setMathOn(v => !v)} />
                 </div>
 
                 {/* Timer toggle */}
@@ -1340,13 +1374,11 @@ export default function Dashboard() {
                     <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>
                       Timer{!isPaid && <span style={{ marginLeft: 6, color: C.gold, textTransform: "none", letterSpacing: 0 }}> — Premium</span>}
                     </span>
-                    <motion.button
+                    <ToggleSwitch
+                      checked={isPaid && timerOn}
                       onClick={() => { if (!isPaid) { handleUpgrade(); return; } const next = !timerOn; setTimerOn(next); if (!next) stopTimer(); }}
-                      whileTap={{ scale: 0.88 }}
-                      style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: isPaid ? "pointer" : "not-allowed", position: "relative", backgroundColor: isPaid && timerOn ? C.secondary : C.surfaceHigh, transition: "background-color 0.22s", flexShrink: 0 }}>
-                      <motion.div animate={{ x: isPaid && timerOn ? 22 : 2 }} transition={{ type: "spring", stiffness: 380, damping: 26 }}
-                        style={{ position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%", backgroundColor: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }} />
-                    </motion.button>
+                      disabled={!isPaid}
+                    />
                   </div>
                   {isPaid && timerOn && (
                     <div style={{ padding: "0 12px 12px", display: "flex", gap: 6 }}>
