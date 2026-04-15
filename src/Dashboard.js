@@ -723,6 +723,8 @@ export default function Dashboard() {
   const { user, isSignedIn } = useUser();
   const { isPaid } = usePaidStatus();
   const sidebarUserBtnRef = useRef(null);
+  const isClerkPopupOpen = () =>
+    sidebarUserBtnRef.current?.querySelector("button")?.getAttribute("aria-expanded") === "true";
   const price      = usePrice();
   const handleUpgrade = useUpgrade();
 
@@ -867,7 +869,7 @@ export default function Dashboard() {
 
   const handleInterviewDebrief = async () => { if (!interviewSession) return; setLoadingDebrief(true); try { const r = await fetch("/api/interview-debrief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scenario: interviewSession.scenario, questions: interviewSession.questions.map((q,i) => ({ question: q.question, idealAnswer: q.idealAnswer, userAnswer: interviewUserAnswers[i] || "No answer submitted.", score: interviewResponses[i]?.score ?? null })), category, difficulty }) }); const d = await r.json(); setInterviewDebrief(d.feedback); } catch (e) { console.error(e); } setLoadingDebrief(false); };
 
-  const handleManageSub = async () => { if (!user?.id) return; const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id }) }); const d = await r.json(); if (d.url) window.location.href = d.url; };
+  const handleManageSub = async () => { if (!user?.id) return; const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, returnPath: router.asPath }) }); const d = await r.json(); if (d.url) window.location.href = d.url; };
 
   const isLoading = loadingQuestion || loadingInterviewGenerate;
   const interviewOverallScore = interviewResponses.length > 0 ? Math.round((interviewResponses.reduce((a,r) => a+(r.score??0),0)/interviewResponses.length)*10)/10 : null;
@@ -934,12 +936,14 @@ export default function Dashboard() {
         {/* User section */}
         <div style={{ padding: "14px 14px 20px" }}>
           <motion.div
+            onMouseDown={(e) => { if (isClerkPopupOpen()) e.stopPropagation(); }}
+            onPointerDown={(e) => { if (isClerkPopupOpen()) e.stopPropagation(); }}
             onClick={() => sidebarUserBtnRef.current?.querySelector("button")?.click()}
             whileHover={{ background: "rgba(21,101,192,0.14)", borderColor: `rgba(79,195,247,0.3)` }}
             whileTap={{ scale: 0.97 }}
             style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(21,101,192,0.06)", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10, cursor: "pointer", transition: "background 0.15s, border-color 0.15s" }}
           >
-            <div ref={sidebarUserBtnRef} onClick={e => e.stopPropagation()}>
+            <div ref={sidebarUserBtnRef} onMouseDown={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()}>
               <UserButton />
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>

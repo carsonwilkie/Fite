@@ -38,7 +38,7 @@ function Navbar() {
     const res = await fetch("/api/portal", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user?.id }),
+      body: JSON.stringify({ userId: user?.id, returnPath: router.asPath }),
     });
     const data = await res.json();
     if (data.url) {

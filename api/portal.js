@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { userId } = req.body;
+  const { userId, returnPath } = req.body;
 
   try {
     const sessions = await stripe.checkout.sessions.list({ limit: 100 });
@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: session.customer,
-      return_url: `${process.env.NEXT_PUBLIC_URL}/`,
+      return_url: `${process.env.NEXT_PUBLIC_URL}${returnPath || "/"}`,
     });
 
     res.status(200).json({ url: portalSession.url });
