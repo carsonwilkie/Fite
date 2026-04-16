@@ -331,9 +331,9 @@ export default function StatsPage() {
                     const fmtTime     = s => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m${s % 60 > 0 ? ` ${s % 60}s` : ""}`;
                     const dateStr     = he ? new Date(he.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
                     const tags = he ? [
+                      isInterview                         ? { label: "Interview",           color: C.gold      } : null,
                       he.category                         ? { label: he.category,          color: null        } : null,
                       he.difficulty                       ? { label: he.difficulty,         color: null        } : null,
-                      isInterview                         ? { label: "Interview",           color: C.gold      } : null,
                       he.math && he.math !== "No Math"    ? { label: "Math",                color: C.secondary } : null,
                       he.customPrompt                     ? { label: he.customPrompt,       color: C.secondary } : null,
                       he.timeTaken != null                ? { label: fmtTime(he.timeTaken), color: C.textMuted } : null,
