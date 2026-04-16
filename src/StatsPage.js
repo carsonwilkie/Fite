@@ -347,9 +347,16 @@ export default function StatsPage() {
                         style={{ overflow: "hidden", position: "relative", flexShrink: 0 }}
                       >
                         {he && (
-                          <div
+                          <motion.div
                             onClick={() => router.push(`/history?highlight=${he.timestamp}`)}
-                            style={{ position: "absolute", inset: 0, padding: "10px 12px", borderRadius: 10, backgroundColor: C.surfaceHigh, border: `1px solid ${isActive ? C.borderActive : C.border}`, cursor: "pointer", display: "flex", alignItems: "center", gap: 10, overflow: "hidden", transition: "border-color 0.2s", userSelect: "none", WebkitUserSelect: "none" }}
+                            style={{ position: "absolute", inset: 0, padding: "10px 12px", borderRadius: 10, backgroundColor: C.surfaceHigh, border: `1px solid ${isActive ? C.borderActive : C.border}`, cursor: "pointer", display: "flex", alignItems: "center", gap: 10, overflow: "hidden", userSelect: "none", WebkitUserSelect: "none", boxShadow: "none" }}
+                            whileHover={{
+                              backgroundColor: "#1e2d42",
+                              boxShadow: `0 0 0 1px ${C.borderActive}, 0 0 18px rgba(79,195,247,0.18)`,
+                              scale: 1.015,
+                            }}
+                            whileTap={{ scale: 0.985 }}
+                            transition={{ duration: 0.18, ease: "easeOut" }}
                           >
                             <div style={{ width: 30, height: 30, borderRadius: "50%", border: `2px solid ${hcol}`, background: `${hcol}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <span style={{ fontSize: 11, fontWeight: 900, color: hcol }}>{he.score}</span>
@@ -366,8 +373,12 @@ export default function StatsPage() {
                                 ))}
                               </div>
                             </div>
-                            <span style={{ fontSize: 10, color: C.secondary, fontFamily: "Manrope, sans-serif", fontWeight: 700, letterSpacing: "0.04em", flexShrink: 0 }}>View →</span>
-                          </div>
+                            <motion.span
+                              style={{ fontSize: 10, color: C.secondary, fontFamily: "Manrope, sans-serif", fontWeight: 700, letterSpacing: "0.04em", flexShrink: 0 }}
+                              whileHover={{ x: 3 }}
+                              transition={{ duration: 0.15 }}
+                            >View →</motion.span>
+                          </motion.div>
                         )}
                       </motion.div>
                     );
