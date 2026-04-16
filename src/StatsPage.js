@@ -353,9 +353,8 @@ export default function StatsPage() {
                             whileHover={{
                               backgroundColor: "#1e2d42",
                               boxShadow: `0 0 0 1px ${C.borderActive}, 0 0 18px rgba(79,195,247,0.18)`,
-                              scale: 1.015,
                             }}
-                            whileTap={{ scale: 0.985 }}
+                            whileTap={{ opacity: 0.8 }}
                             transition={{ duration: 0.18, ease: "easeOut" }}
                           >
                             <div style={{ width: 30, height: 30, borderRadius: "50%", border: `2px solid ${hcol}`, background: `${hcol}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
