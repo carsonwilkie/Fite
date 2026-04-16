@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/clerk-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
 
 const C = {
@@ -106,6 +106,7 @@ export default function StatsPage() {
   const [loadingData, setLoadingData]     = useState(true);
   const [windowN, setWindowN]             = useState(20);
   const [hoveredBar, setHoveredBar]       = useState(null);
+  const [lastHoveredBar, setLastHoveredBar] = useState(null);
 
   useEffect(() => {
     if (loading) return;
@@ -319,41 +320,58 @@ export default function StatsPage() {
                     </div>
                   </div>
 
-                  {/* Tooltip — fixed-height container so the chart never shifts position */}
-                  <div style={{ height: 56, marginBottom: 12, position: "relative" }}>
-                    <AnimatePresence>
-                      {hoveredBar !== null && windowBars[hoveredBar] && (() => {
-                        const he      = windowBars[hoveredBar];
-                        const hcol    = scoreColor(he.score);
-                        const dateStr = new Date(he.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-                        const qTrunc  = he.question?.length > 100 ? he.question.slice(0, 97) + "…" : (he.question || "");
-                        return (
-                          <motion.div
-                            key="bar-tooltip"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.18, ease: "easeInOut" }}
+                  {/* Tooltip — collapses to 0 until first hover, then stays open showing last bar */}
+                  {(() => {
+                    const displayIdx  = hoveredBar !== null ? hoveredBar : lastHoveredBar;
+                    const hasHovered  = lastHoveredBar !== null;
+                    const he          = displayIdx !== null ? windowBars[displayIdx] : null;
+                    const isActive    = hoveredBar !== null;
+                    const hcol        = he ? scoreColor(he.score) : C.textMuted;
+                    const isInterview = he?.type === "interview";
+                    const fmtTime     = s => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m${s % 60 > 0 ? ` ${s % 60}s` : ""}`;
+                    const dateStr     = he ? new Date(he.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+                    const tags = he ? [
+                      he.category                         ? { label: he.category,          color: null        } : null,
+                      he.difficulty                       ? { label: he.difficulty,         color: null        } : null,
+                      isInterview                         ? { label: "Interview",           color: C.gold      } : null,
+                      he.math && he.math !== "No Math"    ? { label: "Math",                color: C.secondary } : null,
+                      he.customPrompt                     ? { label: he.customPrompt,       color: C.secondary } : null,
+                      he.timeTaken != null                ? { label: fmtTime(he.timeTaken), color: C.textMuted } : null,
+                      { label: dateStr, color: null },
+                    ].filter(Boolean) : [];
+                    return (
+                      <motion.div
+                        initial={{ height: 0, marginBottom: 0 }}
+                        animate={{ height: hasHovered ? 58 : 0, marginBottom: hasHovered ? 12 : 0 }}
+                        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                        style={{ overflow: "hidden", position: "relative", flexShrink: 0 }}
+                      >
+                        {he && (
+                          <div
                             onClick={() => router.push(`/history?highlight=${he.timestamp}`)}
-                            style={{ position: "absolute", inset: 0, padding: "10px 13px", borderRadius: 10, backgroundColor: C.surfaceHigh, border: `1px solid ${C.borderActive}`, cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}
+                            style={{ position: "absolute", inset: 0, padding: "10px 12px", borderRadius: 10, backgroundColor: C.surfaceHigh, border: `1px solid ${isActive ? C.borderActive : C.border}`, cursor: "pointer", display: "flex", alignItems: "center", gap: 10, overflow: "hidden", transition: "border-color 0.2s" }}
                           >
-                            <div style={{ width: 34, height: 34, borderRadius: "50%", border: `2px solid ${hcol}`, background: `${hcol}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <span style={{ fontSize: 12, fontWeight: 900, color: hcol }}>{he.score}</span>
+                            <div style={{ width: 30, height: 30, borderRadius: "50%", border: `2px solid ${hcol}`, background: `${hcol}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <span style={{ fontSize: 11, fontWeight: 900, color: hcol }}>{he.score}</span>
                             </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontSize: 12, fontWeight: 600, color: C.text, margin: "0 0 4px 0", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{qTrunc}</p>
-                              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                                {he.category  && <span style={{ fontSize: 9, fontWeight: 800, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{he.category}</span>}
-                                {he.difficulty && <span style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>· {he.difficulty}</span>}
-                                <span style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>· {dateStr}</span>
+                            <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+                              <p style={{ fontSize: 12, fontWeight: 600, color: C.text, margin: "0 0 3px 0", lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {he.question || ""}
+                              </p>
+                              <div style={{ display: "flex", alignItems: "center", overflow: "hidden", flexWrap: "nowrap" }}>
+                                {tags.map((tag, ti) => (
+                                  <span key={ti} style={{ fontSize: 9, fontWeight: 700, color: tag.color || C.textMuted, fontFamily: "Manrope, sans-serif", whiteSpace: "nowrap", flexShrink: ti >= tags.length - 2 ? 1 : 0, overflow: "hidden", textOverflow: "ellipsis", marginRight: 4 }}>
+                                    {ti > 0 ? "· " : ""}{tag.label}
+                                  </span>
+                                ))}
                               </div>
                             </div>
                             <span style={{ fontSize: 10, color: C.secondary, fontFamily: "Manrope, sans-serif", fontWeight: 700, letterSpacing: "0.04em", flexShrink: 0 }}>View →</span>
-                          </motion.div>
-                        );
-                      })()}
-                    </AnimatePresence>
-                  </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })()}
 
                   {/* Y-axis + chart bars */}
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
@@ -391,7 +409,7 @@ export default function StatsPage() {
                                   initial={{ height: 0 }}
                                   animate={{ height: `${pct}%` }}
                                   transition={{ duration: 0.4, delay: i * 0.02, ease: [0.22, 1, 0.36, 1] }}
-                                  onMouseEnter={() => setHoveredBar(i)}
+                                  onMouseEnter={() => { setHoveredBar(i); setLastHoveredBar(i); }}
                                   onClick={() => router.push(`/history?highlight=${e.timestamp}`)}
                                   style={{ width: "100%", borderRadius: "2px 2px 0 0", background: isHov ? `linear-gradient(to top, ${color}, ${color}ee)` : `linear-gradient(to top, ${color}88, ${color}cc)`, minHeight: 2, boxShadow: isHov ? `0 0 8px ${color}70` : "none", transition: "background 0.18s, box-shadow 0.18s", cursor: "pointer" }}
                                 />
