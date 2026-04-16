@@ -1159,7 +1159,7 @@ export default function Dashboard() {
                   </span>
                   <ToggleSwitch
                     checked={isPaid && timerOn}
-                    onClick={() => { if (!isPaid) { handleUpgrade(); return; } const next = !timerOn; setTimerOn(next); if (!next) stopTimer(); }}
+                    onClick={() => { const next = !timerOn; setTimerOn(next); if (!next) stopTimer(); }}
                     disabled={!isPaid}
                   />
                 </div>
