@@ -106,7 +106,7 @@ function TimerDisplay({ timeLeft, timerDuration, paused, onPause, onResume, onSt
       </motion.div>
     );
   }
-  if (timeLeft === null) return null;
+  if (timeLeft === null || typeof timeLeft !== "number" || isNaN(timeLeft)) return null;
   const pct   = timerDuration > 0 ? timeLeft / timerDuration : 0;
   const color = pct > 0.5 ? C.success : pct > 0.25 ? C.warn : C.danger;
   const mins  = Math.floor(timeLeft / 60);
@@ -408,7 +408,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
             <div style={{ backgroundColor: C.surfaceLow, borderRadius: 15, padding: 28, minHeight: 320, display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>
                 <Icon name="terminal" size={16} />
-                EXECUTIVE_TERMINAL_INPUT_V1.0
+                INPUT TERMINAL
                 {!isPaid && (
                   <span style={{ marginLeft: "auto", fontSize: 9, color: C.gold, letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>PREMIUM</span>
                 )}
@@ -673,7 +673,7 @@ function InterviewCanvas({ loadingInterviewGenerate, interviewProgress, intervie
           <div style={{ borderRadius: 16, padding: 1, background: `linear-gradient(135deg, ${C.primary}50, ${C.secondary}30)`, boxShadow: "0 16px 40px rgba(0,0,0,0.35)" }}>
             <div style={{ backgroundColor: C.surfaceLow, borderRadius: 15, padding: 24, minHeight: 200, display: "flex", flexDirection: "column" }}>
               <div style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: 14 }}>
-                EXECUTIVE_TERMINAL_INPUT_V1.0
+                INPUT TERMINAL
               </div>
               <textarea
                 placeholder="Type your response here..."
@@ -836,13 +836,14 @@ export default function Dashboard() {
     clearInterval(timerIntervalRef.current);
     timerIntervalRef.current = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 1) { clearInterval(timerIntervalRef.current); return 0; }
+        if (prev === null || isNaN(prev) || prev <= 1) { clearInterval(timerIntervalRef.current); return 0; }
         return prev - 1;
       });
     }, 1000);
   };
   const startTimer = (dur) => {
     const d = dur ?? timerDurationRef.current;
+    if (typeof d !== "number" || isNaN(d) || d <= 0) return;
     setTimerPaused(false);
     setTimeLeft(d);
     runInterval();
