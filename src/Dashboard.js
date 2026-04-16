@@ -953,7 +953,7 @@ export default function Dashboard() {
                 {isPaid && <span style={{ color: C.gold, fontWeight: 900, marginLeft: 2 }}>+</span>}
               </motion.div>
               <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: C.textMuted, marginTop: 3, opacity: 0.55, fontFamily: "Manrope, sans-serif" }}>
-                Practice Suite
+                Practice Studio
               </div>
             </div>
           </div>
