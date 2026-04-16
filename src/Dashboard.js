@@ -842,8 +842,11 @@ export default function Dashboard() {
     }, 1000);
   };
   const startTimer = (dur) => {
-    const d = dur ?? timerDurationRef.current;
-    if (typeof d !== "number" || isNaN(d) || d <= 0) return;
+    // resolve duration: explicit arg → ref → state → hardcoded fallback
+    const raw = (typeof dur === "number" && !isNaN(dur) && dur > 0) ? dur
+              : (typeof timerDurationRef.current === "number" && !isNaN(timerDurationRef.current) && timerDurationRef.current > 0) ? timerDurationRef.current
+              : timerDuration;
+    const d = (typeof raw === "number" && !isNaN(raw) && raw > 0) ? raw : 120;
     setTimerPaused(false);
     setTimeLeft(d);
     runInterval();
