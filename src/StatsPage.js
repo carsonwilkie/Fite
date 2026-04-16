@@ -349,7 +349,7 @@ export default function StatsPage() {
                         {he && (
                           <div
                             onClick={() => router.push(`/history?highlight=${he.timestamp}`)}
-                            style={{ position: "absolute", inset: 0, padding: "10px 12px", borderRadius: 10, backgroundColor: C.surfaceHigh, border: `1px solid ${isActive ? C.borderActive : C.border}`, cursor: "pointer", display: "flex", alignItems: "center", gap: 10, overflow: "hidden", transition: "border-color 0.2s" }}
+                            style={{ position: "absolute", inset: 0, padding: "10px 12px", borderRadius: 10, backgroundColor: C.surfaceHigh, border: `1px solid ${isActive ? C.borderActive : C.border}`, cursor: "pointer", display: "flex", alignItems: "center", gap: 10, overflow: "hidden", transition: "border-color 0.2s", userSelect: "none", WebkitUserSelect: "none" }}
                           >
                             <div style={{ width: 30, height: 30, borderRadius: "50%", border: `2px solid ${hcol}`, background: `${hcol}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <span style={{ fontSize: 11, fontWeight: 900, color: hcol }}>{he.score}</span>

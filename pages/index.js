@@ -64,6 +64,9 @@ export default function LandingPage() {
   const endSignupRef    = useRef(null); // right sign-up card
   const progressBarRef  = useRef(null);
   const pendingFrameRef = useRef(null); // RAF handle for batched canvas draws
+  const heroBlurRef     = useRef(null); // blur layer tied to hero text
+  const midBlurRef      = useRef(null); // blur layer tied to mid-scroll text
+  const endBlurRef      = useRef(null); // blur layer tied to end overlay
 
   // Mount-only state
   const [heroTextIn, setHeroTextIn] = useState(false);
@@ -288,6 +291,7 @@ export default function LandingPage() {
             heroOverlayRef.current.style.opacity = `${1 - textT}`;
             heroOverlayRef.current.style.pointerEvents = textT > 0.5 ? "none" : "auto";
           }
+          if (heroBlurRef.current) heroBlurRef.current.style.opacity = `${1 - textT}`;
           if (line1Ref.current) line1Ref.current.style.transform = `translateX(${-textT * 120}px)`;
           if (line2Ref.current) line2Ref.current.style.transform = `scale(${1 - textT * 0.3})`;
           if (line3Ref.current) line3Ref.current.style.transform = `translateX(${textT * 120}px)`;
@@ -304,6 +308,7 @@ export default function LandingPage() {
             : p < 0.72 ? 1 - (p - 0.60) / 0.12
             : 0;
           if (midTagRef.current) midTagRef.current.style.opacity = `${midOp}`;
+          if (midBlurRef.current) midBlurRef.current.style.opacity = `${midOp}`;
           if (midOp > 0.05 && !midTagSpawnRef.current) {
             midTagSpawnRef.current = true;
             const inner = midTagInnerRef.current;
@@ -322,6 +327,7 @@ export default function LandingPage() {
             endDetailsRef.current.style.opacity      = `${endOp}`;
             endDetailsRef.current.style.pointerEvents = endOp > 0.5 ? "auto" : "none";
           }
+          if (endBlurRef.current) endBlurRef.current.style.opacity = `${endOp}`;
           if (endBrandRef.current) {
             endBrandRef.current.style.transform = `translateX(${(1 - endOp) * -120}px)`;
           }
@@ -370,8 +376,43 @@ export default function LandingPage() {
             {/* Canvas */}
             <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", background: "#020817" }} />
 
-            {/* Gradient vignette */}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(2,8,23,0.5) 0%, rgba(2,8,23,0.15) 45%, rgba(2,8,23,0.65) 100%)", pointerEvents: "none" }} />
+            {/* Gradient vignette — full-width layers, no lateral edges ever visible */}
+            {/* Bottom layer: darkens top + heavy bottom (hero text zone) */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(2,8,23,0.48) 0%, rgba(2,8,23,0.06) 36%, rgba(2,8,23,0.06) 56%, rgba(2,8,23,0.68) 76%, rgba(2,8,23,0.88) 92%, rgba(2,8,23,0.96) 100%)", pointerEvents: "none" }} />
+            {/* Center layer: subtle ambient darkening for mid-scroll text legibility */}
+            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 100% 55% at 50% 42%, rgba(2,8,23,0.42) 0%, transparent 65%)", pointerEvents: "none" }} />
+
+            {/* Blur zone — bottom (hero text): starts visible, fades out with hero text */}
+            <div ref={heroBlurRef} style={{
+              position: "absolute", inset: 0,
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              maskImage: "radial-gradient(ellipse 110% 58% at 50% 105%, black 0%, black 22%, rgba(0,0,0,0.55) 42%, transparent 60%)",
+              WebkitMaskImage: "radial-gradient(ellipse 110% 58% at 50% 105%, black 0%, black 22%, rgba(0,0,0,0.55) 42%, transparent 60%)",
+              pointerEvents: "none",
+            }} />
+            {/* Blur zone — center (mid-scroll text): hidden until mid-scroll, fades with text */}
+            <div ref={midBlurRef} style={{
+              position: "absolute", inset: 0,
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+              maskImage: "radial-gradient(ellipse 105% 60% at 50% 42%, black 0%, black 18%, rgba(0,0,0,0.7) 40%, transparent 60%)",
+              WebkitMaskImage: "radial-gradient(ellipse 105% 60% at 50% 42%, black 0%, black 18%, rgba(0,0,0,0.7) 40%, transparent 60%)",
+              pointerEvents: "none",
+              opacity: 0,
+            }} />
+            {/* Blur zone — end overlay: two hotspots (left panel + right panel), center stays clear */}
+            <div ref={endBlurRef} style={{
+              position: "absolute", inset: 0,
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+              maskImage: `radial-gradient(ellipse 30% 68% at 17% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%),
+                          radial-gradient(ellipse 30% 68% at 79% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%)`,
+              WebkitMaskImage: `radial-gradient(ellipse 30% 68% at 17% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%),
+                                radial-gradient(ellipse 30% 68% at 79% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%)`,
+              pointerEvents: "none",
+              opacity: 0,
+            }} />
 
 
             {/* Corner HUD — bottom left */}
@@ -386,18 +427,13 @@ export default function LandingPage() {
 
             {/* Hero text overlay */}
             <div ref={heroOverlayRef} style={{ position: "absolute", bottom: "18%", left: "7%", zIndex: 10 }}>
-              <div style={{
-                background: "rgba(2,8,23,0.52)",
-                backdropFilter: "blur(14px)",
-                WebkitBackdropFilter: "blur(14px)",
-                borderRadius: 18,
-                padding: "22px 28px 26px",
-                border: "1px solid rgba(79,195,247,0.1)",
-                boxShadow: "0 8px 40px rgba(0,0,0,0.55)",
-              }}>
+              <div style={{ padding: "22px 28px 26px" }}>
                 <div style={{
                   display: "inline-block", padding: "4px 12px", borderRadius: 999,
-                  background: "rgba(21,101,192,0.28)", border: "1px solid rgba(21,101,192,0.55)",
+                  background: "rgba(21,101,192,0.18)",
+                  backdropFilter: "blur(6px)",
+                  WebkitBackdropFilter: "blur(6px)",
+                  border: "1px solid rgba(21,101,192,0.38)",
                   color: C.secondary, fontSize: 10, fontWeight: 700,
                   textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 20,
                   fontFamily: "Manrope, sans-serif",
@@ -416,7 +452,7 @@ export default function LandingPage() {
                       willChange: "transform",
                       opacity: heroTextIn ? 1 : 0,
                       transition: heroTextIn ? "opacity 0.6s ease 0.15s" : "opacity 0.6s ease 0.15s",
-                      textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 16px rgba(0,0,0,0.95), 0 6px 40px rgba(0,0,0,0.7)",
+                      textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 8px rgba(0,0,0,1), 0 4px 24px rgba(0,0,0,0.95), 0 8px 50px rgba(0,0,0,0.75)",
                     }}
                   >
                     Master Your
@@ -427,7 +463,7 @@ export default function LandingPage() {
                   >
                     <span style={{
                       color: C.secondary, fontStyle: "italic",
-                      textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 16px rgba(0,0,0,0.95), 0 0 40px rgba(79,195,247,0.65), 0 0 80px rgba(79,195,247,0.3)",
+                      textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 8px rgba(0,0,0,1), 0 4px 24px rgba(0,0,0,0.95), 0 0 40px rgba(79,195,247,0.7), 0 0 90px rgba(79,195,247,0.35)",
                     }}>Technicals</span>
                   </div>
                   <div
@@ -436,7 +472,7 @@ export default function LandingPage() {
                       willChange: "transform",
                       opacity: heroTextIn ? 1 : 0,
                       transition: heroTextIn ? "opacity 0.6s ease 0.3s" : "opacity 0.6s ease 0.3s",
-                      textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 16px rgba(0,0,0,0.95), 0 6px 40px rgba(0,0,0,0.7)",
+                      textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 8px rgba(0,0,0,1), 0 4px 24px rgba(0,0,0,0.95), 0 8px 50px rgba(0,0,0,0.75)",
                     }}
                   >
                   </div>
@@ -459,38 +495,21 @@ export default function LandingPage() {
               ref={midTagRef}
               style={{ position: "absolute", top: "40%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", opacity: 0, pointerEvents: "none", width: "88%", maxWidth: 640, zIndex: 10 }}
             >
-              <div ref={midTagInnerRef} style={{
-                background: "rgba(2,8,23,0.58)",
-                backdropFilter: "blur(18px)",
-                WebkitBackdropFilter: "blur(18px)",
-                borderRadius: 20,
-                padding: "32px 36px",
-                border: "1px solid rgba(79,195,247,0.1)",
-                boxShadow: "0 8px 48px rgba(0,0,0,0.65)",
-              }}>
-                {/* Overline */}
-                <div style={{
-                  fontSize: 9, fontWeight: 800, letterSpacing: "0.28em",
-                  color: C.secondary, textTransform: "uppercase",
-                  fontFamily: "Inter, sans-serif", marginBottom: 20, opacity: 0.75,
-                  textShadow: "0 0 16px rgba(79,195,247,0.6)",
-                }}>
-                </div>
-
+              <div ref={midTagInnerRef} style={{ padding: "32px 36px" }}>
                 {/* Main headline */}
                 <p style={{
                   fontSize: "clamp(28px, 4.5vw, 46px)", fontWeight: 900,
                   color: C.onSurface, fontFamily: "Inter, sans-serif",
                   letterSpacing: "-0.04em", lineHeight: 1.1,
-                  margin: "0 0 28px 0",
-                  textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 24px rgba(0,0,0,0.95), 0 8px 50px rgba(0,0,0,0.7)",
+                  margin: 0,
+                  textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,1), 0 4px 20px rgba(0,0,0,0.98), 0 8px 44px rgba(0,0,0,0.85), 0 16px 72px rgba(0,0,0,0.6)",
                 }}>
                   Built for every student at any skill level.<br />
                   <span style={{
                     color: C.secondary,
                     fontStyle: "italic",
                     fontWeight: 800,
-                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 3px 24px rgba(0,0,0,0.95), 0 0 40px rgba(79,195,247,0.55), 0 0 80px rgba(79,195,247,0.25)",
+                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,1), 0 4px 20px rgba(0,0,0,0.98), 0 0 36px rgba(79,195,247,0.65), 0 0 80px rgba(79,195,247,0.3)",
                   }}>
                     don&apos;t leave it to chance.
                   </span>
@@ -517,15 +536,8 @@ export default function LandingPage() {
                 }}
               >
               {/* Left: product details */}
-              <div className="end-panel-left" style={{
-                background: "rgba(2,8,23,0.55)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
-                borderRadius: 20,
-                padding: "28px 30px",
-                border: "1px solid rgba(79,195,247,0.1)",
-                boxShadow: "0 8px 48px rgba(0,0,0,0.6)",
-              }}>
+              <div className="end-panel-left" style={{ padding: "28px 30px" }}>
+                <div>
                 <div
                   ref={endBrandRef}
                   className="end-brand"
@@ -586,6 +598,7 @@ export default function LandingPage() {
                     ))}
                   </div>
                 </div>
+                </div>{/* end zIndex wrapper */}
               </div>
 
               {/* Right: sign-up card */}
