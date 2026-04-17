@@ -441,7 +441,9 @@ export default function LandingPage() {
                   background: "linear-gradient(to right, rgba(2,8,23,0.97) 0%, rgba(2,8,23,0.94) 72%, rgba(2,8,23,0.6) 88%, transparent 100%)",
                   zIndex: 20,
                   display: "flex", flexDirection: "column", justifyContent: "flex-start",
+                  overflow: "hidden",
                   paddingTop: "clamp(72px, 13vh, 130px)",
+                  paddingBottom: "clamp(24px, 3.5vh, 48px)",
                   paddingLeft: "clamp(32px, 4vw, 64px)",
                   paddingRight: "6%",
                   willChange: "transform, opacity",
@@ -563,13 +565,13 @@ export default function LandingPage() {
                   {/* Feedback label + text */}
                   <div style={{ fontSize: "clamp(7px, 0.55vw, 9px)", fontWeight: 900, color: C.muted, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: "clamp(4px, 0.4vw, 6px)" }}>AI Feedback</div>
                   <p style={{ fontSize: "clamp(9px, 0.75vw, 12px)", color: C.onSurface, lineHeight: 1.65, margin: 0, opacity: 0.8, fontFamily: "Inter, sans-serif" }}>
-                    Good instinct on the multiple re-rate — flagging ~15× effective entry is the right anchor. Your IRR erosion logic is directionally correct but underdeveloped: with a flat exit multiple and fixed debt load, equity value compresses disproportionately while the denominator stays the same, so the IRR hit is non-linear. The levers section is where this answer loses points — a strong response enumerates cost restructuring to rebuild EBITDA, root-cause remediation of the churn (pricing, retention, product), and add-on M&A to grow into the multiple. A simple IRR sensitivity table would push this...
+                    Good instinct on the multiple re-rate — flagging ~15× effective entry is the right anchor. Your IRR erosion logic is directionally correct but the levers section needs more structure...
                   </p>
                 </div>
 
                 {/* Scroll hint */}
                 <div style={{
-                  marginTop: "clamp(32px, 4vh, 52px)",
+                  marginTop: "auto",
                   display: "flex", alignItems: "center", gap: 10, pointerEvents: "none",
                 }}>
                   <div style={{
