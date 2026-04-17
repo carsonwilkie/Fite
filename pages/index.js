@@ -375,9 +375,9 @@ export default function LandingPage() {
 
             {/* Gradient vignette — full-width layers, no lateral edges ever visible */}
             {/* Bottom layer: darkens top + heavy bottom (hero text zone) */}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(2,8,23,0.48) 0%, rgba(2,8,23,0.06) 36%, rgba(2,8,23,0.06) 56%, rgba(2,8,23,0.68) 76%, rgba(2,8,23,0.88) 92%, rgba(2,8,23,0.96) 100%)", pointerEvents: "none" }} />
+            {/* <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(2,8,23,0.1) 0%, rgba(2,8,23,0.1) 36%, rgba(2,8,23,0.1) 56%, rgba(2,8,23,0.1) 76%, rgba(2,8,23,0.4) 92%, rgba(2,8,23,0.8) 100%)", pointerEvents: "none" }} /> */}
             {/* Center layer: subtle ambient darkening for mid-scroll text legibility */}
-            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 100% 55% at 50% 42%, rgba(2,8,23,0.42) 0%, transparent 65%)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 100% 55% at 50% 42%, rgba(2,8,23,0.0) 0%, transparent 65%)", pointerEvents: "none" }} />
 
             {/* Blur zone — bottom (hero text): starts visible, fades out with hero text */}
             <div ref={heroBlurRef} style={{
@@ -397,20 +397,6 @@ export default function LandingPage() {
               WebkitBackdropFilter: isMobileHeroLayout ? "none" : "blur(16px)",
               maskImage: "radial-gradient(ellipse 55% 48% at 50% 42%, black 0%, black 18%, rgba(0,0,0,0.7) 40%, transparent 60%)",
               WebkitMaskImage: "radial-gradient(ellipse 55% 48% at 50% 42%, black 0%, black 18%, rgba(0,0,0,0.7) 40%, transparent 60%)",
-              pointerEvents: "none",
-              opacity: 0,
-              willChange: "opacity",
-              transform: "translateZ(0)",
-            }} />
-            {/* Blur zone — end overlay: two hotspots (left panel + right panel), center stays clear */}
-            <div ref={endBlurRef} style={{
-              position: "absolute", inset: 0,
-              backdropFilter: isMobileHeroLayout ? "none" : "blur(16px)",
-              WebkitBackdropFilter: isMobileHeroLayout ? "none" : "blur(16px)",
-              maskImage: `radial-gradient(ellipse 30% 68% at 17% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%),
-                          radial-gradient(ellipse 30% 68% at 79% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%)`,
-              WebkitMaskImage: `radial-gradient(ellipse 30% 68% at 17% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%),
-                                radial-gradient(ellipse 30% 68% at 79% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%)`,
               pointerEvents: "none",
               opacity: 0,
               willChange: "opacity",
@@ -496,18 +482,18 @@ export default function LandingPage() {
             {/* Mid-scroll tagline */}
             <div
               ref={midTagRef}
-              style={{ position: "absolute", top: "40%", left: "50%", transform: "translate(-50%, -50%) translateZ(0)", textAlign: "center", opacity: 0, pointerEvents: "none", width: "88%", maxWidth: 640, zIndex: 10, willChange: "opacity" }}
+              style={{ position: "absolute", top: "40%", left: "50%", transform: "translate(-50%, -50%) translateZ(0)", textAlign: "center", opacity: 0, pointerEvents: "none", width: isMobileHeroLayout ? "88%" : "auto", maxWidth: isMobileHeroLayout ? 640 : "none", zIndex: 10, willChange: "opacity" }}
             >
-              <div ref={midTagInnerRef} style={{ padding: "32px 36px" }}>
+              <div ref={midTagInnerRef} style={{ padding: "32px 26px",}}>
                 {/* Main headline */}
                 <p style={{
                   fontSize: "clamp(28px, 4.5vw, 46px)", fontWeight: 900,
                   color: C.onSurface, fontFamily: "Inter, sans-serif",
-                  letterSpacing: "-0.04em", lineHeight: 1.1,
+                  letterSpacing: "-0.04em", lineHeight: 1.85,
                   margin: 0,
                   textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,1), 0 4px 20px rgba(0,0,0,0.98), 0 8px 44px rgba(0,0,0,0.85), 0 16px 72px rgba(0,0,0,0.6)",
                 }}>
-                  Built for every student at any skill level.<br />
+                  <span style={{ display: "block", whiteSpace: isMobileHeroLayout ? "normal" : "nowrap", textAlign: "center" }}>Built for every student at any skill level.</span>
                   <span style={{
                     color: C.secondary,
                     fontStyle: "italic",
@@ -524,7 +510,7 @@ export default function LandingPage() {
             <div
               ref={endDetailsRef}
               className="end-details-outer"
-              style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 7%", opacity: 0, pointerEvents: "none", willChange: "opacity", transform: "translateZ(0)" }}
+              style={{ position: "absolute", inset: 0, display: "flex", alignItems: isMobileHeroLayout ? "center" : "flex-start", justifyContent: "center", padding: isMobileHeroLayout ? "0 7%" : "10.8% 3.3% 0", opacity: 0, pointerEvents: "none", willChange: "opacity", transform: "translateZ(0)" }}
             >
               <div
                 ref={endInnerRef}
@@ -534,33 +520,35 @@ export default function LandingPage() {
                   width: "100%",
                   flexDirection: "row",
                   justifyContent: "space-between",
-                  alignItems: "center",
+                  alignItems: isMobileHeroLayout ? "stretch" : "flex-start",
                   willChange: "transform",
                 }}
               >
               {/* Left: product details */}
-              <div className="end-panel-left" style={{ padding: "28px 30px" }}>
+              <div className="end-panel-left" style={{ padding: isMobileHeroLayout ? "28px 30px" : 0, width: isMobileHeroLayout ? undefined : "28%" }}>
                 <div>
-                <div
-                  ref={endBrandRef}
-                  className="end-brand"
-                  style={{
-                  fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, letterSpacing: "-0.04em",
-                  fontFamily: "Inter, sans-serif", marginBottom: 4,
-                  filter: "drop-shadow(0 8px 32px rgba(0,0,0,0.85))",
-                  willChange: "transform",
-                  textAlign: "left",
-                }}
-                >
-                  <span style={{ color: C.primary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 20px rgba(0,0,0,0.95), 0 0 28px rgba(21,101,192,0.9), 0 0 60px rgba(21,101,192,0.7)" }}>Fite</span>{" "}
-                  <span style={{ color: C.secondary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 20px rgba(0,0,0,0.95), 0 0 28px rgba(79,195,247,0.95), 0 0 65px rgba(79,195,247,0.8)" }}>Finance</span>
-                </div>
+                {isMobileHeroLayout && (
+                  <div
+                    ref={endBrandRef}
+                    className="end-brand"
+                    style={{
+                    fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, letterSpacing: "-0.04em",
+                    fontFamily: "Inter, sans-serif", marginBottom: 4,
+                    filter: "drop-shadow(0 8px 32px rgba(0,0,0,0.85))",
+                    willChange: "transform",
+                    textAlign: "left",
+                  }}
+                  >
+                    <span style={{ color: C.primary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 20px rgba(0,0,0,0.95), 0 0 28px rgba(21,101,192,0.9), 0 0 60px rgba(21,101,192,0.7)" }}>Fite</span>{" "}
+                    <span style={{ color: C.secondary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 20px rgba(0,0,0,0.95), 0 0 28px rgba(79,195,247,0.95), 0 0 65px rgba(79,195,247,0.8)" }}>Finance</span>
+                  </div>
+                )}
                 <div
                   ref={endPracticeRef}
                   style={{
-                    marginTop: isMobileHeroLayout ? 8 : 14,
+                    marginTop: isMobileHeroLayout ? 8 : "clamp(-80px, -4vw, -40px)",
                     borderRadius: 14,
-                    padding: isMobileHeroLayout ? "14px 14px 14px 16px" : "26px 26px 26px 24px",
+                    padding: isMobileHeroLayout ? "14px 14px 14px 16px" : "clamp(18px, 1.8vw, 32px) clamp(18px, 1.8vw, 32px) clamp(18px, 1.8vw, 32px) clamp(16px, 1.6vw, 28px)",
                     background: "rgba(4,10,28,0.78)",
                     backdropFilter: isMobileHeroLayout ? "none" : "blur(16px)",
                     willChange: "opacity, transform",
@@ -571,32 +559,32 @@ export default function LandingPage() {
                     boxShadow: "0 4px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(79,195,247,0.07)",
                     minWidth: 0,
                     width: "100%",
-                    maxWidth: isMobileHeroLayout ? "100%" : 420,
+                    maxWidth: "none",
                     boxSizing: "border-box",
                   }}
                 >
                   <div style={{
                     color: C.secondary,
-                    fontSize: isMobileHeroLayout ? 12 : 15,
+                    fontSize: isMobileHeroLayout ? 12 : "clamp(13px, 1.1vw, 20px)",
                     fontFamily: "Manrope, sans-serif",
                     fontWeight: 700,
                     letterSpacing: "0.01em",
-                    marginBottom: isMobileHeroLayout ? 10 : 20,
+                    marginBottom: isMobileHeroLayout ? 10 : "clamp(14px, 1.4vw, 26px)",
                     textShadow: "0 0 18px rgba(79,195,247,0.45)",
                   }}>
                     Practice, don&apos;t guess.
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: isMobileHeroLayout ? 8 : 16 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: isMobileHeroLayout ? 8 : "clamp(12px, 1.2vw, 22px)" }}>
                     {[
                       ["8 Interview Categories", "IB, PE, AM, Consulting & more"],
                       ["AI-Powered Grading",     "Instant feedback on every answer"],
                       ["Mock Interview Mode",    "Structured scenarios with scoring"],
                     ].map(([title, sub]) => (
                       <div key={title} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                        <span style={{ color: "rgba(79,195,247,0.65)", fontSize: 9, marginTop: isMobileHeroLayout ? 3 : 4, flexShrink: 0, lineHeight: 1 }}>▸</span>
+                        <span style={{ color: "rgba(79,195,247,0.65)", fontSize: isMobileHeroLayout ? 9 : "clamp(8px, 0.6vw, 12px)", marginTop: isMobileHeroLayout ? 3 : 4, flexShrink: 0, lineHeight: 1 }}>▸</span>
                         <div>
-                          <div style={{ fontSize: isMobileHeroLayout ? 11 : 14, fontWeight: 700, color: C.onSurface, fontFamily: "Inter, sans-serif", lineHeight: 1.3 }}>{title}</div>
-                          <div style={{ fontSize: isMobileHeroLayout ? 10 : 12, color: C.muted, fontFamily: "Manrope, sans-serif", marginTop: 2, lineHeight: 1.3, opacity: 0.8 }}>{sub}</div>
+                          <div style={{ fontSize: isMobileHeroLayout ? 11 : "clamp(12px, 1.0vw, 18px)", fontWeight: 700, color: C.onSurface, fontFamily: "Inter, sans-serif", lineHeight: 1.3 }}>{title}</div>
+                          <div style={{ fontSize: isMobileHeroLayout ? 10 : "clamp(10px, 0.85vw, 15px)", color: C.muted, fontFamily: "Manrope, sans-serif", marginTop: 2, lineHeight: 1.3, opacity: 0.8 }}>{sub}</div>
                         </div>
                       </div>
                     ))}
@@ -607,21 +595,21 @@ export default function LandingPage() {
 
               {/* Right: sign-up card */}
               <div ref={endSignupRef} className="lp-glass-card-solid" style={{
-                padding: isMobileHeroLayout ? 18 : 40,
+                padding: isMobileHeroLayout ? 18 : "2.5%",
                 borderRadius: 16,
                 minWidth: 0,
-                width: "100%",
-                maxWidth: isMobileHeroLayout ? "100%" : 420,
+                width: isMobileHeroLayout ? "100%" : "28%",
+                maxWidth: "none",
                 boxSizing: "border-box",
                 boxShadow: isPaid
                   ? "0 4px 32px rgba(0,0,0,0.65), 0 0 0 1px rgba(201,168,76,0.15), 0 0 40px rgba(201,168,76,0.08)"
                   : "0 4px 32px rgba(0,0,0,0.65), 0 0 0 1px rgba(21,101,192,0.15), 0 0 40px rgba(21,101,192,0.1)",
                 border: isPaid ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(21,101,192,0.35)",
               }}>
-                <h3 style={{ fontSize: isMobileHeroLayout ? 16 : 24, fontWeight: 700, margin: "0 0 6px 0", color: C.onSurface, fontFamily: "Inter, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
+                <h3 style={{ fontSize: isMobileHeroLayout ? 16 : "clamp(18px, 1.6vw, 26px)", fontWeight: 700, margin: "0 0 6px 0", color: C.onSurface, fontFamily: "Inter, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
                   {isPaid ? "Welcome Back" : "Start Preparing"}
                 </h3>
-                <p style={{ fontSize: isMobileHeroLayout ? 11 : 14, color: C.muted, margin: isMobileHeroLayout ? "0 0 14px 0" : "0 0 28px 0", fontFamily: "Manrope, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
+                <p style={{ fontSize: isMobileHeroLayout ? 11 : "clamp(11px, 0.9vw, 15px)", color: C.muted, margin: isMobileHeroLayout ? "0 0 14px 0" : "0 0 1.8vw 0", fontFamily: "Manrope, sans-serif", textAlign: isMobileHeroLayout ? "center" : "left" }}>
                   {isPaid ? "Your premium access is active." : "Built for every student at any skill level."}
                 </p>
                 {isLoaded && (

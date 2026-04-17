@@ -33,7 +33,7 @@ export default function LandingNav() {
         </div>
 
         <div className="landing-nav__center">
-          <NavLink active={onHero} onClick={() => router.push("/")}>Home</NavLink>
+          <NavLink active={onHero} onClick={() => onHero ? null : router.push("/")}>Home</NavLink>
           <NavLink active={router.pathname === "/features"} onClick={() => router.push("/features")}>Features</NavLink>
           <NavLink active={onDashboard} onClick={() => router.push("/dashboard")}>Dashboard</NavLink>
         </div>
