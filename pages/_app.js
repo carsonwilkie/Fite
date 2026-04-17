@@ -204,21 +204,21 @@ export default function App({ Component, pageProps }) {
             background: cyberGrad,
             boxShadow: "0 0 18px rgba(79,195,247,0.95), 0 0 48px rgba(21,101,192,0.65), 0 0 90px rgba(21,101,192,0.3)",
           }} />
-          {/* Brand watermark — matches corner HUD position on landing page */}
+          {/* Brand watermark */}
           <div style={{
             position: "absolute",
-            bottom: 28, left: 32,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
+            top: "50%", left: "50%",
+            transform: "translate(-50%, -50%)",
+            fontSize: "clamp(28px, 5vw, 52px)",
+            fontWeight: 900,
+            letterSpacing: "-0.04em",
             fontFamily: "Inter, sans-serif",
             whiteSpace: "nowrap",
             userSelect: "none",
             pointerEvents: "none",
           }}>
-            <span style={{ color: "#1565C0", textShadow: "0 0 12px rgba(21,101,192,0.9), 0 0 28px rgba(21,101,192,0.6)" }}>FITE</span>{" "}
-            <span style={{ color: "#4FC3F7", textShadow: "0 0 12px rgba(79,195,247,0.9), 0 0 28px rgba(79,195,247,0.6)" }}>FINANCE</span>
+            <span style={{ color: "#1565C0", textShadow: "0 0 24px rgba(21,101,192,0.8), 0 0 60px rgba(21,101,192,0.4)" }}>Fite</span>{" "}
+            <span style={{ color: "#4FC3F7", textShadow: "0 0 24px rgba(79,195,247,0.8), 0 0 60px rgba(79,195,247,0.4)" }}>Finance</span>
           </div>
         </div>
       </PaidStatusProvider>

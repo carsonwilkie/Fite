@@ -453,7 +453,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
                   transition={{ type: "spring", stiffness: 280, damping: 18 }}
                   style={{ marginBottom: 16 }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                     <div style={{ width: 56, height: 56, position: "relative", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <svg width="56" height="56" style={{ transform: "rotate(-90deg)", position: "absolute" }}>
                         <circle cx="28" cy="28" r="22" fill="none" stroke={C.surfaceHigh} strokeWidth="4" />
@@ -467,23 +467,20 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
                       </svg>
                       <span style={{ fontSize: 16, fontWeight: 900, color: getScoreColor(score), position: "relative", zIndex: 1 }}>{score}</span>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 10, fontWeight: 900, color: C.textMuted, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: 2 }}>SCORE</div>
-                      <div style={{ fontSize: 20, fontWeight: 900, color: getScoreColor(score) }}>{score} <span style={{ fontSize: 13, color: C.textMuted, fontWeight: 400 }}>/ 10</span></div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 10, fontWeight: 900, color: C.textMuted, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: 6 }}>SCORE</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ flex: 1, height: 4, background: C.surfaceHigh, borderRadius: 2, overflow: "hidden" }}>
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${score * 10}%` }}
+                            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                            style={{ height: "100%", background: `linear-gradient(to right, ${getScoreColor(score)}99, ${getScoreColor(score)})`, borderRadius: 2, boxShadow: `0 0 6px ${getScoreColor(score)}60` }}
+                          />
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 900, color: getScoreColor(score), fontFamily: "Manrope, sans-serif", whiteSpace: "nowrap" }}>{score} <span style={{ fontSize: 11, color: C.textMuted, fontWeight: 400 }}>/ 10</span></span>
+                      </div>
                     </div>
-                  </div>
-                  {/* Score bar */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.1em", textTransform: "uppercase", whiteSpace: "nowrap" }}>AI Score</span>
-                    <div style={{ flex: 1, height: 4, background: `${C.surfaceHigh}`, borderRadius: 2, overflow: "hidden" }}>
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${score * 10}%` }}
-                        transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                        style={{ height: "100%", background: `linear-gradient(to right, ${getScoreColor(score)}99, ${getScoreColor(score)})`, borderRadius: 2, boxShadow: `0 0 6px ${getScoreColor(score)}60` }}
-                      />
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: getScoreColor(score), fontFamily: "Manrope, sans-serif", whiteSpace: "nowrap" }}>{score} / 10</span>
                   </div>
                 </motion.div>
               )}
