@@ -24,13 +24,16 @@ const C = {
 };
 const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 
-const TOTAL_FRAMES = 111;
+const TOTAL_FRAMES = 169;
 const MOBILE_FRAME_STEP = 2;
-const DESKTOP_FRAME_NUMBERS = Array.from({ length: TOTAL_FRAMES }, (_, i) => i + 1);
+const DESKTOP_FRAME_NUMBERS = Array.from({ length: TOTAL_FRAMES - 1 }, (_, i) => i + 2);
 const MOBILE_FRAME_NUMBERS = DESKTOP_FRAME_NUMBERS.filter((frameNumber, index) =>
   index % MOBILE_FRAME_STEP === 0 || frameNumber === TOTAL_FRAMES
 );
-const frameSrc = (i) => `/frames/frame-${String(i).padStart(4, "0")}.jpg`;
+const frameSrc = (i, mobile = false) =>
+  mobile
+    ? `/frames/mobile/frame-${String(i).padStart(4, "0")}.webp`
+    : `/frames/frame-${String(i).padStart(4, "0")}.webp`;
 const heroFrameCache = new Map();
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -72,7 +75,7 @@ export default function LandingPage() {
   const [heroTextIn, setHeroTextIn] = useState(false);
   const heroViewportHeight = heroViewport.height || null;
   const heroSceneHeight = heroViewportHeight ? `${heroViewportHeight}px` : "100vh";
-  const heroScrollHeight = heroViewportHeight ? `${heroViewportHeight * 6}px` : "600vh";
+  const heroScrollHeight = heroViewportHeight ? `${heroViewportHeight * 10}px` : "1000vh";
   const isMobileHeroLayout = heroViewport.width > 0 && heroViewport.width <= 900;
   const heroFrameNumbers = isMobileHeroLayout ? MOBILE_FRAME_NUMBERS : DESKTOP_FRAME_NUMBERS;
   const heroFrameTotal = heroFrameNumbers.length;
@@ -157,7 +160,7 @@ export default function LandingPage() {
       drawFrame(arr[0]);
     }
 
-    const maxConcurrentLoads = isMobileHeroLayout ? 2 : 6;
+    const maxConcurrentLoads = isMobileHeroLayout ? 2 : 3;
     let nextIndex = 0;
     let activeLoads = 0;
 
@@ -193,7 +196,7 @@ export default function LandingPage() {
           }
         };
         img.onerror = () => resolve();
-        img.src = frameSrc(frameNumber);
+        img.src = frameSrc(frameNumber, isMobileHeroLayout);
       });
     };
 
@@ -311,12 +314,6 @@ export default function LandingPage() {
           if (midBlurRef.current) midBlurRef.current.style.opacity = `${midOp}`;
           if (midOp > 0.05 && !midTagSpawnRef.current) {
             midTagSpawnRef.current = true;
-            const inner = midTagInnerRef.current;
-            if (inner) {
-              // Split remove/add across frames — no forced layout reflow needed.
-              inner.classList.remove("mid-tag-spawn");
-              requestAnimationFrame(() => inner.classList.add("mid-tag-spawn"));
-            }
           } else if (midOp < 0.01) {
             midTagSpawnRef.current = false;
           }
@@ -390,28 +387,34 @@ export default function LandingPage() {
               maskImage: "radial-gradient(ellipse 110% 58% at 50% 105%, black 0%, black 22%, rgba(0,0,0,0.55) 42%, transparent 60%)",
               WebkitMaskImage: "radial-gradient(ellipse 110% 58% at 50% 105%, black 0%, black 22%, rgba(0,0,0,0.55) 42%, transparent 60%)",
               pointerEvents: "none",
+              willChange: "opacity",
+              transform: "translateZ(0)",
             }} />
             {/* Blur zone — center (mid-scroll text): hidden until mid-scroll, fades with text */}
             <div ref={midBlurRef} style={{
               position: "absolute", inset: 0,
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-              maskImage: "radial-gradient(ellipse 105% 60% at 50% 42%, black 0%, black 18%, rgba(0,0,0,0.7) 40%, transparent 60%)",
-              WebkitMaskImage: "radial-gradient(ellipse 105% 60% at 50% 42%, black 0%, black 18%, rgba(0,0,0,0.7) 40%, transparent 60%)",
+              backdropFilter: isMobileHeroLayout ? "none" : "blur(16px)",
+              WebkitBackdropFilter: isMobileHeroLayout ? "none" : "blur(16px)",
+              maskImage: "radial-gradient(ellipse 55% 48% at 50% 42%, black 0%, black 18%, rgba(0,0,0,0.7) 40%, transparent 60%)",
+              WebkitMaskImage: "radial-gradient(ellipse 55% 48% at 50% 42%, black 0%, black 18%, rgba(0,0,0,0.7) 40%, transparent 60%)",
               pointerEvents: "none",
               opacity: 0,
+              willChange: "opacity",
+              transform: "translateZ(0)",
             }} />
             {/* Blur zone — end overlay: two hotspots (left panel + right panel), center stays clear */}
             <div ref={endBlurRef} style={{
               position: "absolute", inset: 0,
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
+              backdropFilter: isMobileHeroLayout ? "none" : "blur(16px)",
+              WebkitBackdropFilter: isMobileHeroLayout ? "none" : "blur(16px)",
               maskImage: `radial-gradient(ellipse 30% 68% at 17% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%),
                           radial-gradient(ellipse 30% 68% at 79% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%)`,
               WebkitMaskImage: `radial-gradient(ellipse 30% 68% at 17% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%),
                                 radial-gradient(ellipse 30% 68% at 79% 50%, black 0%, black 10%, rgba(0,0,0,0.65) 38%, transparent 58%)`,
               pointerEvents: "none",
               opacity: 0,
+              willChange: "opacity",
+              transform: "translateZ(0)",
             }} />
 
 
@@ -493,7 +496,7 @@ export default function LandingPage() {
             {/* Mid-scroll tagline */}
             <div
               ref={midTagRef}
-              style={{ position: "absolute", top: "40%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", opacity: 0, pointerEvents: "none", width: "88%", maxWidth: 640, zIndex: 10 }}
+              style={{ position: "absolute", top: "40%", left: "50%", transform: "translate(-50%, -50%) translateZ(0)", textAlign: "center", opacity: 0, pointerEvents: "none", width: "88%", maxWidth: 640, zIndex: 10, willChange: "opacity" }}
             >
               <div ref={midTagInnerRef} style={{ padding: "32px 36px" }}>
                 {/* Main headline */}
@@ -559,7 +562,8 @@ export default function LandingPage() {
                     borderRadius: 14,
                     padding: isMobileHeroLayout ? "14px 14px 14px 16px" : "26px 26px 26px 24px",
                     background: "rgba(4,10,28,0.78)",
-                    backdropFilter: "blur(16px)",
+                    backdropFilter: isMobileHeroLayout ? "none" : "blur(16px)",
+                    willChange: "opacity, transform",
                     borderTop: "1px solid rgba(79,195,247,0.1)",
                     borderRight: "1px solid rgba(79,195,247,0.1)",
                     borderBottom: "1px solid rgba(79,195,247,0.1)",
@@ -683,11 +687,11 @@ export default function LandingPage() {
         .hero-scroll-hint { opacity: 0; animation: fadeIn 0.5s ease 0.7s forwards; }
         @keyframes fadeIn { to { opacity: 1; } }
         @keyframes explorePulse {
-          0%, 100% { box-shadow: 0 0 32px rgba(21,101,192,0.55), 0 0 8px rgba(79,195,247,0.3); }
-          50%       { box-shadow: 0 0 48px rgba(21,101,192,0.8), 0 0 24px rgba(79,195,247,0.5); }
+          0%, 100% { filter: brightness(1);    }
+          50%       { filter: brightness(1.25); }
         }
-        .explore-btn { animation: explorePulse 2s ease-in-out infinite; }
-        .explore-btn:hover { filter: brightness(1.15); transform: translateY(-2px) !important; }
+        .explore-btn { animation: explorePulse 2s ease-in-out infinite; will-change: filter; }
+        .explore-btn:hover { filter: brightness(1.3) !important; transform: translateY(-2px) !important; }
 
         /* — Left feature card: sweeps in from the left — */
         @keyframes practiceIn {
