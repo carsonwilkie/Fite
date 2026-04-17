@@ -194,6 +194,9 @@ export default function App({ Component, pageProps }) {
               : "none",
             pointerEvents: y === "0%" ? "all" : "none",
             willChange: "transform",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           {/* Glowing sweep line — leads the cover edge on both entry and exit */}
@@ -206,9 +209,6 @@ export default function App({ Component, pageProps }) {
           }} />
           {/* Brand watermark */}
           <div style={{
-            position: "absolute",
-            top: "50%", left: "50%",
-            transform: "translate(-50%, -50%)",
             fontSize: "clamp(28px, 5vw, 52px)",
             fontWeight: 900,
             letterSpacing: "-0.04em",
