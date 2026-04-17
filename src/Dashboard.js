@@ -405,7 +405,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
         {/* Answer terminal */}
         {!isLimitMsg && (
           <div style={{ borderRadius: 16, padding: 1, background: `linear-gradient(135deg, ${C.primary}50, ${C.secondary}30)`, boxShadow: "0 20px 40px rgba(0,0,0,0.4)" }}>
-            <div style={{ backgroundColor: C.surfaceLow, borderRadius: 15, padding: 28, minHeight: 320, display: "flex", flexDirection: "column" }}>
+            <div style={{ backgroundColor: C.surfaceLow, borderRadius: 15, padding: "28px 32px", minHeight: 320, display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>
                 <Icon name="terminal" size={16} />
                 INPUT TERMINAL

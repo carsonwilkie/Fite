@@ -563,7 +563,7 @@ export default function LandingPage() {
                   {/* Feedback label + text */}
                   <div style={{ fontSize: "clamp(7px, 0.55vw, 9px)", fontWeight: 900, color: C.muted, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: "clamp(4px, 0.4vw, 6px)" }}>AI Feedback</div>
                   <p style={{ fontSize: "clamp(9px, 0.75vw, 12px)", color: C.onSurface, lineHeight: 1.65, margin: 0, opacity: 0.8, fontFamily: "Inter, sans-serif" }}>
-                    Strong framing on the multiple re-rate. To push to a 9+, quantify the IRR delta and walk through at least two operational levers the sponsor would pull to defend returns.
+                    Good instinct on the multiple re-rate — flagging ~15× effective entry is the right anchor. Your IRR erosion logic is directionally correct but underdeveloped: with a flat exit multiple and fixed debt load, equity value compresses disproportionately while the denominator stays the same, so the IRR hit is non-linear. The levers section is where this answer loses points — a strong response enumerates cost restructuring to rebuild EBITDA, root-cause remediation of the churn (pricing, retention, product), and add-on M&A to grow into the multiple. A simple IRR sensitivity table would push this...
                   </p>
                 </div>
 
