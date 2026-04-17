@@ -208,21 +208,6 @@ export default function App({ Component, pageProps }) {
             boxShadow: "0 0 18px rgba(79,195,247,0.95), 0 0 48px rgba(21,101,192,0.65), 0 0 90px rgba(21,101,192,0.3)",
             transition: "none",
           }} />
-          {/* Brand watermark */}
-          <div style={{
-            fontSize: "clamp(28px, 5vw, 52px)",
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-            fontFamily: "Inter, sans-serif",
-            whiteSpace: "nowrap",
-            userSelect: "none",
-            pointerEvents: "none",
-            transform: "translateZ(0)",
-            willChange: "transform",
-          }}>
-            <span style={{ color: "#1565C0", textShadow: "0 0 24px rgba(21,101,192,0.8), 0 0 60px rgba(21,101,192,0.4)", transition: "none" }}>Fite</span>{" "}
-            <span style={{ color: "#4FC3F7", textShadow: "0 0 24px rgba(79,195,247,0.8), 0 0 60px rgba(79,195,247,0.4)", transition: "none" }}>Finance</span>
-          </div>
         </div>
       </PaidStatusProvider>
     </ClerkProvider>
