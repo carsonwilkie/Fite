@@ -415,16 +415,16 @@ export default function LandingPage() {
             </div>
 
             {/* Hero text overlay */}
-            <div ref={heroOverlayRef} style={{ position: "absolute", bottom: "18%", left: "7%", zIndex: 10 }}>
-              <div style={{ padding: "22px 28px 26px" }}>
+            <div ref={heroOverlayRef} style={{ position: "absolute", bottom: isMobileHeroLayout ? "18%" : "30%", left: isMobileHeroLayout ? "7%" : "2%", zIndex: 10 }}>
+              <div style={{ padding: isMobileHeroLayout ? "22px 28px 26px" : "clamp(14px, 1.4vw, 22px) clamp(18px, 1.8vw, 28px) clamp(16px, 1.6vw, 26px)" }}>
                 <div style={{
                   display: "inline-block", padding: "4px 12px", borderRadius: 999,
                   background: "rgba(21,101,192,0.18)",
                   backdropFilter: "blur(6px)",
                   WebkitBackdropFilter: "blur(6px)",
                   border: "1px solid rgba(21,101,192,0.38)",
-                  color: C.secondary, fontSize: 10, fontWeight: 700,
-                  textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 20,
+                  color: C.secondary, fontSize: isMobileHeroLayout ? 10 : "clamp(9px, 0.7vw, 11px)", fontWeight: 700,
+                  textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: isMobileHeroLayout ? 20 : "clamp(12px, 1.2vw, 20px)",
                   fontFamily: "Manrope, sans-serif",
                   opacity: heroTextIn ? 1 : 0,
                   transform: heroTextIn ? "translateY(0)" : "translateY(14px)",
@@ -434,7 +434,7 @@ export default function LandingPage() {
                   Next-Gen Interview Preparation
                 </div>
 
-                <div style={{ fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, lineHeight: 1.05, letterSpacing: "-0.04em", color: C.onSurface, fontFamily: "Inter, sans-serif", maxWidth: 600 }}>
+                <div style={{ fontSize: isMobileHeroLayout ? "clamp(38px, 6vw, 70px)" : "clamp(32px, 4.2vw, 58px)", fontWeight: 900, lineHeight: 1.05, letterSpacing: "-0.04em", color: C.onSurface, fontFamily: "Inter, sans-serif", maxWidth: isMobileHeroLayout ? 600 : "38vw" }}>
                   <div
                     ref={line1Ref}
                     style={{
@@ -466,16 +466,16 @@ export default function LandingPage() {
                   >
                   </div>
                 </div>
-              </div>
 
-              {/* Scroll hint */}
-              <div ref={scrollHintRef} style={{ marginTop: 32, display: "flex", alignItems: "center", gap: 10, opacity: 1, transition: "opacity 0.5s ease 0.6s", pointerEvents: "none" }}
-                className="hero-scroll-hint"
-              >
-                <div style={{ width: 26, height: 42, border: `2px solid rgba(79,195,247,0.9)`, borderRadius: 13, display: "flex", justifyContent: "center", padding: "5px 0", boxShadow: "0 0 16px rgba(79,195,247,0.5), 0 0 4px rgba(79,195,247,0.25), inset 0 0 8px rgba(79,195,247,0.1)" }}>
-                  <div style={{ width: 4, height: 9, background: C.secondary, borderRadius: 2, boxShadow: "0 0 6px rgba(79,195,247,0.8)" }} className="scroll-dot" />
+                {/* Scroll hint */}
+                <div ref={scrollHintRef} style={{ marginTop: 32, marginLeft: isMobileHeroLayout ? 0 : "clamp(4px, 0.5vw, 10px)", display: "flex", alignItems: "center", gap: 10, opacity: 1, transition: "opacity 0.5s ease 0.6s", pointerEvents: "none" }}
+                  className="hero-scroll-hint"
+                >
+                  <div style={{ width: 26, height: 42, border: `2px solid rgba(79,195,247,0.9)`, borderRadius: 13, display: "flex", justifyContent: "center", padding: "5px 0", boxShadow: "0 0 16px rgba(79,195,247,0.5), 0 0 4px rgba(79,195,247,0.25), inset 0 0 8px rgba(79,195,247,0.1)" }}>
+                    <div style={{ width: 4, height: 9, background: C.secondary, borderRadius: 2, boxShadow: "0 0 6px rgba(79,195,247,0.8)" }} className="scroll-dot" />
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Inter, sans-serif", color: "rgba(248,250,252,0.95)", textShadow: "0 1px 4px rgba(0,0,0,0.8), 0 0 12px rgba(79,195,247,0.25)" }}>Scroll to explore</span>
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Inter, sans-serif", color: "rgba(248,250,252,0.95)", textShadow: "0 1px 4px rgba(0,0,0,0.8), 0 0 12px rgba(79,195,247,0.25)" }}>Scroll to explore</span>
               </div>
             </div>
 
