@@ -280,17 +280,18 @@ export default function LandingPage() {
         onUpdate(self) {
           const p = self.progress;
 
-          // — Desktop intro phase (p: 0 → INTRO) —
+          // — Desktop intro phase (p: INTRO_DELAY → INTRO) —
           // Column slides out left, canvas translates back to center.
-          const INTRO = 0.12;
+          const INTRO_DELAY = 0.04;
+          const INTRO = 0.16;
           if (!isMobileHeroLayout) {
-            const introT = Math.min(p / INTRO, 1);
+            const introT = Math.min(Math.max((p - INTRO_DELAY) / (INTRO - INTRO_DELAY), 0), 1);
             if (introColRef.current) {
               introColRef.current.style.transform = `translateX(${-introT * 105}%) translateZ(0)`;
               introColRef.current.style.opacity   = `${Math.max(0, 1 - introT * 1.6)}`;
             }
             if (canvasRef.current) {
-              canvasRef.current.style.transform = `translateX(${(1 - introT) * 20}%) translateZ(0)`;
+              canvasRef.current.style.transform = `translateX(${(1 - introT) * 24}%) translateZ(0)`;
             }
           }
 
