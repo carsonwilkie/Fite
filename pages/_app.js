@@ -206,6 +206,7 @@ export default function App({ Component, pageProps }) {
             height: 3,
             background: cyberGrad,
             boxShadow: "0 0 18px rgba(79,195,247,0.95), 0 0 48px rgba(21,101,192,0.65), 0 0 90px rgba(21,101,192,0.3)",
+            transition: "none",
           }} />
           {/* Brand watermark */}
           <div style={{
@@ -219,8 +220,8 @@ export default function App({ Component, pageProps }) {
             transform: "translateZ(0)",
             willChange: "transform",
           }}>
-            <span style={{ color: "#1565C0", textShadow: "0 0 24px rgba(21,101,192,0.8), 0 0 60px rgba(21,101,192,0.4)" }}>Fite</span>{" "}
-            <span style={{ color: "#4FC3F7", textShadow: "0 0 24px rgba(79,195,247,0.8), 0 0 60px rgba(79,195,247,0.4)" }}>Finance</span>
+            <span style={{ color: "#1565C0", textShadow: "0 0 24px rgba(21,101,192,0.8), 0 0 60px rgba(21,101,192,0.4)", transition: "none" }}>Fite</span>{" "}
+            <span style={{ color: "#4FC3F7", textShadow: "0 0 24px rgba(79,195,247,0.8), 0 0 60px rgba(79,195,247,0.4)", transition: "none" }}>Finance</span>
           </div>
         </div>
       </PaidStatusProvider>
