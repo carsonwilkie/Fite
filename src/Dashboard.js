@@ -468,7 +468,8 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
                       <span style={{ fontSize: 16, fontWeight: 900, color: getScoreColor(score), position: "relative", zIndex: 1 }}>{score}</span>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 10, fontWeight: 900, color: C.textMuted, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: 6 }}>SCORE</div>
+                      <div style={{ fontSize: 10, fontWeight: 900, color: C.textMuted, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: 2 }}>SCORE</div>
+                      <div style={{ fontSize: 20, fontWeight: 900, color: getScoreColor(score), marginBottom: 8 }}>{score} <span style={{ fontSize: 13, color: C.textMuted, fontWeight: 400 }}>/ 10</span></div>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <div style={{ flex: 1, height: 4, background: C.surfaceHigh, borderRadius: 2, overflow: "hidden" }}>
                           <motion.div
@@ -478,7 +479,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
                             style={{ height: "100%", background: `linear-gradient(to right, ${getScoreColor(score)}99, ${getScoreColor(score)})`, borderRadius: 2, boxShadow: `0 0 6px ${getScoreColor(score)}60` }}
                           />
                         </div>
-                        <span style={{ fontSize: 13, fontWeight: 900, color: getScoreColor(score), fontFamily: "Manrope, sans-serif", whiteSpace: "nowrap" }}>{score} <span style={{ fontSize: 11, color: C.textMuted, fontWeight: 400 }}>/ 10</span></span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: getScoreColor(score), fontFamily: "Manrope, sans-serif", whiteSpace: "nowrap" }}>{score} / 10</span>
                       </div>
                     </div>
                   </div>
