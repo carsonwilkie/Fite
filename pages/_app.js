@@ -216,6 +216,8 @@ export default function App({ Component, pageProps }) {
             whiteSpace: "nowrap",
             userSelect: "none",
             pointerEvents: "none",
+            transform: "translateZ(0)",
+            willChange: "transform",
           }}>
             <span style={{ color: "#1565C0", textShadow: "0 0 24px rgba(21,101,192,0.8), 0 0 60px rgba(21,101,192,0.4)" }}>Fite</span>{" "}
             <span style={{ color: "#4FC3F7", textShadow: "0 0 24px rgba(79,195,247,0.8), 0 0 60px rgba(79,195,247,0.4)" }}>Finance</span>
