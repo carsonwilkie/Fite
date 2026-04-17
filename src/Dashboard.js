@@ -419,7 +419,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
                 value={userAnswer}
                 onChange={(e) => isPaid && !graded && setUserAnswer(e.target.value)}
                 disabled={!isPaid || graded}
-                style={{ flex: 1, width: "100%", minHeight: 260, backgroundColor: "transparent", border: "none", outline: "none", resize: "none", fontSize: 16, lineHeight: 1.75, color: isPaid ? C.text : `${C.textMuted}60`, fontFamily: "Inter, sans-serif", cursor: isPaid && !graded ? "text" : "not-allowed" }}
+                style={{ flex: 1, width: "100%", minHeight: 260, backgroundColor: "transparent", border: "none", outline: "none", resize: "none", fontSize: 16, lineHeight: 1.75, color: isPaid ? C.text : `${C.textMuted}60`, fontFamily: "Inter, sans-serif", cursor: isPaid && !graded ? "text" : "not-allowed", padding: "4px 0 0 0" }}
               />
 
               <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 16, marginTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -451,24 +451,39 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
                   initial={{ opacity: 0, scale: 0.7 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ type: "spring", stiffness: 280, damping: 18 }}
-                  style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}
+                  style={{ marginBottom: 16 }}
                 >
-                  <div style={{ width: 56, height: 56, position: "relative", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <svg width="56" height="56" style={{ transform: "rotate(-90deg)", position: "absolute" }}>
-                      <circle cx="28" cy="28" r="22" fill="none" stroke={C.surfaceHigh} strokeWidth="4" />
-                      <motion.circle
-                        cx="28" cy="28" r="22" fill="none" stroke={getScoreColor(score)} strokeWidth="4" strokeLinecap="round"
-                        strokeDasharray={138.2}
-                        initial={{ strokeDashoffset: 138.2 }}
-                        animate={{ strokeDashoffset: 138.2 * (1 - score / 10) }}
-                        transition={{ duration: 1, ease: "easeOut", delay: 0.1 }}
-                      />
-                    </svg>
-                    <span style={{ fontSize: 16, fontWeight: 900, color: getScoreColor(score), position: "relative", zIndex: 1 }}>{score}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+                    <div style={{ width: 56, height: 56, position: "relative", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <svg width="56" height="56" style={{ transform: "rotate(-90deg)", position: "absolute" }}>
+                        <circle cx="28" cy="28" r="22" fill="none" stroke={C.surfaceHigh} strokeWidth="4" />
+                        <motion.circle
+                          cx="28" cy="28" r="22" fill="none" stroke={getScoreColor(score)} strokeWidth="4" strokeLinecap="round"
+                          strokeDasharray={138.2}
+                          initial={{ strokeDashoffset: 138.2 }}
+                          animate={{ strokeDashoffset: 138.2 * (1 - score / 10) }}
+                          transition={{ duration: 1, ease: "easeOut", delay: 0.1 }}
+                        />
+                      </svg>
+                      <span style={{ fontSize: 16, fontWeight: 900, color: getScoreColor(score), position: "relative", zIndex: 1 }}>{score}</span>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 900, color: C.textMuted, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: 2 }}>SCORE</div>
+                      <div style={{ fontSize: 20, fontWeight: 900, color: getScoreColor(score) }}>{score} <span style={{ fontSize: 13, color: C.textMuted, fontWeight: 400 }}>/ 10</span></div>
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ fontSize: 10, fontWeight: 900, color: C.textMuted, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: 2 }}>SCORE</div>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: getScoreColor(score) }}>{score} <span style={{ fontSize: 13, color: C.textMuted, fontWeight: 400 }}>/ 10</span></div>
+                  {/* Score bar */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.1em", textTransform: "uppercase", whiteSpace: "nowrap" }}>AI Score</span>
+                    <div style={{ flex: 1, height: 4, background: `${C.surfaceHigh}`, borderRadius: 2, overflow: "hidden" }}>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${score * 10}%` }}
+                        transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                        style={{ height: "100%", background: `linear-gradient(to right, ${getScoreColor(score)}99, ${getScoreColor(score)})`, borderRadius: 2, boxShadow: `0 0 6px ${getScoreColor(score)}60` }}
+                      />
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: getScoreColor(score), fontFamily: "Manrope, sans-serif", whiteSpace: "nowrap" }}>{score} / 10</span>
                   </div>
                 </motion.div>
               )}

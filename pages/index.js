@@ -70,6 +70,7 @@ export default function LandingPage() {
   const heroBlurRef     = useRef(null); // blur layer tied to hero text
   const midBlurRef      = useRef(null); // blur layer tied to mid-scroll text
   const endBlurRef      = useRef(null); // blur layer tied to end overlay
+  const introColRef     = useRef(null); // desktop intro panel
 
   // Mount-only state
   const [heroTextIn, setHeroTextIn] = useState(false);
@@ -145,6 +146,15 @@ export default function LandingPage() {
     if (f) drawFrame(f); // ImageBitmap has no .complete — check truthiness
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [heroViewport.width, heroViewport.height]);
+
+  // Set initial canvas offset on desktop so the bull logo is visible beside the intro column
+  useEffect(() => {
+    if (!canvasRef.current || !heroViewport.width) return;
+    canvasRef.current.style.transform = isMobileHeroLayout
+      ? ""
+      : "translateX(24%) translateZ(0)";
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobileHeroLayout, heroViewport.width]);
 
   // Frame preload — convert to ImageBitmap so drawImage pulls from GPU memory
   // instead of re-decoding the JPEG every frame. On mobile, sample fewer frames
@@ -270,12 +280,29 @@ export default function LandingPage() {
         onUpdate(self) {
           const p = self.progress;
 
+          // — Desktop intro phase (p: 0 → INTRO) —
+          // Column slides out left, canvas translates back to center.
+          const INTRO = 0.12;
+          if (!isMobileHeroLayout) {
+            const introT = Math.min(p / INTRO, 1);
+            if (introColRef.current) {
+              introColRef.current.style.transform = `translateX(${-introT * 105}%) translateZ(0)`;
+              introColRef.current.style.opacity   = `${Math.max(0, 1 - introT * 1.6)}`;
+            }
+            if (canvasRef.current) {
+              canvasRef.current.style.transform = `translateX(${(1 - introT) * 20}%) translateZ(0)`;
+            }
+          }
+
+          // Remap progress: on desktop the existing animation runs over p: INTRO → 1.0
+          const np = isMobileHeroLayout ? p : Math.max(0, (p - INTRO) / (1 - INTRO));
+
           // — Canvas frame — batched to one draw per animation frame.
-          // Skip when the end overlay fully covers the canvas (p ≥ 0.94) so the
+          // Skip when the end overlay fully covers the canvas (np ≥ 0.94) so the
           // browser isn't compositing canvas draws that are invisible anyway.
-          const idx = Math.min(Math.floor(p * (heroFrameTotal - 1)), heroFrameTotal - 1);
+          const idx = Math.min(Math.floor(np * (heroFrameTotal - 1)), heroFrameTotal - 1);
           const img = getClosestLoadedFrame(idx);
-          if (img && p < 0.94) {
+          if (img && np < 0.94) {
             if (pendingFrameRef.current) cancelAnimationFrame(pendingFrameRef.current);
             pendingFrameRef.current = requestAnimationFrame(() => {
               pendingFrameRef.current = null;
@@ -285,30 +312,30 @@ export default function LandingPage() {
 
           // — Progress bar —
           if (progressBarRef.current) {
-            progressBarRef.current.style.width = `${p * 100}%`;
+            progressBarRef.current.style.width = `${np * 100}%`;
           }
 
-          // — Hero text exit (p: 0.18 → 0.28) —
-          const textT = Math.max(0, Math.min((p - 0.18) / 0.1, 1));
-          if (heroOverlayRef.current) {
-            heroOverlayRef.current.style.opacity = `${1 - textT}`;
-            heroOverlayRef.current.style.pointerEvents = textT > 0.5 ? "none" : "auto";
+          // — Hero text exit (mobile only; desktop uses intro column) —
+          if (isMobileHeroLayout) {
+            const textT = Math.max(0, Math.min((np - 0.18) / 0.1, 1));
+            if (heroOverlayRef.current) {
+              heroOverlayRef.current.style.opacity = `${1 - textT}`;
+              heroOverlayRef.current.style.pointerEvents = textT > 0.5 ? "none" : "auto";
+            }
+            if (heroBlurRef.current) heroBlurRef.current.style.opacity = `${1 - textT}`;
+            if (line1Ref.current) line1Ref.current.style.transform = `translateX(${-textT * 120}px)`;
+            if (line2Ref.current) line2Ref.current.style.transform = `scale(${1 - textT * 0.3})`;
+            if (line3Ref.current) line3Ref.current.style.transform = `translateX(${textT * 120}px)`;
+            if (scrollHintRef.current) {
+              scrollHintRef.current.style.opacity = `${Math.max(0, 1 - np / 0.04)}`;
+            }
           }
-          if (heroBlurRef.current) heroBlurRef.current.style.opacity = `${1 - textT}`;
-          if (line1Ref.current) line1Ref.current.style.transform = `translateX(${-textT * 120}px)`;
-          if (line2Ref.current) line2Ref.current.style.transform = `scale(${1 - textT * 0.3})`;
-          if (line3Ref.current) line3Ref.current.style.transform = `translateX(${textT * 120}px)`;
 
-          // — Scroll hint (fades out after first tiny scroll) —
-          if (scrollHintRef.current) {
-            scrollHintRef.current.style.opacity = `${Math.max(0, 1 - p / 0.04)}`;
-          }
-
-          // — Mid-scroll tagline (p: 0.3 → 0.72) —
-          const midOp = p < 0.30 ? 0
-            : p < 0.45 ? (p - 0.30) / 0.15
-            : p < 0.60 ? 1
-            : p < 0.72 ? 1 - (p - 0.60) / 0.12
+          // — Mid-scroll tagline (np: 0.3 → 0.72) —
+          const midOp = np < 0.30 ? 0
+            : np < 0.45 ? (np - 0.30) / 0.15
+            : np < 0.60 ? 1
+            : np < 0.72 ? 1 - (np - 0.60) / 0.12
             : 0;
           if (midTagRef.current) midTagRef.current.style.opacity = `${midOp}`;
           if (midBlurRef.current) midBlurRef.current.style.opacity = `${midOp}`;
@@ -318,8 +345,8 @@ export default function LandingPage() {
             midTagSpawnRef.current = false;
           }
 
-          // — End-of-scroll overlay (p: 0.82 → 0.94) —
-          const endOp = Math.max(0, Math.min((p - 0.82) / 0.12, 1));
+          // — End-of-scroll overlay (np: 0.82 → 0.94) —
+          const endOp = Math.max(0, Math.min((np - 0.82) / 0.12, 1));
           if (endDetailsRef.current) {
             endDetailsRef.current.style.opacity      = `${endOp}`;
             endDetailsRef.current.style.pointerEvents = endOp > 0.5 ? "auto" : "none";
@@ -404,6 +431,165 @@ export default function LandingPage() {
             }} />
 
 
+            {/* Desktop intro column */}
+            {!isMobileHeroLayout && (
+              <div
+                ref={introColRef}
+                style={{
+                  position: "absolute", left: 0, top: 0, bottom: 0,
+                  width: "40%",
+                  background: "linear-gradient(to right, rgba(2,8,23,0.97) 0%, rgba(2,8,23,0.94) 72%, rgba(2,8,23,0.6) 88%, transparent 100%)",
+                  zIndex: 20,
+                  display: "flex", flexDirection: "column", justifyContent: "flex-start",
+                  paddingTop: "clamp(72px, 13vh, 130px)",
+                  paddingLeft: "clamp(32px, 4vw, 64px)",
+                  paddingRight: "6%",
+                  willChange: "transform, opacity",
+                  transform: "translateZ(0)",
+                  pointerEvents: "auto",
+                }}
+              >
+                {/* Badge */}
+                <div style={{
+                  display: "inline-block", alignSelf: "flex-start",
+                  padding: "4px 12px", borderRadius: 999,
+                  background: "rgba(21,101,192,0.18)",
+                  backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
+                  border: "1px solid rgba(21,101,192,0.38)",
+                  color: C.secondary, fontSize: "clamp(9px, 0.7vw, 11px)", fontWeight: 700,
+                  textTransform: "uppercase", letterSpacing: "0.15em",
+                  marginBottom: "clamp(12px, 1.2vw, 20px)",
+                  fontFamily: "Manrope, sans-serif",
+                  textShadow: "0 0 12px rgba(79,195,247,0.5)",
+                }}>
+                  Next-Gen Interview Preparation
+                </div>
+
+                {/* Heading */}
+                <div style={{
+                  fontSize: "clamp(32px, 4.2vw, 58px)", fontWeight: 900, lineHeight: 1.05,
+                  letterSpacing: "-0.04em", color: C.onSurface, fontFamily: "Inter, sans-serif",
+                  marginBottom: "clamp(24px, 3.5vh, 48px)",
+                }}>
+                  <div style={{ textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 8px rgba(0,0,0,1), 0 4px 24px rgba(0,0,0,0.95), 0 8px 50px rgba(0,0,0,0.75)" }}>
+                    Master Your
+                  </div>
+                  <div>
+                    <span style={{
+                      color: C.secondary, fontStyle: "italic",
+                      textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 8px rgba(0,0,0,1), 0 4px 24px rgba(0,0,0,0.95), 0 0 40px rgba(79,195,247,0.7), 0 0 90px rgba(79,195,247,0.35)",
+                    }}>Technicals</span>
+                  </div>
+                </div>
+
+                {/* Mock question card */}
+                <div style={{
+                  borderRadius: 12,
+                  background: "rgba(13,27,42,0.85)",
+                  border: "1px solid rgba(79,195,247,0.14)",
+                  borderLeft: "3px solid rgba(79,195,247,0.65)",
+                  boxShadow: "0 4px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(79,195,247,0.06)",
+                  padding: "clamp(14px, 1.4vw, 22px) clamp(14px, 1.4vw, 22px) clamp(12px, 1.2vw, 18px)",
+                  maxWidth: "75%",
+                }}>
+                  {/* Card header: tags */}
+                  <div style={{ display: "flex", gap: 6, marginBottom: "clamp(10px, 1vw, 16px)", alignItems: "center" }}>
+                    <span style={{
+                      fontSize: "clamp(8px, 0.6vw, 10px)", fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+                      background: "rgba(21,101,192,0.22)", color: C.secondary,
+                      fontFamily: "Manrope, sans-serif", letterSpacing: "0.1em", textTransform: "uppercase",
+                    }}>Private Equity</span>
+                    <span style={{
+                      fontSize: "clamp(8px, 0.6vw, 10px)", fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+                      background: "rgba(201,168,76,0.18)", color: C.gold,
+                      fontFamily: "Manrope, sans-serif", letterSpacing: "0.1em", textTransform: "uppercase",
+                    }}>Hard</span>
+                  </div>
+
+                  {/* Question text */}
+                  <div style={{
+                    fontSize: "clamp(11px, 0.9vw, 14px)", fontWeight: 600, color: C.onSurface,
+                    fontFamily: "Inter, sans-serif", lineHeight: 1.55,
+                    marginBottom: "clamp(10px, 1vw, 16px)",
+                  }}>
+                    A PE firm is acquiring a software company at 12× EBITDA. Post-close, EBITDA drops 20% due to customer churn. How does this affect the returns math, and what levers does the sponsor have?
+                  </div>
+
+                  {/* Mock answer area */}
+                  <div style={{
+                    borderRadius: 7, padding: "clamp(8px, 0.8vw, 12px) clamp(10px, 1vw, 14px)",
+                    background: "rgba(2,8,23,0.55)", border: "1px solid rgba(79,195,247,0.1)",
+                    marginBottom: "clamp(8px, 0.8vw, 12px)",
+                  }}>
+                    <div style={{
+                      fontSize: "clamp(9px, 0.75vw, 12px)", color: C.muted,
+                      fontFamily: "Manrope, sans-serif", lineHeight: 1.6, opacity: 0.55,
+                    }}>
+                      The entry equity value stays fixed but the EBITDA base shrinks, so effective entry multiple re-rates to ~15×. IRR erodes on both the numerator and denominator…
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Mock feedback card — mirrors the real dashboard feedback UI */}
+                <div style={{
+                  marginTop: "clamp(8px, 0.8vw, 12px)",
+                  padding: "clamp(12px, 1.2vw, 18px) clamp(14px, 1.4vw, 20px)",
+                  borderRadius: 12,
+                  background: "rgba(13,27,42,0.7)",
+                  borderLeft: "4px solid #4FC3F7",
+                  maxWidth: "75%",
+                }}>
+                  {/* Score row */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "clamp(8px, 0.8vw, 12px)" }}>
+                    <div style={{ width: 36, height: 36, position: "relative", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <svg width="36" height="36" style={{ transform: "rotate(-90deg)", position: "absolute" }}>
+                        <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(79,195,247,0.15)" strokeWidth="3" />
+                        <circle cx="18" cy="18" r="14" fill="none" stroke="#4FC3F7" strokeWidth="3" strokeLinecap="round"
+                          strokeDasharray={87.96} strokeDashoffset={87.96 * (1 - 0.78)} />
+                      </svg>
+                      <span style={{ fontSize: "clamp(9px, 0.75vw, 12px)", fontWeight: 900, color: "#4FC3F7", position: "relative", zIndex: 1 }}>7.8</span>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: "clamp(7px, 0.55vw, 9px)", fontWeight: 900, color: C.muted, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: 2 }}>SCORE</div>
+                      <div style={{ fontSize: "clamp(11px, 0.95vw, 15px)", fontWeight: 900, color: "#4FC3F7" }}>7.8 <span style={{ fontSize: "clamp(9px, 0.7vw, 11px)", color: C.muted, fontWeight: 400 }}>/ 10</span></div>
+                    </div>
+                    <div style={{ flex: 1, marginLeft: 4 }}>
+                      <div style={{ height: 3, background: "rgba(79,195,247,0.12)", borderRadius: 2 }}>
+                        <div style={{ width: "78%", height: "100%", background: "linear-gradient(to right, #1565C099, #4FC3F7)", borderRadius: 2, boxShadow: "0 0 5px rgba(79,195,247,0.35)" }} />
+                      </div>
+                    </div>
+                  </div>
+                  {/* Feedback label + text */}
+                  <div style={{ fontSize: "clamp(7px, 0.55vw, 9px)", fontWeight: 900, color: C.muted, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: "clamp(4px, 0.4vw, 6px)" }}>AI Feedback</div>
+                  <p style={{ fontSize: "clamp(9px, 0.75vw, 12px)", color: C.onSurface, lineHeight: 1.65, margin: 0, opacity: 0.8, fontFamily: "Inter, sans-serif" }}>
+                    Strong framing on the multiple re-rate. To push to a 9+, quantify the IRR delta and walk through at least two operational levers the sponsor would pull to defend returns.
+                  </p>
+                </div>
+
+                {/* Scroll hint */}
+                <div style={{
+                  marginTop: "clamp(32px, 4vh, 52px)",
+                  display: "flex", alignItems: "center", gap: 10, pointerEvents: "none",
+                }}>
+                  <div style={{
+                    width: 22, height: 36, border: "2px solid rgba(79,195,247,0.85)", borderRadius: 11,
+                    display: "flex", justifyContent: "center", padding: "4px 0",
+                    boxShadow: "0 0 12px rgba(79,195,247,0.4), inset 0 0 6px rgba(79,195,247,0.08)",
+                    flexShrink: 0,
+                  }}>
+                    <div style={{ width: 3, height: 7, background: C.secondary, borderRadius: 2, boxShadow: "0 0 6px rgba(79,195,247,0.8)" }} className="scroll-dot" />
+                  </div>
+                  <span style={{
+                    fontSize: "clamp(9px, 0.7vw, 11px)", fontWeight: 700, letterSpacing: "0.15em",
+                    textTransform: "uppercase", fontFamily: "Inter, sans-serif",
+                    color: "rgba(248,250,252,0.9)",
+                    textShadow: "0 1px 4px rgba(0,0,0,0.8), 0 0 10px rgba(79,195,247,0.2)",
+                  }}>Scroll to explore</span>
+                </div>
+              </div>
+            )}
+
             {/* Corner HUD — bottom left */}
             <div style={{ position: "absolute", bottom: 28, left: 32, fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", color: C.secondary, opacity: 0.4, textTransform: "uppercase", pointerEvents: "none" }}>
               FITE FINANCE
@@ -414,9 +600,9 @@ export default function LandingPage() {
               PRECISION IN PREPARATION
             </div>
 
-            {/* Hero text overlay */}
-            <div ref={heroOverlayRef} style={{ position: "absolute", bottom: isMobileHeroLayout ? "18%" : "30%", left: isMobileHeroLayout ? "7%" : "2%", zIndex: 10 }}>
-              <div style={{ padding: isMobileHeroLayout ? "22px 28px 26px" : "clamp(14px, 1.4vw, 22px) clamp(18px, 1.8vw, 28px) clamp(16px, 1.6vw, 26px)" }}>
+            {/* Hero text overlay — mobile only (desktop uses intro column) */}
+            <div ref={heroOverlayRef} style={{ position: "absolute", bottom: "18%", left: "7%", zIndex: 10, display: isMobileHeroLayout ? undefined : "none" }}>
+              <div style={{ padding: "22px 28px 26px" }}>
                 <div style={{
                   display: "inline-block", padding: "4px 12px", borderRadius: 999,
                   background: "rgba(21,101,192,0.18)",
