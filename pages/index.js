@@ -68,6 +68,11 @@ export default function LandingPage() {
   const midBlurRef      = useRef(null); // blur layer tied to mid-scroll text
   const endBlurRef      = useRef(null); // blur layer tied to end overlay
   const introColRef     = useRef(null); // desktop intro panel
+  const cmpRef          = useRef(null); // pricing comparison container
+  const cmpLeftRef      = useRef(null); // left stat block
+  const cmpRightRef     = useRef(null); // right descriptive block
+  const cmpNumRef       = useRef(null); // giant stat number (for subtle scale)
+  const cmpBlurRef      = useRef(null); // blur layer for comparison section
 
   // Mount-only state
   const [heroTextIn, setHeroTextIn] = useState(false);
@@ -334,11 +339,55 @@ export default function LandingPage() {
             }
           }
 
-          // — Mid-scroll tagline (np: 0.3 → 0.72) —
-          const midOp = np < 0.30 ? 0
-            : np < 0.45 ? (np - 0.30) / 0.15
-            : np < 0.60 ? 1
-            : np < 0.72 ? 1 - (np - 0.60) / 0.12
+          // — Pricing comparison (np: 0.04 → 0.36) —
+          // Enter 0.04→0.15, hold 0.15→0.29, exit 0.29→0.36.
+          const cmpEnter = Math.max(0, Math.min((np - 0.04) / 0.11, 1));
+          const cmpExit  = Math.max(0, Math.min((np - 0.29) / 0.07, 1));
+          const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+          const cmpEnterE = easeInOut(cmpEnter);
+          const cmpExitE  = easeInOut(cmpExit);
+          const cmpOp = cmpEnterE * (1 - cmpExitE);
+
+          // Visibility gate — skip compositor work entirely when offstage.
+          const cmpActive = cmpOp > 0.005;
+          if (cmpRef.current) {
+            cmpRef.current.style.visibility = cmpActive ? "visible" : "hidden";
+            if (cmpActive) {
+              cmpRef.current.style.opacity = `${cmpOp}`;
+              const ty = (1 - cmpEnterE) * 22 - cmpExitE * 18;
+              cmpRef.current.style.transform = `translate3d(0,${ty}px,0)`;
+            }
+          }
+          if (cmpBlurRef.current) {
+            cmpBlurRef.current.style.visibility = cmpActive ? "visible" : "hidden";
+            if (cmpActive) cmpBlurRef.current.style.opacity = `${cmpOp * 0.95}`;
+          }
+          if (cmpActive) {
+            if (cmpLeftRef.current) {
+              const txDesk = (1 - cmpEnterE) * -44 + cmpExitE * -14;
+              const tyMob  = (1 - cmpEnterE) * 18 - cmpExitE * 14;
+              cmpLeftRef.current.style.transform = isMobileHeroLayout
+                ? `translate3d(-50%,${tyMob}px,0)`
+                : `translate3d(${txDesk}px,-50%,0)`;
+            }
+            if (cmpRightRef.current) {
+              const txDesk = (1 - cmpEnterE) * 44 + cmpExitE * 14;
+              const tyMob  = (1 - cmpEnterE) * 22 - cmpExitE * 14;
+              cmpRightRef.current.style.transform = isMobileHeroLayout
+                ? `translate3d(-50%,${tyMob}px,0)`
+                : `translate3d(${txDesk}px,-50%,0)`;
+            }
+            if (cmpNumRef.current) {
+              const s = 0.88 + cmpEnterE * 0.12 - cmpExitE * 0.04;
+              cmpNumRef.current.style.transform = `scale(${s}) translateZ(0)`;
+            }
+          }
+
+          // — Mid-scroll tagline (np: 0.40 → 0.72) —
+          const midOp = np < 0.40 ? 0
+            : np < 0.50 ? (np - 0.40) / 0.10
+            : np < 0.62 ? 1
+            : np < 0.72 ? 1 - (np - 0.62) / 0.10
             : 0;
           if (midTagRef.current) midTagRef.current.style.opacity = `${midOp}`;
           if (midBlurRef.current) midBlurRef.current.style.opacity = `${midOp}`;
@@ -675,6 +724,252 @@ export default function LandingPage() {
                   </div>
                   <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Inter, sans-serif", color: "rgba(248,250,252,0.95)", textShadow: "0 1px 4px rgba(0,0,0,0.8), 0 0 12px rgba(79,195,247,0.25)" }}>Scroll to explore</span>
                 </div>
+              </div>
+            </div>
+
+            {/* Pricing comparison — sits between intro exit and "Built for..." */}
+            <div
+              ref={cmpRef}
+              className="cmp-section"
+              style={{
+                position: "absolute", inset: 0,
+                opacity: 0,
+                visibility: "hidden",
+                pointerEvents: "none",
+                zIndex: 9,
+                willChange: "opacity, transform",
+                transform: "translate3d(0,22px,0)",
+                contain: "layout paint style",
+              }}
+            >
+              {/* Natural backdrop — deeper blur + soft radial dim halos behind each block */}
+              <div
+                ref={cmpBlurRef}
+                style={{
+                  position: "absolute", inset: 0,
+                  backdropFilter: isMobileHeroLayout ? "blur(10px)" : "blur(28px)",
+                  WebkitBackdropFilter: isMobileHeroLayout ? "blur(10px)" : "blur(28px)",
+                  maskImage: isMobileHeroLayout
+                    ? "radial-gradient(ellipse 98% 22% at 50% 20%, black 0%, black 65%, rgba(0,0,0,0.3) 88%, transparent 100%), radial-gradient(ellipse 98% 14% at 50% 39%, black 0%, black 65%, rgba(0,0,0,0.3) 88%, transparent 100%)"
+                    : "radial-gradient(ellipse 34% 30% at 18% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%), radial-gradient(ellipse 34% 22% at 82% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%)",
+                  WebkitMaskImage: isMobileHeroLayout
+                    ? "radial-gradient(ellipse 98% 22% at 50% 20%, black 0%, black 65%, rgba(0,0,0,0.3) 88%, transparent 100%), radial-gradient(ellipse 98% 14% at 50% 39%, black 0%, black 65%, rgba(0,0,0,0.3) 88%, transparent 100%)"
+                    : "radial-gradient(ellipse 34% 30% at 18% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%), radial-gradient(ellipse 34% 22% at 82% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%)",
+                  opacity: 0,
+                  visibility: "hidden",
+                  pointerEvents: "none",
+                  willChange: "opacity",
+                  transform: "translateZ(0)",
+                  contain: "layout paint style",
+                }}
+              />
+
+              {/* Soft dim halo — pure gradient, no edges, sits under the copy */}
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute", inset: 0,
+                  background: isMobileHeroLayout
+                    ? "radial-gradient(ellipse 86% 20% at 50% 20%, rgba(2,8,23,0.7) 0%, rgba(2,8,23,0.66) 18%, rgba(2,8,23,0.56) 36%, rgba(2,8,23,0.42) 52%, rgba(2,8,23,0.28) 68%, rgba(2,8,23,0.16) 80%, rgba(2,8,23,0.07) 90%, rgba(2,8,23,0.02) 96%, rgba(2,8,23,0) 100%), radial-gradient(ellipse 86% 12% at 50% 39%, rgba(2,8,23,0.68) 0%, rgba(2,8,23,0.62) 18%, rgba(2,8,23,0.52) 36%, rgba(2,8,23,0.38) 52%, rgba(2,8,23,0.24) 68%, rgba(2,8,23,0.14) 80%, rgba(2,8,23,0.06) 90%, rgba(2,8,23,0.02) 96%, rgba(2,8,23,0) 100%)"
+                    : "radial-gradient(ellipse 30% 26% at 14% 50%, rgba(2,8,23,0.9) 0%, rgba(2,8,23,0.84) 16%, rgba(2,8,23,0.74) 32%, rgba(2,8,23,0.6) 48%, rgba(2,8,23,0.43) 62%, rgba(2,8,23,0.27) 74%, rgba(2,8,23,0.14) 84%, rgba(2,8,23,0.06) 92%, rgba(2,8,23,0.02) 97%, rgba(2,8,23,0) 100%), radial-gradient(ellipse 27% 21% at 78.5% 51%, rgba(2,8,23,0.75) 0%, rgba(2,8,23,0.72) 22%, rgba(2,8,23,0.66) 38%, rgba(2,8,23,0.55) 52%, rgba(2,8,23,0.4) 64%, rgba(2,8,23,0.25) 76%, rgba(2,8,23,0.13) 85%, rgba(2,8,23,0.05) 93%, rgba(2,8,23,0.02) 97%, rgba(2,8,23,0) 100%)",
+                  pointerEvents: "none",
+                }}
+              />
+
+              {/* Left block — giant stat */}
+              <div
+                ref={cmpLeftRef}
+                className="cmp-left"
+                style={{
+                  position: "absolute",
+                  left: isMobileHeroLayout ? "50%" : "5.5%",
+                  top: isMobileHeroLayout ? "9%" : "50%",
+                  transform: isMobileHeroLayout ? "translate(-50%, 0)" : "translateY(-50%)",
+                  width: isMobileHeroLayout ? "84%" : "26%",
+                  maxWidth: isMobileHeroLayout ? 440 : "none",
+                  textAlign: isMobileHeroLayout ? "center" : "left",
+                  willChange: "transform, filter",
+                }}
+              >
+                <div style={{
+                  fontSize: isMobileHeroLayout ? 10 : "clamp(10px, 0.75vw, 12px)",
+                  fontWeight: 800, letterSpacing: "0.24em",
+                  textTransform: "uppercase", fontFamily: "Manrope, sans-serif",
+                  color: C.muted,
+                  marginBottom: isMobileHeroLayout ? 6 : "clamp(8px, 0.8vw, 12px)",
+                  opacity: 0.85,
+                  textShadow: "0 1px 4px rgba(0,0,0,0.9)",
+                }}>
+                  The Premium Price
+                </div>
+
+                {/* Retail → Fite price comparison with arrow */}
+                <div style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: isMobileHeroLayout ? 8 : "clamp(8px, 0.7vw, 12px)",
+                  justifyContent: isMobileHeroLayout ? "center" : "flex-start",
+                  flexWrap: "nowrap",
+                  marginBottom: isMobileHeroLayout ? 4 : "clamp(2px, 0.3vw, 6px)",
+                }}>
+                  <span style={{
+                    fontSize: isMobileHeroLayout ? 15 : "clamp(15px, 1.2vw, 20px)",
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 700,
+                    color: "rgba(203,213,225,0.95)",
+                    letterSpacing: "-0.01em",
+                    textDecoration: "line-through",
+                    textDecorationColor: "rgba(231,120,120,0.85)",
+                    textDecorationThickness: "2px",
+                    textShadow: "0 1px 3px rgba(0,0,0,0.95), 0 2px 10px rgba(0,0,0,0.75)",
+                  }}>
+                    $20 / month
+                  </span>
+                  <span
+                    aria-hidden
+                    style={{
+                      fontSize: isMobileHeroLayout ? 15 : "clamp(15px, 1.2vw, 20px)",
+                      fontFamily: "Inter, sans-serif",
+                      fontWeight: 800,
+                      color: "rgba(201,168,76,0.9)",
+                      lineHeight: 1,
+                      textShadow: "0 0 10px rgba(201,168,76,0.55), 0 1px 3px rgba(0,0,0,0.9)",
+                      transform: "translateY(-1px)",
+                    }}
+                  >
+                    →
+                  </span>
+                  <span style={{
+                    fontSize: isMobileHeroLayout ? 16 : "clamp(16px, 1.3vw, 22px)",
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: 800,
+                    color: C.gold,
+                    letterSpacing: "-0.01em",
+                    textShadow: "0 0 14px rgba(201,168,76,0.5), 0 0 30px rgba(201,168,76,0.28), 0 1px 3px rgba(0,0,0,0.9)",
+                  }}>
+                    $3 / month
+                  </span>
+                </div>
+
+                {/* Giant hero number */}
+                <div
+                  ref={cmpNumRef}
+                  className="cmp-num"
+                  style={{
+                    fontSize: isMobileHeroLayout
+                      ? "clamp(56px, 15vw, 80px)"
+                      : "clamp(96px, 11vw, 172px)",
+                    fontWeight: 900, fontStyle: "italic",
+                    fontFamily: "Inter, sans-serif",
+                    lineHeight: 0.92,
+                    letterSpacing: "-0.055em",
+                    color: C.secondary,
+                    transformOrigin: isMobileHeroLayout ? "center top" : "left center",
+                    textShadow: "0 1px 0 rgba(0,0,0,1), 0 4px 18px rgba(0,0,0,0.95), 0 0 36px rgba(79,195,247,0.55), 0 0 82px rgba(79,195,247,0.28)",
+                    margin: isMobileHeroLayout ? "2px 0 4px" : "2px 0 clamp(8px, 0.9vw, 14px)",
+                  }}
+                >
+                  15%
+                </div>
+
+                {/* Accent rule */}
+                <div style={{
+                  height: 2,
+                  width: isMobileHeroLayout ? 88 : "42%",
+                  background: "linear-gradient(to right, rgba(79,195,247,0.95), rgba(79,195,247,0))",
+                  marginBottom: isMobileHeroLayout ? 10 : "clamp(10px, 1vw, 16px)",
+                  marginLeft: isMobileHeroLayout ? "auto" : 0,
+                  marginRight: isMobileHeroLayout ? "auto" : 0,
+                  boxShadow: "0 0 12px rgba(79,195,247,0.4)",
+                  borderRadius: 2,
+                }} />
+
+                <div style={{
+                  fontSize: isMobileHeroLayout ? 14 : "clamp(14px, 1.1vw, 20px)",
+                  fontWeight: 700,
+                  fontFamily: "Inter, sans-serif",
+                  color: C.onSurface,
+                  lineHeight: 1.25,
+                  letterSpacing: "-0.01em",
+                  textShadow: "0 1px 4px rgba(0,0,0,0.95), 0 2px 14px rgba(0,0,0,0.8)",
+                }}>
+                  of the cost.
+                </div>
+              </div>
+
+              {/* Right block — descriptive */}
+              <div
+                ref={cmpRightRef}
+                className="cmp-right"
+                style={{
+                  position: "absolute",
+                  right: isMobileHeroLayout ? undefined : "5.5%",
+                  left: isMobileHeroLayout ? "50%" : undefined,
+                  top: isMobileHeroLayout ? "34%" : "50%",
+                  transform: isMobileHeroLayout ? "translate(-50%, 0)" : "translateY(-50%)",
+                  width: isMobileHeroLayout ? "84%" : "26%",
+                  maxWidth: isMobileHeroLayout ? 440 : "none",
+                  textAlign: isMobileHeroLayout ? "center" : "left",
+                  willChange: "transform, filter",
+                }}
+              >
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  justifyContent: isMobileHeroLayout ? "center" : "flex-start",
+                  marginBottom: isMobileHeroLayout ? 10 : "clamp(10px, 1vw, 14px)",
+                }}>
+                  <div style={{
+                    width: isMobileHeroLayout ? 22 : "clamp(22px, 2.2vw, 34px)",
+                    height: 1,
+                    background: C.gold,
+                    boxShadow: "0 0 10px rgba(201,168,76,0.65)",
+                  }} />
+                  <span style={{
+                    fontSize: isMobileHeroLayout ? 10 : "clamp(10px, 0.78vw, 12px)",
+                    fontWeight: 800, letterSpacing: "0.22em",
+                    textTransform: "uppercase", fontFamily: "Manrope, sans-serif",
+                    color: C.gold,
+                    textShadow: "0 0 14px rgba(201,168,76,0.4), 0 1px 3px rgba(0,0,0,0.95)",
+                  }}>
+                    Powered by Premium AI
+                  </span>
+                </div>
+
+                <p style={{
+                  fontSize: isMobileHeroLayout ? 13.5 : "clamp(13px, 1vw, 17px)",
+                  fontWeight: 500,
+                  fontFamily: "Inter, sans-serif",
+                  color: C.onSurface,
+                  lineHeight: 1.55,
+                  letterSpacing: "-0.005em",
+                  margin: 0,
+                  textShadow: "0 1px 4px rgba(0,0,0,0.95), 0 2px 14px rgba(0,0,0,0.8), 0 4px 26px rgba(0,0,0,0.55)",
+                }}>
+                  Fite runs on the same frontier models behind{" "}
+                  <span style={{ color: C.secondary, fontWeight: 800, textShadow: "0 0 18px rgba(79,195,247,0.55)" }}>$20/month</span>{" "}
+                  tools — a{" "}
+                  <span style={{ color: C.secondary, fontWeight: 800, fontStyle: "italic", textShadow: "0 0 18px rgba(79,195,247,0.55)" }}>6.5×</span>{" "}
+                  premium on intelligence.
+                </p>
+                <p style={{
+                  fontSize: isMobileHeroLayout ? 13.5 : "clamp(13px, 1vw, 17px)",
+                  fontWeight: 600,
+                  fontFamily: "Inter, sans-serif",
+                  color: "rgba(241,245,249,0.96)",
+                  lineHeight: 1.5,
+                  letterSpacing: "-0.005em",
+                  margin: isMobileHeroLayout ? "10px 0 0" : "clamp(10px, 1vw, 16px) 0 0",
+                  textShadow: "0 1px 4px rgba(0,0,0,0.95), 0 2px 14px rgba(0,0,0,0.8), 0 4px 26px rgba(0,0,0,0.55)",
+                }}>
+                  You get the answers.{" "}
+                  <span style={{
+                    color: C.secondary,
+                    fontWeight: 800,
+                    fontStyle: "italic",
+                    letterSpacing: "-0.01em",
+                    textShadow: "0 0 16px rgba(79,195,247,0.55), 0 0 34px rgba(79,195,247,0.28), 0 1px 3px rgba(0,0,0,0.9)",
+                  }}>We absorb the cost.</span>
+                </p>
               </div>
             </div>
 
