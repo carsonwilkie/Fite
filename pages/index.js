@@ -466,6 +466,8 @@ export default function LandingPage() {
                   marginBottom: "clamp(12px, 1.2vw, 20px)",
                   fontFamily: "Manrope, sans-serif",
                   textShadow: "0 0 12px rgba(79,195,247,0.5)",
+                  userSelect: "none",
+                  pointerEvents: "none",
                 }}>
                   Next-Gen Interview Preparation
                 </div>
@@ -475,6 +477,8 @@ export default function LandingPage() {
                   fontSize: "clamp(32px, 4.2vw, 58px)", fontWeight: 900, lineHeight: 1.05,
                   letterSpacing: "-0.04em", color: C.onSurface, fontFamily: "Inter, sans-serif",
                   marginBottom: "clamp(24px, 3.5vh, 48px)",
+                  userSelect: "none",
+                  pointerEvents: "none",
                 }}>
                   <div style={{ textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 8px rgba(0,0,0,1), 0 4px 24px rgba(0,0,0,0.95), 0 8px 50px rgba(0,0,0,0.75)" }}>
                     Master Your
@@ -496,6 +500,8 @@ export default function LandingPage() {
                   boxShadow: "0 4px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(79,195,247,0.06)",
                   padding: "clamp(14px, 1.4vw, 22px) clamp(14px, 1.4vw, 22px) clamp(12px, 1.2vw, 18px)",
                   maxWidth: "75%",
+                  userSelect: "none",
+                  pointerEvents: "none",
                 }}>
                   {/* Card header: tags */}
                   <div style={{ display: "flex", gap: 6, marginBottom: "clamp(10px, 1vw, 16px)", alignItems: "center" }}>
@@ -544,6 +550,8 @@ export default function LandingPage() {
                   background: "rgba(13,27,42,0.7)",
                   borderLeft: "4px solid #4FC3F7",
                   maxWidth: "75%",
+                  userSelect: "none",
+                  pointerEvents: "none",
                 }}>
                   {/* Score row */}
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "clamp(8px, 0.8vw, 12px)" }}>
