@@ -177,9 +177,14 @@ export default function LandingPage() {
       if (index === 0) drawFrame(asset);
     };
 
+    const isKeyFrameIndex = (index) => index === 0 || index === heroFrameNumbers.length - 1;
+
     const loadFrameAtIndex = (index) => {
       const frameNumber = heroFrameNumbers[index];
-      const cachedAsset = heroFrameCache.get(frameNumber);
+      // Key frames (first + last) always load the full-res desktop image for quality.
+      const useHQ = isMobileHeroLayout && isKeyFrameIndex(index);
+      const cacheKey = useHQ ? `hq:${frameNumber}` : frameNumber;
+      const cachedAsset = heroFrameCache.get(cacheKey);
 
       if (cachedAsset) {
         commitFrame(index, cachedAsset);
@@ -191,19 +196,19 @@ export default function LandingPage() {
         img.decoding = "async";
         img.onload = () => {
           const finalize = (asset) => {
-            heroFrameCache.set(frameNumber, asset);
+            heroFrameCache.set(cacheKey, asset);
             commitFrame(index, asset);
             resolve();
           };
 
-          if (!isMobileHeroLayout && window.createImageBitmap) {
+          if ((useHQ || !isMobileHeroLayout) && window.createImageBitmap) {
             window.createImageBitmap(img).then(finalize).catch(() => finalize(img));
           } else {
             finalize(img);
           }
         };
         img.onerror = () => resolve();
-        img.src = frameSrc(frameNumber, isMobileHeroLayout);
+        img.src = frameSrc(frameNumber, useHQ ? false : isMobileHeroLayout);
       });
     };
 
