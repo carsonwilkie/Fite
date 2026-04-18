@@ -290,7 +290,7 @@ export default function LandingPage() {
             const introT = Math.min(Math.max((p - INTRO_DELAY) / (INTRO - INTRO_DELAY), 0), 1);
             if (introColRef.current) {
               introColRef.current.style.transform = `translateX(${-introT * 105}%) translateZ(0)`;
-              introColRef.current.style.opacity   = `${Math.max(0, 1 - introT * 1.6)}`;
+              introColRef.current.style.opacity   = `${Math.max(0, 1 - introT * 1.1)}`;
             }
             if (canvasRef.current) {
               canvasRef.current.style.transform = `translateX(${(1 - introT) * 24}%) translateZ(0)`;
@@ -441,7 +441,7 @@ export default function LandingPage() {
                 style={{
                   position: "absolute", left: 0, top: 0, bottom: 0,
                   width: "40%",
-                  background: "linear-gradient(to right, rgba(2,8,23,0.97) 0%, rgba(2,8,23,0.94) 72%, rgba(2,8,23,0.6) 88%, transparent 100%)",
+                  background: "linear-gradient(to right, rgba(2,8,23,0.97) 0%, rgba(2,8,23,0.93) 38%, rgba(2,8,23,0.6) 62%, rgba(2,8,23,0.15) 82%, transparent 100%)",
                   zIndex: 20,
                   display: "flex", flexDirection: "column", justifyContent: "flex-start",
                   overflow: "hidden",
