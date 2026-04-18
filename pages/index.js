@@ -716,7 +716,7 @@ export default function LandingPage() {
                 }}
               >
               {/* Left: product details */}
-              <div className="end-panel-left" style={{ padding: isMobileHeroLayout ? "28px 30px" : 0, width: isMobileHeroLayout ? undefined : "28%" }}>
+              <div className="end-panel-left" style={{ padding: isMobileHeroLayout ? "28px 0" : 0, width: isMobileHeroLayout ? undefined : "28%" }}>
                 <div>
                 <div
                   ref={endPracticeRef}
