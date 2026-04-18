@@ -441,7 +441,7 @@ export default function LandingPage() {
                 style={{
                   position: "absolute", left: 0, top: 0, bottom: 0,
                   width: "40%",
-                  background: "linear-gradient(to right, rgba(2,8,23,0.97) 0%, rgba(2,8,23,0.93) 38%, rgba(2,8,23,0.6) 62%, rgba(2,8,23,0.15) 82%, transparent 100%)",
+                  background: "linear-gradient(to right, rgba(2,8,23,0.97) 0%, rgba(2,8,23,0.96) 65%, rgba(2,8,23,0.7) 82%, rgba(2,8,23,0.15) 93%, transparent 100%)",
                   zIndex: 20,
                   display: "flex", flexDirection: "column", justifyContent: "flex-start",
                   overflow: "hidden",
@@ -514,7 +514,7 @@ export default function LandingPage() {
                       fontSize: "clamp(8px, 0.6vw, 10px)", fontWeight: 700, padding: "2px 8px", borderRadius: 99,
                       background: "rgba(201,168,76,0.18)", color: C.gold,
                       fontFamily: "Manrope, sans-serif", letterSpacing: "0.1em", textTransform: "uppercase",
-                    }}>Hard</span>
+                    }}>Medium</span>
                   </div>
 
                   {/* Question text */}
