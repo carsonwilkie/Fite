@@ -716,7 +716,7 @@ export default function LandingPage() {
                 }}
               >
               {/* Left: product details */}
-              <div className="end-panel-left" style={{ padding: isMobileHeroLayout ? "28px 0" : 0, width: isMobileHeroLayout ? undefined : "28%" }}>
+              <div className="end-panel-left" style={{ padding: isMobileHeroLayout ? "28px 30" : 0, width: isMobileHeroLayout ? undefined : "28%" }}>
                 <div>
                 <div
                   ref={endPracticeRef}
@@ -770,7 +770,7 @@ export default function LandingPage() {
 
               {/* Right: sign-up card */}
               <div ref={endSignupRef} className="lp-glass-card-solid" style={{
-                padding: isMobileHeroLayout ? 18 : "2.5%",
+                padding: isMobileHeroLayout ? 30 : "2.5%",
                 borderRadius: 16,
                 minWidth: 0,
                 width: isMobileHeroLayout ? "100%" : "28%",
