@@ -339,10 +339,15 @@ export default function LandingPage() {
             }
           }
 
-          // — Pricing comparison (np: 0.04 → 0.36) —
-          // Enter 0.04→0.15, hold 0.15→0.29, exit 0.29→0.36.
-          const cmpEnter = Math.max(0, Math.min((np - 0.04) / 0.11, 1));
-          const cmpExit  = Math.max(0, Math.min((np - 0.29) / 0.07, 1));
+          // — Pricing comparison —
+          // Desktop: enter 0.04→0.15, hold 0.15→0.29, exit 0.29→0.36.
+          // Mobile: enter 0.28→0.38 (after hero text exits), hold 0.38→0.48, exit 0.48→0.56.
+          const cmpEnterStart = isMobileHeroLayout ? 0.28 : 0.04;
+          const cmpEnterEnd   = isMobileHeroLayout ? 0.38 : 0.15;
+          const cmpExitStart  = isMobileHeroLayout ? 0.48 : 0.29;
+          const cmpExitEnd    = isMobileHeroLayout ? 0.56 : 0.36;
+          const cmpEnter = Math.max(0, Math.min((np - cmpEnterStart) / (cmpEnterEnd - cmpEnterStart), 1));
+          const cmpExit  = Math.max(0, Math.min((np - cmpExitStart)  / (cmpExitEnd  - cmpExitStart),  1));
           const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
           const cmpEnterE = easeInOut(cmpEnter);
           const cmpExitE  = easeInOut(cmpExit);
@@ -383,11 +388,16 @@ export default function LandingPage() {
             }
           }
 
-          // — Mid-scroll tagline (np: 0.40 → 0.72) —
-          const midOp = np < 0.40 ? 0
-            : np < 0.50 ? (np - 0.40) / 0.10
-            : np < 0.62 ? 1
-            : np < 0.72 ? 1 - (np - 0.62) / 0.10
+          // — Mid-scroll tagline —
+          // Desktop: 0.40→0.72; Mobile delayed so it doesn't collide with pricing exit.
+          const midIn0  = isMobileHeroLayout ? 0.60 : 0.40;
+          const midIn1  = isMobileHeroLayout ? 0.68 : 0.50;
+          const midOut0 = isMobileHeroLayout ? 0.74 : 0.62;
+          const midOut1 = isMobileHeroLayout ? 0.82 : 0.72;
+          const midOp = np < midIn0 ? 0
+            : np < midIn1 ? (np - midIn0) / (midIn1 - midIn0)
+            : np < midOut0 ? 1
+            : np < midOut1 ? 1 - (np - midOut0) / (midOut1 - midOut0)
             : 0;
           if (midTagRef.current) midTagRef.current.style.opacity = `${midOp}`;
           if (midBlurRef.current) midBlurRef.current.style.opacity = `${midOp}`;
@@ -750,10 +760,10 @@ export default function LandingPage() {
                   backdropFilter: isMobileHeroLayout ? "blur(10px)" : "blur(28px)",
                   WebkitBackdropFilter: isMobileHeroLayout ? "blur(10px)" : "blur(28px)",
                   maskImage: isMobileHeroLayout
-                    ? "radial-gradient(ellipse 98% 22% at 50% 20%, black 0%, black 65%, rgba(0,0,0,0.3) 88%, transparent 100%), radial-gradient(ellipse 98% 14% at 50% 39%, black 0%, black 65%, rgba(0,0,0,0.3) 88%, transparent 100%)"
+                    ? "radial-gradient(ellipse 98% 34% at 50% 28%, black 0%, black 68%, rgba(0,0,0,0.3) 88%, transparent 100%)"
                     : "radial-gradient(ellipse 34% 30% at 18% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%), radial-gradient(ellipse 34% 22% at 82% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%)",
                   WebkitMaskImage: isMobileHeroLayout
-                    ? "radial-gradient(ellipse 98% 22% at 50% 20%, black 0%, black 65%, rgba(0,0,0,0.3) 88%, transparent 100%), radial-gradient(ellipse 98% 14% at 50% 39%, black 0%, black 65%, rgba(0,0,0,0.3) 88%, transparent 100%)"
+                    ? "radial-gradient(ellipse 98% 34% at 50% 28%, black 0%, black 68%, rgba(0,0,0,0.3) 88%, transparent 100%)"
                     : "radial-gradient(ellipse 34% 30% at 18% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%), radial-gradient(ellipse 34% 22% at 82% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%)",
                   opacity: 0,
                   visibility: "hidden",
@@ -770,7 +780,7 @@ export default function LandingPage() {
                 style={{
                   position: "absolute", inset: 0,
                   background: isMobileHeroLayout
-                    ? "radial-gradient(ellipse 86% 20% at 50% 20%, rgba(2,8,23,0.7) 0%, rgba(2,8,23,0.66) 18%, rgba(2,8,23,0.56) 36%, rgba(2,8,23,0.42) 52%, rgba(2,8,23,0.28) 68%, rgba(2,8,23,0.16) 80%, rgba(2,8,23,0.07) 90%, rgba(2,8,23,0.02) 96%, rgba(2,8,23,0) 100%), radial-gradient(ellipse 86% 12% at 50% 39%, rgba(2,8,23,0.68) 0%, rgba(2,8,23,0.62) 18%, rgba(2,8,23,0.52) 36%, rgba(2,8,23,0.38) 52%, rgba(2,8,23,0.24) 68%, rgba(2,8,23,0.14) 80%, rgba(2,8,23,0.06) 90%, rgba(2,8,23,0.02) 96%, rgba(2,8,23,0) 100%)"
+                    ? "radial-gradient(ellipse 92% 32% at 50% 28%, rgba(2,8,23,0.82) 0%, rgba(2,8,23,0.76) 18%, rgba(2,8,23,0.64) 36%, rgba(2,8,23,0.48) 52%, rgba(2,8,23,0.32) 68%, rgba(2,8,23,0.18) 80%, rgba(2,8,23,0.08) 90%, rgba(2,8,23,0.03) 96%, rgba(2,8,23,0) 100%)"
                     : "radial-gradient(ellipse 30% 26% at 14% 50%, rgba(2,8,23,0.9) 0%, rgba(2,8,23,0.84) 16%, rgba(2,8,23,0.74) 32%, rgba(2,8,23,0.6) 48%, rgba(2,8,23,0.43) 62%, rgba(2,8,23,0.27) 74%, rgba(2,8,23,0.14) 84%, rgba(2,8,23,0.06) 92%, rgba(2,8,23,0.02) 97%, rgba(2,8,23,0) 100%), radial-gradient(ellipse 27% 21% at 78.5% 51%, rgba(2,8,23,0.75) 0%, rgba(2,8,23,0.72) 22%, rgba(2,8,23,0.66) 38%, rgba(2,8,23,0.55) 52%, rgba(2,8,23,0.4) 64%, rgba(2,8,23,0.25) 76%, rgba(2,8,23,0.13) 85%, rgba(2,8,23,0.05) 93%, rgba(2,8,23,0.02) 97%, rgba(2,8,23,0) 100%)",
                   pointerEvents: "none",
                 }}
@@ -783,73 +793,104 @@ export default function LandingPage() {
                 style={{
                   position: "absolute",
                   left: isMobileHeroLayout ? "50%" : "5.5%",
-                  top: isMobileHeroLayout ? "9%" : "50%",
+                  top: isMobileHeroLayout ? "14%" : "50%",
                   transform: isMobileHeroLayout ? "translate(-50%, 0)" : "translateY(-50%)",
-                  width: isMobileHeroLayout ? "84%" : "26%",
+                  width: isMobileHeroLayout ? "86%" : "26%",
                   maxWidth: isMobileHeroLayout ? 440 : "none",
                   textAlign: isMobileHeroLayout ? "center" : "left",
                   willChange: "transform, filter",
                 }}
               >
-                <div style={{
-                  fontSize: isMobileHeroLayout ? 10 : "clamp(10px, 0.75vw, 12px)",
-                  fontWeight: 800, letterSpacing: "0.24em",
-                  textTransform: "uppercase", fontFamily: "Manrope, sans-serif",
-                  color: C.muted,
-                  marginBottom: isMobileHeroLayout ? 6 : "clamp(8px, 0.8vw, 12px)",
-                  opacity: 0.85,
-                  textShadow: "0 1px 4px rgba(0,0,0,0.9)",
-                }}>
-                  The Premium Price
-                </div>
-
-                {/* Retail → Fite price comparison with arrow */}
-                <div style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: isMobileHeroLayout ? 8 : "clamp(8px, 0.7vw, 12px)",
-                  justifyContent: isMobileHeroLayout ? "center" : "flex-start",
-                  flexWrap: "nowrap",
-                  marginBottom: isMobileHeroLayout ? 4 : "clamp(2px, 0.3vw, 6px)",
-                }}>
-                  <span style={{
-                    fontSize: isMobileHeroLayout ? 15 : "clamp(15px, 1.2vw, 20px)",
-                    fontFamily: "Inter, sans-serif",
-                    fontWeight: 700,
-                    color: "rgba(203,213,225,0.95)",
-                    letterSpacing: "-0.01em",
-                    textDecoration: "line-through",
-                    textDecorationColor: "rgba(231,120,120,0.85)",
-                    textDecorationThickness: "2px",
-                    textShadow: "0 1px 3px rgba(0,0,0,0.95), 0 2px 10px rgba(0,0,0,0.75)",
+                {/* Mobile: gold eyebrow label (merges right block hook). Desktop: muted "The Premium Price" */}
+                {isMobileHeroLayout ? (
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    justifyContent: "center",
+                    marginBottom: 14,
                   }}>
-                    $20 / month
-                  </span>
-                  <span
-                    aria-hidden
-                    style={{
-                      fontSize: isMobileHeroLayout ? 15 : "clamp(15px, 1.2vw, 20px)",
+                    <div style={{
+                      width: 22, height: 1,
+                      background: C.gold,
+                      boxShadow: "0 0 10px rgba(201,168,76,0.65)",
+                    }} />
+                    <span style={{
+                      fontSize: 10,
+                      fontWeight: 800, letterSpacing: "0.22em",
+                      textTransform: "uppercase", fontFamily: "Manrope, sans-serif",
+                      color: C.gold,
+                      textShadow: "0 0 14px rgba(201,168,76,0.4), 0 1px 3px rgba(0,0,0,0.95)",
+                    }}>
+                      Powered by Premium AI
+                    </span>
+                    <div style={{
+                      width: 22, height: 1,
+                      background: C.gold,
+                      boxShadow: "0 0 10px rgba(201,168,76,0.65)",
+                    }} />
+                  </div>
+                ) : (
+                  <div style={{
+                    fontSize: "clamp(10px, 0.75vw, 12px)",
+                    fontWeight: 800, letterSpacing: "0.24em",
+                    textTransform: "uppercase", fontFamily: "Manrope, sans-serif",
+                    color: C.muted,
+                    marginBottom: "clamp(8px, 0.8vw, 12px)",
+                    opacity: 0.85,
+                    textShadow: "0 1px 4px rgba(0,0,0,0.9)",
+                  }}>
+                    The Premium Price
+                  </div>
+                )}
+
+                {/* Desktop only: price comparison above the giant number */}
+                {!isMobileHeroLayout && (
+                  <div style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: "clamp(8px, 0.7vw, 12px)",
+                    justifyContent: "flex-start",
+                    flexWrap: "nowrap",
+                    marginBottom: "clamp(2px, 0.3vw, 6px)",
+                  }}>
+                    <span style={{
+                      fontSize: "clamp(15px, 1.2vw, 20px)",
+                      fontFamily: "Inter, sans-serif",
+                      fontWeight: 700,
+                      color: "rgba(203,213,225,0.95)",
+                      letterSpacing: "-0.01em",
+                      textDecoration: "line-through",
+                      textDecorationColor: "rgba(231,120,120,0.85)",
+                      textDecorationThickness: "2px",
+                      textShadow: "0 1px 3px rgba(0,0,0,0.95), 0 2px 10px rgba(0,0,0,0.75)",
+                    }}>
+                      $20 / month
+                    </span>
+                    <span
+                      aria-hidden
+                      style={{
+                        fontSize: "clamp(15px, 1.2vw, 20px)",
+                        fontFamily: "Inter, sans-serif",
+                        fontWeight: 800,
+                        color: "rgba(201,168,76,0.9)",
+                        lineHeight: 1,
+                        textShadow: "0 0 10px rgba(201,168,76,0.55), 0 1px 3px rgba(0,0,0,0.9)",
+                        transform: "translateY(-1px)",
+                      }}
+                    >
+                      →
+                    </span>
+                    <span style={{
+                      fontSize: "clamp(16px, 1.3vw, 22px)",
                       fontFamily: "Inter, sans-serif",
                       fontWeight: 800,
-                      color: "rgba(201,168,76,0.9)",
-                      lineHeight: 1,
-                      textShadow: "0 0 10px rgba(201,168,76,0.55), 0 1px 3px rgba(0,0,0,0.9)",
-                      transform: "translateY(-1px)",
-                    }}
-                  >
-                    →
-                  </span>
-                  <span style={{
-                    fontSize: isMobileHeroLayout ? 16 : "clamp(16px, 1.3vw, 22px)",
-                    fontFamily: "Inter, sans-serif",
-                    fontWeight: 800,
-                    color: C.gold,
-                    letterSpacing: "-0.01em",
-                    textShadow: "0 0 14px rgba(201,168,76,0.5), 0 0 30px rgba(201,168,76,0.28), 0 1px 3px rgba(0,0,0,0.9)",
-                  }}>
-                    $3 / month
-                  </span>
-                </div>
+                      color: C.gold,
+                      letterSpacing: "-0.01em",
+                      textShadow: "0 0 14px rgba(201,168,76,0.5), 0 0 30px rgba(201,168,76,0.28), 0 1px 3px rgba(0,0,0,0.9)",
+                    }}>
+                      $3 / month
+                    </span>
+                  </div>
+                )}
 
                 {/* Giant hero number */}
                 <div
@@ -857,60 +898,132 @@ export default function LandingPage() {
                   className="cmp-num"
                   style={{
                     fontSize: isMobileHeroLayout
-                      ? "clamp(56px, 15vw, 80px)"
+                      ? "clamp(72px, 22vw, 128px)"
                       : "clamp(96px, 11vw, 172px)",
                     fontWeight: 900, fontStyle: "italic",
                     fontFamily: "Inter, sans-serif",
-                    lineHeight: 0.92,
+                    lineHeight: 0.9,
                     letterSpacing: "-0.055em",
                     color: C.secondary,
                     transformOrigin: isMobileHeroLayout ? "center top" : "left center",
                     textShadow: "0 1px 0 rgba(0,0,0,1), 0 4px 18px rgba(0,0,0,0.95), 0 0 36px rgba(79,195,247,0.55), 0 0 82px rgba(79,195,247,0.28)",
-                    margin: isMobileHeroLayout ? "2px 0 4px" : "2px 0 clamp(8px, 0.9vw, 14px)",
+                    margin: isMobileHeroLayout ? "0 0 2px" : "2px 0 clamp(8px, 0.9vw, 14px)",
                   }}
                 >
                   15%
                 </div>
 
+                <div style={{
+                  fontSize: isMobileHeroLayout ? 18 : "clamp(14px, 1.1vw, 20px)",
+                  fontWeight: 800,
+                  fontFamily: "Inter, sans-serif",
+                  color: C.onSurface,
+                  lineHeight: 1.2,
+                  letterSpacing: "-0.015em",
+                  marginBottom: isMobileHeroLayout ? 14 : 0,
+                  textShadow: "0 1px 4px rgba(0,0,0,0.95), 0 2px 14px rgba(0,0,0,0.8)",
+                }}>
+                  of the cost.
+                </div>
+
                 {/* Accent rule */}
                 <div style={{
                   height: 2,
-                  width: isMobileHeroLayout ? 88 : "42%",
+                  width: isMobileHeroLayout ? 64 : "42%",
                   background: "linear-gradient(to right, rgba(79,195,247,0.95), rgba(79,195,247,0))",
-                  marginBottom: isMobileHeroLayout ? 10 : "clamp(10px, 1vw, 16px)",
+                  marginBottom: isMobileHeroLayout ? 14 : "clamp(10px, 1vw, 16px)",
                   marginLeft: isMobileHeroLayout ? "auto" : 0,
                   marginRight: isMobileHeroLayout ? "auto" : 0,
                   boxShadow: "0 0 12px rgba(79,195,247,0.4)",
                   borderRadius: 2,
                 }} />
 
-                <div style={{
-                  fontSize: isMobileHeroLayout ? 14 : "clamp(14px, 1.1vw, 20px)",
-                  fontWeight: 700,
-                  fontFamily: "Inter, sans-serif",
-                  color: C.onSurface,
-                  lineHeight: 1.25,
-                  letterSpacing: "-0.01em",
-                  textShadow: "0 1px 4px rgba(0,0,0,0.95), 0 2px 14px rgba(0,0,0,0.8)",
-                }}>
-                  of the cost.
-                </div>
+                {/* Mobile only: compact price row + closing line (merged from right block) */}
+                {isMobileHeroLayout && (
+                  <>
+                    <div style={{
+                      display: "flex",
+                      alignItems: "baseline",
+                      gap: 8,
+                      justifyContent: "center",
+                      flexWrap: "nowrap",
+                      marginBottom: 12,
+                    }}>
+                      <span style={{
+                        fontSize: 14,
+                        fontFamily: "Inter, sans-serif",
+                        fontWeight: 700,
+                        color: "rgba(203,213,225,0.95)",
+                        letterSpacing: "-0.01em",
+                        textDecoration: "line-through",
+                        textDecorationColor: "rgba(231,120,120,0.85)",
+                        textDecorationThickness: "2px",
+                        textShadow: "0 1px 3px rgba(0,0,0,0.95), 0 2px 10px rgba(0,0,0,0.75)",
+                      }}>
+                        $20 / mo
+                      </span>
+                      <span
+                        aria-hidden
+                        style={{
+                          fontSize: 14,
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 800,
+                          color: "rgba(201,168,76,0.9)",
+                          lineHeight: 1,
+                          textShadow: "0 0 10px rgba(201,168,76,0.55), 0 1px 3px rgba(0,0,0,0.9)",
+                          transform: "translateY(-1px)",
+                        }}
+                      >
+                        →
+                      </span>
+                      <span style={{
+                        fontSize: 15,
+                        fontFamily: "Inter, sans-serif",
+                        fontWeight: 800,
+                        color: C.gold,
+                        letterSpacing: "-0.01em",
+                        textShadow: "0 0 14px rgba(201,168,76,0.5), 0 0 30px rgba(201,168,76,0.28), 0 1px 3px rgba(0,0,0,0.9)",
+                      }}>
+                        $3 / mo
+                      </span>
+                    </div>
+
+                    <p style={{
+                      fontSize: 13.5,
+                      fontWeight: 600,
+                      fontFamily: "Inter, sans-serif",
+                      color: "rgba(241,245,249,0.96)",
+                      lineHeight: 1.45,
+                      letterSpacing: "-0.005em",
+                      margin: 0,
+                      textShadow: "0 1px 4px rgba(0,0,0,0.95), 0 2px 14px rgba(0,0,0,0.8), 0 4px 26px rgba(0,0,0,0.55)",
+                    }}>
+                      Same frontier AI.{" "}
+                      <span style={{
+                        color: C.secondary,
+                        fontWeight: 800,
+                        fontStyle: "italic",
+                        letterSpacing: "-0.01em",
+                        textShadow: "0 0 16px rgba(79,195,247,0.55), 0 0 34px rgba(79,195,247,0.28), 0 1px 3px rgba(0,0,0,0.9)",
+                      }}>We absorb the cost.</span>
+                    </p>
+                  </>
+                )}
               </div>
 
-              {/* Right block — descriptive */}
+              {/* Right block — descriptive (desktop only; merged into left block on mobile) */}
               <div
                 ref={cmpRightRef}
                 className="cmp-right"
                 style={{
                   position: "absolute",
-                  right: isMobileHeroLayout ? undefined : "5.5%",
-                  left: isMobileHeroLayout ? "50%" : undefined,
-                  top: isMobileHeroLayout ? "34%" : "50%",
-                  transform: isMobileHeroLayout ? "translate(-50%, 0)" : "translateY(-50%)",
-                  width: isMobileHeroLayout ? "84%" : "26%",
-                  maxWidth: isMobileHeroLayout ? 440 : "none",
-                  textAlign: isMobileHeroLayout ? "center" : "left",
+                  right: "5.5%",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: "26%",
+                  textAlign: "left",
                   willChange: "transform, filter",
+                  display: isMobileHeroLayout ? "none" : undefined,
                 }}
               >
                 <div style={{
