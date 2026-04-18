@@ -290,7 +290,7 @@ export default function LandingPage() {
             const introT = Math.min(Math.max((p - INTRO_DELAY) / (INTRO - INTRO_DELAY), 0), 1);
             if (introColRef.current) {
               introColRef.current.style.transform = `translateX(${-introT * 105}%) translateZ(0)`;
-              introColRef.current.style.opacity   = `${Math.max(0, 1 - introT * 1.1)}`;
+              introColRef.current.style.opacity   = "1";
             }
             if (canvasRef.current) {
               canvasRef.current.style.transform = `translateX(${(1 - introT) * 24}%) translateZ(0)`;
