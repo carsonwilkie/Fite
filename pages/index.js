@@ -713,22 +713,6 @@ export default function LandingPage() {
               {/* Left: product details */}
               <div className="end-panel-left" style={{ padding: isMobileHeroLayout ? "28px 30px" : 0, width: isMobileHeroLayout ? undefined : "28%" }}>
                 <div>
-                {isMobileHeroLayout && (
-                  <div
-                    ref={endBrandRef}
-                    className="end-brand"
-                    style={{
-                    fontSize: "clamp(38px, 6vw, 70px)", fontWeight: 900, letterSpacing: "-0.04em",
-                    fontFamily: "Inter, sans-serif", marginBottom: 4,
-                    filter: "drop-shadow(0 8px 32px rgba(0,0,0,0.85))",
-                    willChange: "transform",
-                    textAlign: "left",
-                  }}
-                  >
-                    <span style={{ color: C.primary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 20px rgba(0,0,0,0.95), 0 0 28px rgba(21,101,192,0.9), 0 0 60px rgba(21,101,192,0.7)" }}>Fite</span>{" "}
-                    <span style={{ color: C.secondary, textShadow: "0 1px 0 rgba(0,0,0,0.98), 0 4px 20px rgba(0,0,0,0.95), 0 0 28px rgba(79,195,247,0.95), 0 0 65px rgba(79,195,247,0.8)" }}>Finance</span>
-                  </div>
-                )}
                 <div
                   ref={endPracticeRef}
                   style={{
