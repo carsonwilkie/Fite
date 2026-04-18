@@ -760,10 +760,10 @@ export default function LandingPage() {
                   backdropFilter: isMobileHeroLayout ? "blur(10px)" : "blur(28px)",
                   WebkitBackdropFilter: isMobileHeroLayout ? "blur(10px)" : "blur(28px)",
                   maskImage: isMobileHeroLayout
-                    ? "radial-gradient(ellipse 98% 34% at 50% 28%, black 0%, black 68%, rgba(0,0,0,0.3) 88%, transparent 100%)"
+                    ? "radial-gradient(ellipse 98% 34% at 50% 38%, black 0%, black 68%, rgba(0,0,0,0.3) 88%, transparent 100%)"
                     : "radial-gradient(ellipse 34% 30% at 18% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%), radial-gradient(ellipse 34% 22% at 82% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%)",
                   WebkitMaskImage: isMobileHeroLayout
-                    ? "radial-gradient(ellipse 98% 34% at 50% 28%, black 0%, black 68%, rgba(0,0,0,0.3) 88%, transparent 100%)"
+                    ? "radial-gradient(ellipse 98% 34% at 50% 38%, black 0%, black 68%, rgba(0,0,0,0.3) 88%, transparent 100%)"
                     : "radial-gradient(ellipse 34% 30% at 18% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%), radial-gradient(ellipse 34% 22% at 82% 50%, black 0%, black 62%, rgba(0,0,0,0.28) 85%, transparent 100%)",
                   opacity: 0,
                   visibility: "hidden",
@@ -780,7 +780,7 @@ export default function LandingPage() {
                 style={{
                   position: "absolute", inset: 0,
                   background: isMobileHeroLayout
-                    ? "radial-gradient(ellipse 92% 32% at 50% 28%, rgba(2,8,23,0.82) 0%, rgba(2,8,23,0.76) 18%, rgba(2,8,23,0.64) 36%, rgba(2,8,23,0.48) 52%, rgba(2,8,23,0.32) 68%, rgba(2,8,23,0.18) 80%, rgba(2,8,23,0.08) 90%, rgba(2,8,23,0.03) 96%, rgba(2,8,23,0) 100%)"
+                    ? "radial-gradient(ellipse 92% 32% at 50% 38%, rgba(2,8,23,0.82) 0%, rgba(2,8,23,0.76) 18%, rgba(2,8,23,0.64) 36%, rgba(2,8,23,0.48) 52%, rgba(2,8,23,0.32) 68%, rgba(2,8,23,0.18) 80%, rgba(2,8,23,0.08) 90%, rgba(2,8,23,0.03) 96%, rgba(2,8,23,0) 100%)"
                     : "radial-gradient(ellipse 30% 26% at 14% 50%, rgba(2,8,23,0.9) 0%, rgba(2,8,23,0.84) 16%, rgba(2,8,23,0.74) 32%, rgba(2,8,23,0.6) 48%, rgba(2,8,23,0.43) 62%, rgba(2,8,23,0.27) 74%, rgba(2,8,23,0.14) 84%, rgba(2,8,23,0.06) 92%, rgba(2,8,23,0.02) 97%, rgba(2,8,23,0) 100%), radial-gradient(ellipse 27% 21% at 78.5% 51%, rgba(2,8,23,0.75) 0%, rgba(2,8,23,0.72) 22%, rgba(2,8,23,0.66) 38%, rgba(2,8,23,0.55) 52%, rgba(2,8,23,0.4) 64%, rgba(2,8,23,0.25) 76%, rgba(2,8,23,0.13) 85%, rgba(2,8,23,0.05) 93%, rgba(2,8,23,0.02) 97%, rgba(2,8,23,0) 100%)",
                   pointerEvents: "none",
                 }}
@@ -793,7 +793,7 @@ export default function LandingPage() {
                 style={{
                   position: "absolute",
                   left: isMobileHeroLayout ? "50%" : "5.5%",
-                  top: isMobileHeroLayout ? "14%" : "50%",
+                  top: isMobileHeroLayout ? "22%" : "50%",
                   transform: isMobileHeroLayout ? "translate(-50%, 0)" : "translateY(-50%)",
                   width: isMobileHeroLayout ? "86%" : "26%",
                   maxWidth: isMobileHeroLayout ? 440 : "none",
