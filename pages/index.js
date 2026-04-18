@@ -25,11 +25,8 @@ const C = {
 const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 
 const TOTAL_FRAMES = 169;
-const MOBILE_FRAME_STEP = 2;
 const DESKTOP_FRAME_NUMBERS = Array.from({ length: TOTAL_FRAMES - 1 }, (_, i) => i + 2);
-const MOBILE_FRAME_NUMBERS = DESKTOP_FRAME_NUMBERS.filter((frameNumber, index) =>
-  index % MOBILE_FRAME_STEP === 0 || frameNumber === TOTAL_FRAMES
-);
+const MOBILE_FRAME_NUMBERS = DESKTOP_FRAME_NUMBERS.filter((n) => n % 2 === 1);
 const frameSrc = (i, mobile = false) =>
   mobile
     ? `/frames/mobile/frame-${String(i).padStart(4, "0")}.webp`
