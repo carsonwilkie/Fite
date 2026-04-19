@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
+import useStableViewport, { toViewportCssValue } from "./useStableViewport";
 
 // ─── Design tokens (matches Dashboard.js) ────────────────────────────────────
 const C = {
@@ -75,6 +76,8 @@ function Icon({ name, size = 18 }) {
 function Success() {
   const router = useRouter();
   const { isPaid, loading } = usePaidStatus();
+  const viewport = useStableViewport();
+  const fullHeight = toViewportCssValue(viewport.height);
   const [showConfetti, setShowConfetti] = useState(true);
 
   const [particles] = useState(() =>
@@ -100,7 +103,7 @@ function Success() {
   }
 
   return (
-    <div style={styles.page}>
+    <div style={{ ...styles.page, minHeight: fullHeight }}>
       {/* Confetti overlay */}
       {showConfetti && (
         <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 200, overflow: "hidden" }}>

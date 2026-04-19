@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import usePaidStatus from "./usePaidStatus";
 import { CATEGORIES, DIFFICULTIES } from "./constants";
+import useStableViewport, { toViewportCssValue } from "./useStableViewport";
 
 const C = {
   bg:          "#020817",
@@ -145,6 +146,8 @@ export default function HistoryDark() {
   const router  = useRouter();
   const { user } = useUser();
   const { isPaid, loading } = usePaidStatus();
+  const viewport = useStableViewport();
+  const fullHeight = toViewportCssValue(viewport.height);
 
   const [entries,           setEntries]           = useState([]);
   const [loadingData,       setLoadingData]       = useState(true);
@@ -221,14 +224,14 @@ export default function HistoryDark() {
 
   if (loading || loadingData) {
     return (
-      <div style={{ minHeight: "100vh", backgroundColor: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: fullHeight, backgroundColor: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ fontSize: 13, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>Loading history...</div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: C.bg, color: C.text, fontFamily: "Inter, sans-serif" }}>
+    <div style={{ minHeight: fullHeight, backgroundColor: C.bg, color: C.text, fontFamily: "Inter, sans-serif" }}>
 
       {/* Top bar */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", backgroundColor: `${C.bg}ee`, backdropFilter: "blur(20px)", borderBottom: `1px solid ${C.border}` }}>

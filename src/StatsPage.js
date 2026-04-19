@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useUser } from "@clerk/clerk-react";
 import { motion } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
+import useStableViewport, { toViewportCssValue } from "./useStableViewport";
 
 const C = {
   bg:          "#020817",
@@ -102,6 +103,8 @@ export default function StatsPage() {
   const router  = useRouter();
   const { user } = useUser();
   const { isPaid, loading } = usePaidStatus();
+  const viewport = useStableViewport();
+  const fullHeight = toViewportCssValue(viewport.height);
   const [entries, setEntries]             = useState([]);
   const [loadingData, setLoadingData]     = useState(true);
   const [windowN, setWindowN]             = useState(20);
@@ -198,14 +201,14 @@ export default function StatsPage() {
 
   if (loading || loadingData) {
     return (
-      <div style={{ minHeight: "100vh", backgroundColor: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: fullHeight, backgroundColor: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ fontSize: 13, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>Loading stats...</div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: C.bg, color: C.text, fontFamily: "Inter, sans-serif" }}>
+    <div style={{ minHeight: fullHeight, backgroundColor: C.bg, color: C.text, fontFamily: "Inter, sans-serif" }}>
 
       {/* Top bar */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", backgroundColor: `${C.bg}ee`, backdropFilter: "blur(20px)", borderBottom: `1px solid ${C.border}` }}>

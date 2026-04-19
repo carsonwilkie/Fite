@@ -10,6 +10,7 @@ import {
 } from "@clerk/clerk-react";
 import usePaidStatus from "../src/usePaidStatus";
 import useUpgrade from "../src/useUpgrade";
+import useStableViewport, { toViewportCssValue } from "../src/useStableViewport";
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
@@ -39,7 +40,7 @@ export default function LandingPage() {
   const { isLoaded } = useUser();
   const { isPaid } = usePaidStatus();
   const handleUpgrade = useUpgrade();
-  const [heroViewport, setHeroViewport] = useState({ width: 0, height: 0 });
+  const heroViewport = useStableViewport();
 
   // Canvas / hero refs
   const heroSectionRef = useRef(null);
@@ -77,7 +78,7 @@ export default function LandingPage() {
   // Mount-only state
   const [heroTextIn, setHeroTextIn] = useState(false);
   const heroViewportHeight = heroViewport.height || null;
-  const heroSceneHeight = heroViewportHeight ? `${heroViewportHeight}px` : "100vh";
+  const heroSceneHeight = toViewportCssValue(heroViewportHeight);
   const heroScrollHeight = heroViewportHeight ? `${heroViewportHeight * 10}px` : "1000vh";
   const isMobileHeroLayout = heroViewport.width > 0 && heroViewport.width <= 900;
   const heroFrameNumbers = isMobileHeroLayout ? MOBILE_FRAME_NUMBERS : DESKTOP_FRAME_NUMBERS;
@@ -87,42 +88,6 @@ export default function LandingPage() {
   useEffect(() => {
     const t = setTimeout(() => setHeroTextIn(true), 540);
     return () => clearTimeout(t);
-  }, []);
-
-  // Lock the hero viewport size on touch devices so mobile browser chrome
-  // doesn't keep resizing the pinned scene while the user scrolls.
-  useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-
-    const isTouchViewport = () =>
-      window.matchMedia?.("(hover: none) and (pointer: coarse)")?.matches || window.innerWidth <= 900;
-
-    const updateHeroViewport = () => {
-      const width = Math.round(window.innerWidth);
-      const height = Math.round(window.innerHeight);
-
-      setHeroViewport((prev) => {
-        if (!isTouchViewport()) {
-          return { width, height };
-        }
-
-        // On mobile, ignore height-only resizes caused by collapsing browser UI.
-        if (!prev.width || Math.abs(width - prev.width) > 24) {
-          return { width, height };
-        }
-
-        return prev;
-      });
-    };
-
-    updateHeroViewport();
-    window.addEventListener("resize", updateHeroViewport);
-    window.addEventListener("orientationchange", updateHeroViewport);
-
-    return () => {
-      window.removeEventListener("resize", updateHeroViewport);
-      window.removeEventListener("orientationchange", updateHeroViewport);
-    };
   }, []);
 
   // "Explore" click — navigate to features/supplemental page

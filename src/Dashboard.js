@@ -9,6 +9,7 @@ import usePrice from "./usePrice";
 import useUpgrade from "./useUpgrade";
 import LightsaberLoader from "./LightsaberLoader";
 import { CATEGORIES, DIFFICULTIES } from "./constants";
+import useStableViewport, { toViewportCssValue } from "./useStableViewport";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -781,6 +782,8 @@ export default function Dashboard() {
   const { isPaid } = usePaidStatus();
   const price      = usePrice();
   const handleUpgrade = useUpgrade();
+  const viewport = useStableViewport();
+  const fullHeight = toViewportCssValue(viewport.height);
 
   // Mobile state
   const [isMobile,    setIsMobile]    = useState(false);
@@ -936,14 +939,14 @@ export default function Dashboard() {
   const interviewOverallScore = interviewResponses.length > 0 ? Math.round((interviewResponses.reduce((a,r) => a+(r.score??0),0)/interviewResponses.length)*10)/10 : null;
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden", backgroundColor: C.bg, color: C.text, fontFamily: "Inter, sans-serif" }}>
+    <div style={{ display: "flex", height: fullHeight, overflow: "hidden", backgroundColor: C.bg, color: C.text, fontFamily: "Inter, sans-serif" }}>
 
       {/* ── Sidebar (desktop only) ── */}
       <motion.aside
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        style={{ width: 220, flexShrink: 0, height: "100vh", backgroundColor: C.surfaceLow, borderRight: `1px solid ${C.border}`, display: isMobile ? "none" : "flex", flexDirection: "column", zIndex: 50, overflowY: "auto" }}
+        style={{ width: 220, flexShrink: 0, height: fullHeight, backgroundColor: C.surfaceLow, borderRight: `1px solid ${C.border}`, display: isMobile ? "none" : "flex", flexDirection: "column", zIndex: 50, overflowY: "auto" }}
       >
         {/* Brand */}
         <div style={{ padding: "28px 24px 16px" }}>
@@ -1026,7 +1029,7 @@ export default function Dashboard() {
       </motion.aside>
 
       {/* ── Right side ── */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", height: fullHeight, overflow: "hidden" }}>
 
         {/* Top bar */}
         <motion.header

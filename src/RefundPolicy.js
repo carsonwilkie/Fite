@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import { useRouter } from "next/router";
+import useStableViewport, { toViewportCssValue } from "./useStableViewport";
 
 const C = {
   bg: "#020817",
@@ -63,6 +64,8 @@ For questions about billing or refunds, contact us at support@fitefinance.com.`;
 
 function RefundPolicy() {
   const router = useRouter();
+  const viewport = useStableViewport();
+  const fullHeight = toViewportCssValue(viewport.height);
   return (
     <>
       <style jsx global>{`
@@ -78,7 +81,7 @@ function RefundPolicy() {
         .legal-content a:hover { text-decoration: underline; }
       `}</style>
       <div style={{
-        minHeight: "100vh",
+        minHeight: fullHeight,
         background: C.bg,
         display: "flex",
         flexDirection: "column",
