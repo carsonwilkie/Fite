@@ -483,8 +483,8 @@ export default function FeaturesPage() {
               </SignUpButton>
             </ScrollReveal>
 
-            <div style={{ transform: "scale(1.03)" }}>
-              <ScrollReveal direction="right" startOffset={0.2} className="lp-glass-card-solid" style={{ padding: 40, borderRadius: 16, display: "flex", flexDirection: "column", position: "relative", boxShadow: "0 30px 60px rgba(0,0,0,0.5)" }}>
+            <div>
+              <ScrollReveal direction="right" startOffset={0.2} className="lp-glass-card-solid" style={{ padding: 40, borderRadius: 16, display: "flex", flexDirection: "column", position: "relative", boxShadow: "0 30px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,195,247,0.18)", background: "linear-gradient(#0b1120, #0b1120) padding-box, linear-gradient(45deg, rgba(21,101,192,0.95), rgba(79,195,247,0.95)) border-box" }}>
                 <div style={{ position: "absolute", top: 0, right: 40, transform: "translateY(-50%)", background: cyberGrad, color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 12px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "Manrope, sans-serif", boxShadow: "0 4px 12px rgba(21,101,192,0.4)" }}>
                   Recommended
                 </div>
