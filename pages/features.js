@@ -316,18 +316,18 @@ export default function FeaturesPage() {
 
             {/* Stats strip */}
             <ScrollReveal style={{ marginBottom: 64 }}>
-              <div style={{ display: "flex", flexWrap: "wrap", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(21,101,192,0.2)" }}>
+              <div className="lp-stats-strip" style={{ display: "flex", flexWrap: "wrap", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(21,101,192,0.2)" }}>
                 {[
                   { label: "Questions Generated",     val: 50000, suffix: "+",    prefix: ""  },
                   { label: "Categories",              val: 8,     suffix: "",     prefix: ""  },
                   { label: "Score Improvement",       val: 40,    suffix: "%",    prefix: ""  },
                   { label: "Price",                   val: 3,     suffix: "/mo",  prefix: "$" },
                 ].map(({ label, val, suffix, prefix }, i) => (
-                  <div key={label} style={{ flex: "1 1 160px", padding: "28px 24px", textAlign: "center", background: i % 2 === 0 ? "rgba(21,101,192,0.06)" : "rgba(79,195,247,0.04)", borderRight: i < 3 ? "1px solid rgba(21,101,192,0.15)" : "none" }}>
-                    <div style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 900, fontFamily: "Inter, sans-serif", background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", lineHeight: 1 }}>
+                  <div key={label} className="lp-stats-cell" style={{ flex: "1 1 160px", padding: "28px 24px", textAlign: "center", background: i % 2 === 0 ? "rgba(21,101,192,0.06)" : "rgba(79,195,247,0.04)", borderRight: i < 3 ? "1px solid rgba(21,101,192,0.15)" : "none" }}>
+                    <div className="lp-stats-value" style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 900, fontFamily: "Inter, sans-serif", background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", lineHeight: 1 }}>
                       <CountUp target={val} suffix={suffix} prefix={prefix} />
                     </div>
-                    <div style={{ fontSize: 11, color: C.muted, marginTop: 8, fontFamily: "Manrope, sans-serif", textTransform: "uppercase", letterSpacing: "0.1em" }}>{label}</div>
+                    <div className="lp-stats-label" style={{ fontSize: 11, color: C.muted, marginTop: 8, fontFamily: "Manrope, sans-serif", textTransform: "uppercase", letterSpacing: "0.1em" }}>{label}</div>
                   </div>
                 ))}
               </div>
@@ -383,7 +383,7 @@ export default function FeaturesPage() {
                         Track your progress over time with granular data. Visualize readiness across core competencies and technical hurdles.
                       </p>
                     </div>
-                    <div style={{ flex: 1, minWidth: 180, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: 24, borderRadius: 12, border: "1px solid rgba(21,101,192,0.2)", background: "rgba(2,8,23,0.5)" }}>
+                    <div className="features-history-chart" style={{ flex: 1, minWidth: 180, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: 24, borderRadius: 12, border: "1px solid rgba(21,101,192,0.2)", background: "rgba(2,8,23,0.5)" }}>
                       <div style={{ height: 140, display: "flex", alignItems: "flex-end", gap: 8 }}>
                         {[30, 45, 60, 85, 70].map((h, i) => (
                           <div key={i} style={{ flex: 1, borderRadius: "4px 4px 0 0", height: `${h}%`, background: i === 3 ? cyberGrad : `rgba(21,101,192,${0.2 + i * 0.12})`, boxShadow: i === 3 ? "0 0 20px rgba(21,101,192,0.4)" : "none" }} />
@@ -421,7 +421,7 @@ export default function FeaturesPage() {
 
         {/* ── HOW IT WORKS ──────────────────────────────────────────────────────── */}
         <section style={{ position: "relative", zIndex: 2, background: C.bgAlt }}>
-          <div style={{ padding: "96px 32px", maxWidth: 1280, margin: "0 auto" }}>
+          <div className="features-mobile-section" style={{ padding: "96px 32px", maxWidth: 1280, margin: "0 auto" }}>
             <SectionScan label="How It Works" />
             <ScrollReveal direction="right" style={{ marginBottom: 64 }}>
               <h2 style={{ fontSize: "clamp(22px, 3vw, 34px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 16px 0", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
@@ -441,7 +441,7 @@ export default function FeaturesPage() {
                 { step: "04", icon: "timeline",      title: "Track Your Progress",    body: "Every graded answer is logged. Search, filter, and watch your performance improve.", tag: "Premium" },
               ].map(({ step, icon, title, body, tag }, i) => (
                 <ScrollReveal key={step} direction="scale" startOffset={0.05 + i * 0.1} className="lp-glass-card how-step-card">
-                  <div style={{ fontSize: 52, fontWeight: 900, fontFamily: "Inter, sans-serif", background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", lineHeight: 1, marginBottom: 20, letterSpacing: "-0.04em" }}>
+                  <div className="features-how-step-num" style={{ fontSize: 52, fontWeight: 900, fontFamily: "Inter, sans-serif", background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", lineHeight: 1, marginBottom: 20, letterSpacing: "-0.04em" }}>
                     {step}
                   </div>
                   <span className="material-symbols-outlined lp-icon-secondary">{icon}</span>
@@ -457,7 +457,7 @@ export default function FeaturesPage() {
         </section>
 
         {/* ── PRICING ───────────────────────────────────────────────────────────── */}
-        <section style={{ padding: "96px 32px", position: "relative", zIndex: 2, background: C.bg }}>
+        <section className="features-mobile-section" style={{ padding: "96px 32px", position: "relative", zIndex: 2, background: C.bg }}>
           <div style={{ maxWidth: 1280, margin: "0 auto" }}>
             <SectionScan label="Pricing" />
           </div>
@@ -472,12 +472,12 @@ export default function FeaturesPage() {
           </ScrollReveal>
 
           <div className="lp-pricing-grid">
-            <ScrollReveal direction="left" startOffset={0.1} style={{ background: C.surface, border: "1px solid rgba(51,65,85,0.3)", padding: 40, borderRadius: 16, display: "flex", flexDirection: "column" }}>
+            <ScrollReveal direction="left" startOffset={0.1} className="features-pricing-card" style={{ background: C.surface, border: "1px solid rgba(51,65,85,0.3)", padding: 40, borderRadius: 16, display: "flex", flexDirection: "column" }}>
               <div style={{ marginBottom: 32 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 4px 0", fontFamily: "Inter, sans-serif" }}>Free Tier</h3>
                 <p style={{ color: C.muted, fontSize: 14, margin: 0, fontFamily: "Manrope, sans-serif" }}>Essential Prep</p>
               </div>
-              <div style={{ fontSize: 42, fontWeight: 900, margin: "0 0 32px 0", fontFamily: "Inter, sans-serif" }}>
+              <div className="features-pricing-price" style={{ fontSize: 42, fontWeight: 900, margin: "0 0 32px 0", fontFamily: "Inter, sans-serif" }}>
                 $0<span style={{ fontSize: 18, fontWeight: 400, color: C.muted }}>/mo</span>
               </div>
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px 0", flex: 1 }}>
@@ -499,7 +499,7 @@ export default function FeaturesPage() {
             </ScrollReveal>
 
             <div>
-              <ScrollReveal direction="right" startOffset={0.2} className="lp-glass-card-solid" style={{ padding: 40, borderRadius: 16, display: "flex", flexDirection: "column", position: "relative", boxShadow: "0 30px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,195,247,0.18)", background: "linear-gradient(#0b1120, #0b1120) padding-box, linear-gradient(45deg, rgba(21,101,192,0.95), rgba(79,195,247,0.95)) border-box" }}>
+              <ScrollReveal direction="right" startOffset={0.2} className="lp-glass-card-solid features-pricing-card" style={{ padding: 40, borderRadius: 16, display: "flex", flexDirection: "column", position: "relative", boxShadow: "0 30px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,195,247,0.18)", background: "linear-gradient(#0b1120, #0b1120) padding-box, linear-gradient(45deg, rgba(21,101,192,0.95), rgba(79,195,247,0.95)) border-box" }}>
                 <div style={{ position: "absolute", top: 0, right: 40, transform: "translateY(-50%)", background: cyberGrad, color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 12px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "Manrope, sans-serif", boxShadow: "0 4px 12px rgba(21,101,192,0.4)" }}>
                   Recommended
                 </div>
@@ -507,7 +507,7 @@ export default function FeaturesPage() {
                   <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 4px 0", fontFamily: "Inter, sans-serif" }}>Fite Premium</h3>
                   <p style={{ color: C.muted, fontSize: 14, margin: 0, fontFamily: "Manrope, sans-serif" }}>Advanced Mastery</p>
                 </div>
-                <div style={{ fontSize: 42, fontWeight: 900, margin: "0 0 32px 0", color: C.secondary, fontFamily: "Inter, sans-serif" }}>
+                <div className="features-pricing-price" style={{ fontSize: 42, fontWeight: 900, margin: "0 0 32px 0", color: C.secondary, fontFamily: "Inter, sans-serif" }}>
                   $3<span style={{ fontSize: 18, fontWeight: 400, color: C.muted }}>/mo</span>
                 </div>
                 <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px 0", flex: 1 }}>
@@ -530,7 +530,7 @@ export default function FeaturesPage() {
         </section>
 
         {/* ── CTA ───────────────────────────────────────────────────────────────── */}
-        <section style={{ padding: "128px 32px", textAlign: "center", position: "relative", overflow: "hidden", zIndex: 2, background: C.bgAlt }}>
+        <section className="features-cta-section" style={{ padding: "128px 32px", textAlign: "center", position: "relative", overflow: "hidden", zIndex: 2, background: C.bgAlt }}>
           {/* Ambient glow */}
           <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 700, height: 700, background: isPaid ? "rgba(201,168,76,0.12)" : "rgba(21,101,192,0.15)", borderRadius: "50%", filter: "blur(90px)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", top: "50%", left: "38%", transform: "translate(-50%,-50%)", width: 400, height: 400, background: "rgba(79,195,247,0.08)", borderRadius: "50%", filter: "blur(65px)", pointerEvents: "none" }} />
@@ -619,11 +619,57 @@ export default function FeaturesPage() {
             font-size: 12px !important;
           }
           .features-page-intro {
-            padding: 248px 20px 72px !important;
+            padding: 224px 18px 56px !important;
           }
           .features-quote-block {
-            margin-top: 56px !important;
-            padding: 40px 20px !important;
+            margin-top: 40px !important;
+            padding: 32px 20px !important;
+            border-radius: 18px !important;
+          }
+          .features-quote-block p {
+            font-size: 16px !important;
+            line-height: 1.5 !important;
+          }
+          .features-mobile-section {
+            padding: 64px 18px !important;
+          }
+          .features-mobile-section-narrow {
+            padding: 56px 18px 72px !important;
+          }
+          .features-mobile-section h2 {
+            font-size: 22px !important;
+          }
+          .features-how-step-num {
+            font-size: 36px !important;
+            margin-bottom: 10px !important;
+          }
+          .features-pricing-card {
+            padding: 26px 22px !important;
+            border-radius: 14px !important;
+          }
+          .features-pricing-card h3 {
+            font-size: 16px !important;
+          }
+          .features-pricing-price {
+            font-size: 32px !important;
+            margin-bottom: 20px !important;
+          }
+          .features-pricing-feature {
+            font-size: 13px !important;
+            margin-bottom: 12px !important;
+          }
+          .features-pricing-card ul {
+            margin-bottom: 24px !important;
+          }
+          .features-cta-section {
+            padding: 80px 18px !important;
+          }
+          .features-cta-section h2 {
+            font-size: 28px !important;
+          }
+          .features-history-chart {
+            padding: 16px !important;
+            min-width: unset !important;
           }
         }
       `}</style>

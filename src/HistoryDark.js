@@ -234,8 +234,8 @@ export default function HistoryDark() {
     <div style={{ minHeight: fullHeight, backgroundColor: C.bg, color: C.text, fontFamily: "Inter, sans-serif" }}>
 
       {/* Top bar */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", backgroundColor: `${C.bg}ee`, backdropFilter: "blur(20px)", borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div className="page-topbar" style={{ position: "sticky", top: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: `${C.bg}ee`, backdropFilter: "blur(20px)", borderBottom: `1px solid ${C.border}` }}>
+        <div className="page-topbar-left" style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <motion.img
             src={isPaid ? "/Fite_Premium_NB.png" : "/favicon.png"}
             alt="logo"
@@ -244,6 +244,7 @@ export default function HistoryDark() {
             style={{ height: 32, width: 32, cursor: "pointer", borderRadius: 6, flexShrink: 0 }}
           />
           <motion.button
+            className="page-topbar-back"
             onClick={() => router.push("/dashboard")}
             whileHover={{ x: -2 }}
             whileTap={{ scale: 0.95 }}
@@ -251,12 +252,13 @@ export default function HistoryDark() {
           >
             ← Dashboard
           </motion.button>
-          <div style={{ width: 1, height: 16, backgroundColor: C.border }} />
-          <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase", color: C.text, fontFamily: "Manrope, sans-serif" }}>Question History</span>
+          <div className="page-topbar-divider" style={{ width: 1, height: 16, backgroundColor: C.border }} />
+          <span className="page-topbar-title" style={{ fontSize: 14, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase", color: C.text, fontFamily: "Manrope, sans-serif" }}>Question History</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{entries.length} entries</span>
+          <span className="page-topbar-count" style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{entries.length} entries</span>
           <motion.button
+            className="page-topbar-cta"
             onClick={() => router.push("/stats")}
             whileTap={{ scale: 0.97 }}
             style={{ padding: "7px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.textMuted, fontSize: 11, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer", letterSpacing: "0.06em" }}
@@ -266,7 +268,7 @@ export default function HistoryDark() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 820, margin: "0 auto", padding: "28px 20px 80px" }}>
+      <div className="history-content" style={{ maxWidth: 820, margin: "0 auto", padding: "28px 20px 80px" }}>
 
         {/* Search */}
         <div style={{ position: "relative", marginBottom: 20 }}>
@@ -363,6 +365,20 @@ export default function HistoryDark() {
         .history-dark-md ul, .history-dark-md ol { padding-left: 16px; margin: 4px 0; }
         .history-dark-md li { font-size: 13px; color: ${C.text}; line-height: 1.6; margin: 2px 0; }
         .history-dark-md strong { color: ${C.secondary}; font-weight: 700; }
+        .page-topbar { height: 60px; padding: 0 28px; }
+        @media (max-width: 720px) {
+          .page-topbar { height: auto; min-height: 54px; padding: 10px 14px; }
+          .page-topbar-left { gap: 10px !important; }
+          .page-topbar-back { font-size: 11px !important; }
+          .page-topbar-divider { display: none !important; }
+          .page-topbar-title { font-size: 11px !important; letter-spacing: 0.06em !important; }
+          .page-topbar-count { display: none !important; }
+          .page-topbar-cta { padding: 6px 10px !important; font-size: 10px !important; }
+          .history-content { padding: 18px 14px 80px !important; }
+          .history-filter-row { flex-direction: column !important; align-items: flex-start !important; }
+          .history-filter-row .history-filter-label { width: auto !important; }
+          .history-filter-sort { margin-left: 0 !important; }
+        }
       `}</style>
     </div>
   );

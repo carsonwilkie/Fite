@@ -211,8 +211,8 @@ export default function StatsPage() {
     <div style={{ minHeight: fullHeight, backgroundColor: C.bg, color: C.text, fontFamily: "Inter, sans-serif" }}>
 
       {/* Top bar */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", backgroundColor: `${C.bg}ee`, backdropFilter: "blur(20px)", borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div className="page-topbar" style={{ position: "sticky", top: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: `${C.bg}ee`, backdropFilter: "blur(20px)", borderBottom: `1px solid ${C.border}` }}>
+        <div className="page-topbar-left" style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0, flex: 1 }}>
           <motion.img
             src={isPaid ? "/Fite_Premium_NB.png" : "/favicon.png"}
             alt="logo"
@@ -224,26 +224,28 @@ export default function StatsPage() {
             onClick={() => router.push("/dashboard")}
             whileHover={{ x: -2 }}
             whileTap={{ scale: 0.95 }}
-            style={{ background: "none", border: "none", cursor: "pointer", color: C.textMuted, fontSize: 13, fontFamily: "Manrope, sans-serif", fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}
+            className="page-topbar-back"
+            style={{ background: "none", border: "none", cursor: "pointer", color: C.textMuted, fontSize: 13, fontFamily: "Manrope, sans-serif", fontWeight: 700, display: "flex", alignItems: "center", gap: 6, flexShrink: 0, padding: 0 }}
           >
             ← Dashboard
           </motion.button>
-          <div style={{ width: 1, height: 16, backgroundColor: C.border }} />
-          <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase", color: C.text, fontFamily: "Manrope, sans-serif" }}>Performance Stats</span>
+          <div className="page-topbar-divider" style={{ width: 1, height: 16, backgroundColor: C.border, flexShrink: 0 }} />
+          <span className="page-topbar-title" style={{ fontSize: 14, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase", color: C.text, fontFamily: "Manrope, sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Performance Stats</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{entries.length} entries</span>
+        <div className="page-topbar-right" style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <span className="page-topbar-count" style={{ fontSize: 11, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{entries.length} entries</span>
           <motion.button
             onClick={() => router.push("/history")}
             whileTap={{ scale: 0.97 }}
-            style={{ padding: "7px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.textMuted, fontSize: 11, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer", letterSpacing: "0.06em" }}
+            className="page-topbar-cta"
+            style={{ padding: "7px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.textMuted, fontSize: 11, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer", letterSpacing: "0.06em", whiteSpace: "nowrap" }}
           >
-            View History →
+            History →
           </motion.button>
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px 80px" }}>
+      <div className="stats-content" style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px 80px" }}>
 
         {entries.length === 0 ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: "center", paddingTop: 80 }}>
@@ -278,6 +280,7 @@ export default function StatsPage() {
             {/* ── Score chart (slider-controlled by # questions) ── */}
             {label("Score History")}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+              className="stats-chart-card"
               style={{ padding: "20px 22px 18px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}`, marginBottom: 32 }}>
 
               {maxN < 2 ? (
@@ -292,7 +295,7 @@ export default function StatsPage() {
               ) : (
                 <>
                   {/* Slider header row */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                  <div className="stats-chart-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                     <div>
                       <div style={{ fontSize: 28, fontWeight: 900, color: windowAvg ? scoreColor(+windowAvg) : C.textMuted, lineHeight: 1 }}>
                         {windowAvg ?? "—"}
@@ -303,7 +306,7 @@ export default function StatsPage() {
                       </div>
                     </div>
                     {/* Slider */}
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, minWidth: 160 }}>
+                    <div className="stats-slider-wrap" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, minWidth: 160 }}>
                       <div style={{ fontSize: 11, fontWeight: 700, color: C.secondary, fontFamily: "Manrope, sans-serif" }}>
                         {clampedN} question{clampedN !== 1 ? "s" : ""}
                       </div>
@@ -456,7 +459,7 @@ export default function StatsPage() {
                       <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.15em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 12 }}>
                         Recent Trend
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div className="stats-trend-row" style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         {/* Prior window */}
                         <div style={{ flex: 1, padding: "10px 12px", borderRadius: 8, background: C.surfaceLow, border: `1px solid ${C.border}` }}>
                           <div style={{ fontSize: 8, fontWeight: 800, color: C.textMuted, fontFamily: "Manrope, sans-serif", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 5 }}>
@@ -469,7 +472,7 @@ export default function StatsPage() {
                         </div>
 
                         {/* Arrow */}
-                        <div style={{ textAlign: "center", flexShrink: 0 }}>
+                        <div className="stats-trend-arrow" style={{ textAlign: "center", flexShrink: 0 }}>
                           <div style={{ fontSize: 20, fontWeight: 900, color: trendPct >= 0 ? C.success : C.danger, lineHeight: 1 }}>
                             {trendPct >= 0 ? "↑" : "↓"}
                           </div>
@@ -537,6 +540,30 @@ export default function StatsPage() {
 
       <style jsx global>{`
         html, body { background: ${C.bg}; }
+        .page-topbar { height: 60px; padding: 0 28px; }
+        @media (max-width: 720px) {
+          .page-topbar {
+            height: auto;
+            min-height: 54px;
+            padding: 10px 14px;
+          }
+          .page-topbar-left { gap: 10px !important; }
+          .page-topbar-back { font-size: 11px !important; }
+          .page-topbar-divider { display: none !important; }
+          .page-topbar-title {
+            font-size: 11px !important;
+            letter-spacing: 0.06em !important;
+          }
+          .page-topbar-count { display: none !important; }
+          .page-topbar-cta { padding: 6px 10px !important; font-size: 10px !important; }
+          .stats-content { padding: 20px 14px 80px !important; }
+          .stats-chart-card { padding: 16px 14px !important; }
+          .stats-chart-header { flex-wrap: wrap; gap: 14px; }
+          .stats-slider-wrap { min-width: 100% !important; align-items: flex-start !important; }
+          .stats-trend-row { flex-wrap: wrap; gap: 10px !important; }
+          .stats-trend-row > div:not(.stats-trend-arrow) { min-width: calc(50% - 26px); }
+          .stats-trend-arrow { order: 2; }
+        }
       `}</style>
     </div>
   );

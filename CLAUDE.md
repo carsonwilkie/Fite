@@ -93,6 +93,7 @@ Notes:
   index.css
   usePaidStatus.js
   usePrice.js
+  useStableViewport.js
   useUpgrade.js
 
 /api
@@ -109,6 +110,7 @@ Notes:
   portal.js
   price.js
   question.js
+  total-questions.js
   webhook.js
 
 /public
@@ -117,7 +119,8 @@ Notes:
   apple-touch-icon.png
   favicon.ico
   favicon.png
-  frames/frame-0001.jpg ... frame-0111.jpg
+  frames/frame-0002.webp ... frame-0169.webp
+  frames/mobile/frame-0003.webp ... frame-0169.webp
   robots.txt
   Logo/
   Old Logo/
@@ -130,14 +133,16 @@ Notes:
 #### `pages/index.js`
 - Primary hero page
 - Uses `LandingNav`
-- Runs a GSAP ScrollTrigger-driven image-sequence hero using 111 JPEG frames in `/public/frames`
+- Runs a GSAP ScrollTrigger-driven image-sequence hero using 169 WebP frames
+- Uses desktop frames from `/public/frames` and sampled mobile frames from `/public/frames/mobile`
 - Uses a sticky full-height canvas scene with a long scroll container
 - Dynamically samples fewer frames on mobile
 - Contains staged overlay content that appears/disappears based on scroll progress
+- Includes a mid-scroll pricing comparison and end-state CTA cards inside the scroll-driven hero timeline
 - Routes users to `/features` via the "Explore" CTA
 
 Important details:
-- Mobile viewport height is stabilized to avoid browser chrome resize jitter
+- Mobile viewport height is stabilized through `useStableViewport()` to avoid browser chrome resize jitter
 - Frame assets are cached and progressively preloaded
 - Uses `createImageBitmap` on desktop when available for smoother frame drawing
 
@@ -151,11 +156,12 @@ Important details:
   - `ScrambleText`
   - `CountUp`
   - `AnimatedBar`
-- Contains product sections, pricing, CTA, and footer links
+- Contains a stats strip, animated feature cards, "How It Works", pricing, CTA, and footer links
+- On narrow mobile viewports, left/right reveal animations fall back to vertical motion to avoid temporary side-gutter imbalance during scroll-in
 
 #### `src/LandingNav.js`
 - Shared nav for `/` and `/features`
-- Shows brand, Home / Features / Dashboard links, auth CTAs, and a Practice button for signed-in users
+- Shows brand, Home / Features / Dashboard links, auth CTAs, and a Practice button plus `UserButton` for signed-in users
 - Uses inline `style jsx` instead of `App.css`
 
 #### `src/LandingPage.css`
@@ -257,10 +263,12 @@ Timer behavior:
 - Premium success page
 - Redirects non-paid users back to `/`
 - Uses confetti particles and premium branding
+- Uses the shared stable viewport-height helper for mobile layout consistency
 - No longer relies on the old shared navbar
 
 #### `src/PrivacyPolicy.js`, `src/TermsOfService.js`, `src/RefundPolicy.js`
 - Standalone dark-theme policy pages
+- Also use the stable viewport-height helper for mobile full-height layout stability
 - Routed via thin wrappers in `/pages`
 
 ## Hooks and Context
@@ -281,6 +289,12 @@ Timer behavior:
 ### `src/usePrice.js`
 - Calls `GET /api/price`
 - Returns a formatted string like `$3.00/month`
+
+### `src/useStableViewport.js`
+- Shared viewport stabilization hook for full-height mobile layouts
+- Ignores height-only resize events caused by collapsing or expanding mobile browser chrome
+- Still updates on real width and orientation changes
+- Exports `toViewportCssValue()` for inline full-height style usage
 
 ### `src/ScrollToTop.js`
 - Forces scroll restoration to manual
@@ -329,6 +343,11 @@ export const CATEGORIES = [
 - Returns Stripe price info from `STRIPE_PRICE_ID`
 - Output shape: `{ amount, interval }`
 
+### `GET /api/total-questions`
+- Returns the aggregate `stats:total_questions` counter from Redis
+- Can be protected with `ADMIN_SECRET` via the `x-admin-secret` header
+- Output shape: `{ total }`
+
 ### `GET|POST /api/history`
 - GET input: `?userId=...`
 - POST input: `{ userId, entry }`
@@ -344,6 +363,7 @@ Two modes:
 - Non-paid users are limited to 5/day
 - Limit key: `questions:${userId || clientIp}:${YYYY-MM-DD}`
 - Supports SSE streaming when `stream: true`
+- Increments the aggregate Redis counter `stats:total_questions`
 - Uses:
   - category
   - difficulty
@@ -365,6 +385,7 @@ Current model:
 
 ### `POST /api/interview-generate`
 - Input: `{ category, difficulty, math, customPrompt }`
+- Increments the aggregate question counter by `4` because interview mode always generates a 4-question set
 - Returns:
 ```json
 {
@@ -472,12 +493,14 @@ Current model:
 - `Manrope` is used heavily for compact uppercase UI labels
 - `Inter` is used for primary body/UI text
 - Material Symbols are loaded globally through `_document.js`
+- Marketing pages lean heavily on glass-card panels, gradient borders, blurred glow layers, and animated count-up/stat treatments
 
 ## Important Implementation Notes
 - Navigation is Next.js-only via `next/router` and `next/link`
 - The project still contains some old CRA-era dependencies in `package.json` (`react-router-dom`, `react-scripts`), but the runtime app is Next.js Pages Router
 - `public/index.html`, `public/manifest.json`, the old redirect routes, and `src/Navbar.js` were removed in the recent cleanup
 - The repo still contains non-runtime archive/design folders outside the app shell; do not assume everything in the repo is part of the shipped website
+- Several full-height screens now use `useStableViewport()` instead of raw `100vh` to reduce Chrome mobile resize jitter
 
 ## Environment Variables
 ```text
@@ -490,6 +513,7 @@ NEXT_PUBLIC_URL
 OPENAI_API_KEY
 UPSTASH_REDIS_REST_URL
 UPSTASH_REDIS_REST_TOKEN
+ADMIN_SECRET
 ```
 
 ## Safe Assumptions for Future Edits

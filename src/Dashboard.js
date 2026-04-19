@@ -362,6 +362,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
     <AnimatePresence mode="wait">
       <motion.div
         key={question}
+        className="qc-wrap"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
@@ -398,7 +399,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
             </motion.button>
           </div>
         ) : (
-          <h1 style={{ fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 900, lineHeight: 1.15, color: C.text, margin: 0, fontFamily: "Inter, sans-serif", letterSpacing: "-0.02em" }}>
+          <h1 className="qc-question" style={{ fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 900, lineHeight: 1.15, color: C.text, margin: 0, fontFamily: "Inter, sans-serif", letterSpacing: "-0.02em" }}>
             {question}
           </h1>
         )}
@@ -406,7 +407,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
         {/* Answer terminal */}
         {!isLimitMsg && (
           <div style={{ borderRadius: 16, padding: 1, background: `linear-gradient(135deg, ${C.primary}50, ${C.secondary}30)`, boxShadow: "0 20px 40px rgba(0,0,0,0.4)" }}>
-            <div style={{ backgroundColor: C.surfaceLow, borderRadius: 15, padding: "28px 32px", minHeight: 320, display: "flex", flexDirection: "column" }}>
+            <div className="qc-terminal" style={{ backgroundColor: C.surfaceLow, borderRadius: 15, padding: "28px 32px", minHeight: 320, display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>
                 <Icon name="terminal" size={16} />
                 INPUT TERMINAL
@@ -416,6 +417,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
               </div>
 
               <textarea
+                className="qc-textarea"
                 placeholder={isPaid ? "Type your detailed response here... Consider the mechanics, the math, and the strategic implications." : "Upgrade to Premium to type your answer and get AI feedback."}
                 value={userAnswer}
                 onChange={(e) => isPaid && !graded && setUserAnswer(e.target.value)}
@@ -512,7 +514,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
 
         {/* Action buttons */}
         {!isLimitMsg && (
-          <div style={{ display: "flex", gap: 14, justifyContent: "flex-end", flexWrap: "wrap" }}>
+          <div className="qc-actions" style={{ display: "flex", gap: 14, justifyContent: "flex-end", flexWrap: "wrap" }}>
             {!answerRevealed && (
               <motion.button
                 onClick={onGetAnswer}
@@ -603,15 +605,16 @@ function InterviewCanvas({ loadingInterviewGenerate, interviewProgress, intervie
 
   return (
     <motion.div
+      className="ic-wrap"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       style={{ display: "flex", flexDirection: "column", gap: 28 }}
     >
       {/* Scenario */}
-      <div style={{ padding: "20px 24px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}` }}>
+      <div className="ic-scenario" style={{ padding: "20px 24px", borderRadius: 14, backgroundColor: C.surface, border: `1px solid ${C.border}` }}>
         <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.secondary, fontFamily: "Manrope, sans-serif", marginBottom: 10 }}>Interview Scenario</div>
-        <p style={{ fontSize: 15, color: C.text, lineHeight: 1.75, margin: 0 }}>{interviewSession.scenario}</p>
+        <p className="ic-scenario-text" style={{ fontSize: 15, color: C.text, lineHeight: 1.75, margin: 0 }}>{interviewSession.scenario}</p>
       </div>
 
       {/* Progress bar */}
@@ -681,15 +684,16 @@ function InterviewCanvas({ loadingInterviewGenerate, interviewProgress, intervie
         <div style={{ borderTop: interviewUserAnswers.length > 0 ? `1px solid ${C.border}` : "none", paddingTop: interviewUserAnswers.length > 0 ? 20 : 0 }}>
           <div style={{ borderLeft: `3px solid ${C.secondary}`, paddingLeft: 16, marginBottom: 20 }}>
             <div style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: 6 }}>Question {interviewStep + 1}</div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: C.text, lineHeight: 1.3, margin: 0, fontFamily: "Inter, sans-serif" }}>{interviewSession.questions[interviewStep].question}</h2>
+            <h2 className="ic-question" style={{ fontSize: 22, fontWeight: 800, color: C.text, lineHeight: 1.3, margin: 0, fontFamily: "Inter, sans-serif" }}>{interviewSession.questions[interviewStep].question}</h2>
           </div>
 
           <div style={{ borderRadius: 16, padding: 1, background: `linear-gradient(135deg, ${C.primary}50, ${C.secondary}30)`, boxShadow: "0 16px 40px rgba(0,0,0,0.35)" }}>
-            <div style={{ backgroundColor: C.surfaceLow, borderRadius: 15, padding: 24, minHeight: 200, display: "flex", flexDirection: "column" }}>
+            <div className="ic-terminal" style={{ backgroundColor: C.surfaceLow, borderRadius: 15, padding: 24, minHeight: 200, display: "flex", flexDirection: "column" }}>
               <div style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif", marginBottom: 14 }}>
                 INPUT TERMINAL
               </div>
               <textarea
+                className="ic-textarea"
                 placeholder="Type your response here..."
                 value={interviewCurrentAnswer}
                 onChange={(e) => setInterviewCurrentAnswer(e.target.value)}
@@ -1096,14 +1100,15 @@ export default function Dashboard() {
                 </SignUpButton>
               </>
             )}
-            {/* Mobile: configure button */}
+            {/* Mobile: configure button (labeled) */}
             {isMobile && (
               <motion.button
                 onClick={() => setDrawerOpen(true)}
-                whileTap={{ scale: 0.9 }}
-                style={{ width: 40, height: 40, borderRadius: 10, border: `1px solid ${C.border}`, background: "rgba(21,101,192,0.1)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                whileTap={{ scale: 0.92 }}
+                style={{ height: 38, padding: "0 12px", borderRadius: 10, border: `1px solid ${C.border}`, background: "rgba(21,101,192,0.12)", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
               >
-                <Icon name="tune" size={20} style={{ color: C.secondary }} />
+                <Icon name="tune" size={16} style={{ color: C.secondary }} />
+                <span style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>Config</span>
               </motion.button>
             )}
           </div>
@@ -1231,7 +1236,7 @@ export default function Dashboard() {
             transition={{ duration: 0.5, delay: 0.2 }}
             style={{ flex: 1, overflowY: "auto", backgroundColor: C.bg, position: "relative" }}
           >
-            <div style={{ maxWidth: 840, margin: "0 auto", padding: isMobile ? "20px 16px 0" : "40px 44px 120px" }}>
+            <div className="dashboard-canvas-inner" style={{ maxWidth: 840, margin: "0 auto", padding: isMobile ? "16px 14px 140px" : "40px 44px 120px" }}>
               {mode === "question" ? (
                 <QuestionCanvas
                   question={question} answer={answer} userAnswer={userAnswer} setUserAnswer={setUserAnswer}
@@ -1290,6 +1295,22 @@ export default function Dashboard() {
           ))}
         </footer>
       </div>
+
+      {/* ── Mobile Floating Generate FAB ── */}
+      {isMobile && !drawerOpen && (
+        <motion.button
+          onClick={() => mode === "question" ? getQuestion() : generateInterview()}
+          disabled={isLoading}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 320, damping: 22, delay: 0.3 }}
+          whileTap={!isLoading ? { scale: 0.94 } : {}}
+          style={{ position: "fixed", bottom: 80, right: 16, zIndex: 190, height: 52, padding: "0 20px", borderRadius: 26, border: "none", cursor: isLoading ? "not-allowed" : "pointer", background: isLoading ? "rgba(21,101,192,0.4)" : cyberGrad, color: "#fff", fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "Manrope, sans-serif", display: "flex", alignItems: "center", gap: 8, boxShadow: isLoading ? "0 4px 14px rgba(21,101,192,0.25)" : "0 10px 30px rgba(21,101,192,0.55)", opacity: isLoading ? 0.75 : 1 }}
+        >
+          <Icon name={mode === "interview" ? "groups" : "rocket_launch"} size={18} />
+          {isLoading ? "Generating..." : mode === "interview" ? "New Interview" : "Generate"}
+        </motion.button>
+      )}
 
       {/* ── Mobile Bottom Nav ── */}
       {isMobile && (
@@ -1480,6 +1501,28 @@ export default function Dashboard() {
         .dashboard-markdown ul,.dashboard-markdown ol { padding-left: 18px; margin: 4px 0; }
         .dashboard-markdown li { font-size: 14px; color: ${C.text}; line-height: 1.6; margin: 3px 0; }
         .dashboard-markdown strong { color: ${C.secondary}; font-weight: 700; }
+
+        @media (max-width: 767px) {
+          /* Tighter question canvas spacing */
+          .qc-wrap { gap: 18px !important; }
+          .qc-question { font-size: 19px !important; line-height: 1.28 !important; letter-spacing: -0.01em !important; }
+          .qc-terminal { padding: 16px 16px !important; min-height: 220px !important; border-radius: 12px !important; }
+          .qc-textarea { min-height: 170px !important; font-size: 15px !important; line-height: 1.6 !important; }
+          .qc-actions { gap: 8px !important; justify-content: stretch !important; }
+          .qc-actions > button { flex: 1 1 auto !important; padding: 12px 14px !important; font-size: 11px !important; letter-spacing: 0.08em !important; }
+
+          /* Interview canvas compactness */
+          .ic-wrap { gap: 18px !important; }
+          .ic-scenario { padding: 14px 16px !important; border-radius: 12px !important; }
+          .ic-scenario-text { font-size: 13px !important; line-height: 1.65 !important; }
+          .ic-question { font-size: 17px !important; line-height: 1.35 !important; }
+          .ic-terminal { padding: 16px 16px !important; min-height: 170px !important; }
+          .ic-textarea { min-height: 140px !important; font-size: 15px !important; }
+
+          /* Dashboard markdown shrinks slightly on mobile */
+          .dashboard-markdown p { font-size: 14px !important; line-height: 1.7 !important; }
+          .dashboard-markdown li { font-size: 13px !important; }
+        }
       `}</style>
     </div>
   );

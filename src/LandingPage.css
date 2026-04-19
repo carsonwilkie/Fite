@@ -353,6 +353,42 @@ html {
   font-family: Manrope, sans-serif;
 }
 
+/* ── Mobile compactness ───────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .lp-glass-card          { padding: 22px 20px; border-radius: 14px; }
+  .lp-glass-card-solid    { padding: 24px 20px !important; border-radius: 14px; }
+  .lp-card-title          { font-size: 17px; margin: 0 0 10px 0; }
+  .lp-card-body           { font-size: 13px; line-height: 1.65; }
+  .lp-icon-secondary,
+  .lp-icon-primary        { font-size: 28px !important; margin-bottom: 14px; }
+  .lp-tag                 { font-size: 9px; padding: 3px 9px; letter-spacing: 0.1em; }
+
+  .feat-grid              { gap: 14px; }
+
+  .how-grid               { gap: 14px; }
+  .how-step-card          { padding: 20px 18px !important; }
+  .how-step-card .lp-card-title { font-size: 15px !important; }
+
+  .lp-pricing-grid        { gap: 16px; }
+
+  .lp-btn-mission,
+  .lp-btn-mission-gold    { padding: 14px 24px; font-size: 13px; }
+  .lp-btn-premium         { padding: 13px; font-size: 13px; }
+  .lp-btn-cta,
+  .lp-btn-cta-gold        { padding: 16px 34px; font-size: 14px; }
+
+  .lp-stats-strip         { border-radius: 14px !important; }
+  .lp-stats-cell          {
+    flex: 1 1 calc(50% - 0.5px) !important;
+    padding: 14px 8px !important;
+    border-right: none !important;
+  }
+  .lp-stats-cell:nth-child(odd)  { border-right: 1px solid rgba(21,101,192,0.15) !important; }
+  .lp-stats-cell:nth-child(-n+2) { border-bottom: 1px solid rgba(21,101,192,0.15); }
+  .lp-stats-value         { font-size: 22px !important; }
+  .lp-stats-label         { font-size: 9px !important; margin-top: 6px !important; letter-spacing: 0.08em !important; }
+}
+
 /* ── Footer ───────────────────────────────────────────────────────────────── */
 .lp-footer-inner {
   display: flex;
