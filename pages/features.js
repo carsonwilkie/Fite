@@ -28,6 +28,7 @@ const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 function ScrollReveal({ children, direction = "up", startOffset = 0, className, style }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
+  const [isNarrowViewport, setIsNarrowViewport] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -38,8 +39,22 @@ function ScrollReveal({ children, direction = "up", startOffset = 0, className, 
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-  const yPx   = !visible && (direction === "up" || direction === "scale") ? 28 : 0;
-  const xPx   = !visible && direction === "left" ? -48 : !visible && direction === "right" ? 48 : 0;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const updateViewportMode = () => {
+      setIsNarrowViewport(window.innerWidth <= 720);
+    };
+
+    updateViewportMode();
+    window.addEventListener("resize", updateViewportMode);
+    return () => window.removeEventListener("resize", updateViewportMode);
+  }, []);
+
+  const useVerticalReveal = isNarrowViewport && (direction === "left" || direction === "right");
+  const yPx   = !visible && (direction === "up" || direction === "scale" || useVerticalReveal) ? 28 : 0;
+  const xPx   = !visible && !useVerticalReveal && direction === "left" ? -48 : !visible && !useVerticalReveal && direction === "right" ? 48 : 0;
   const sc    = !visible && direction === "scale" ? 0.88 : 1;
   const delay = startOffset ? `${Math.round(startOffset * 120)}ms` : "0ms";
   return (
