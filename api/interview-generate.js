@@ -1,6 +1,9 @@
 const openai = require("./_openai");
+const { Redis } = require("@upstash/redis");
 const { CATEGORIES: ALL_CATEGORIES } = require("./_constants");
 const { sampleQuestions } = require("./_questionBank");
+
+const redis = Redis.fromEnv();
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -49,6 +52,7 @@ Respond with ONLY a JSON object in this exact format, no other text:
     const text = completion.choices[0].message.content;
     const clean = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
     const parsed = JSON.parse(clean);
+    redis.incrby("stats:total_questions", 4).catch(() => {});
     res.status(200).json({ ...parsed, resolvedCategory: category });
   } catch (error) {
     res.status(500).json({ error: error.message });

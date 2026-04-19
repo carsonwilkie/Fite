@@ -32,6 +32,9 @@ module.exports = async function handler(req, res) {
       questionsUsed = await redis.incr(countKey);
       await redis.expireat(countKey, Math.floor(new Date().setHours(23, 59, 59, 999) / 1000));
     }
+
+    // Fire-and-forget global counter — never blocks or fails the request
+    redis.incr("stats:total_questions").catch(() => {});
   }
 
   const categoryText =
