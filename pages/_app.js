@@ -52,6 +52,8 @@ export default function App({ Component, pageProps }) {
   const [y, setY]       = useState("0%");    // start covering
   const [anim, setAnim] = useState(false);   // no transition on first paint
   const [transitionMs, setTransitionMs] = useState(ENTRY_MS);
+  const [frozenScrollY, setFrozenScrollY] = useState(0);
+  const [isCovering, setIsCovering] = useState(false);
   const [displayedView, setDisplayedView] = useState(() => ({
     Component,
     pageProps,
@@ -67,6 +69,7 @@ export default function App({ Component, pageProps }) {
     pendingViewRef.current = null;
     routeReadyRef.current = false;
     phaseRef.current = "revealing";
+    setIsCovering(false);
     resetWindowScroll();
     setDisplayedView(nextView);
 
@@ -102,6 +105,8 @@ export default function App({ Component, pageProps }) {
       routeReadyRef.current = false;
       coverDoneRef.current = false;
       phaseRef.current = "covering";
+      setFrozenScrollY(window.scrollY || window.pageYOffset || 0);
+      setIsCovering(true);
       // Sweep the current page closed before we reverse the cover to reveal the next one.
       setTransitionMs(ENTRY_MS);
       setAnim(true);
@@ -132,6 +137,7 @@ export default function App({ Component, pageProps }) {
       coverDoneRef.current = false;
       pendingViewRef.current = null;
       phaseRef.current = "idle";
+      setIsCovering(false);
       setAnim(true);
       setY("-100%");
     };
@@ -154,6 +160,27 @@ export default function App({ Component, pageProps }) {
       window.history.scrollRestoration = "manual";
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    if (isCovering) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = "hidden";
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
+    };
+  }, [isCovering]);
 
   useEffect(() => {
     const incomingView = {
@@ -195,7 +222,17 @@ export default function App({ Component, pageProps }) {
       <PaidStatusProvider>
         <Analytics />
         <SpeedInsights />
-        <displayedView.Component {...displayedView.pageProps} />
+        <div
+          style={isCovering ? {
+            position: "fixed",
+            top: -frozenScrollY,
+            left: 0,
+            right: 0,
+            width: "100%",
+          } : undefined}
+        >
+          <displayedView.Component {...displayedView.pageProps} />
+        </div>
 
         {/* ── Global page-transition overlay ─────────────────────────────────── */}
         <div
