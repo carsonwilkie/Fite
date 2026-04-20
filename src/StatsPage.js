@@ -427,7 +427,7 @@ export default function StatsPage() {
                                   initial={{ height: 0 }}
                                   animate={{ height: `${pct}%` }}
                                   transition={{ duration: 0.4, delay: i * 0.02, ease: [0.22, 1, 0.36, 1] }}
-                                  onMouseEnter={() => { setHoveredBar(i); setLastHoveredBar(i); setTappedBar(i); }}
+                                  onMouseEnter={() => { setHoveredBar(i); setLastHoveredBar(i); }}
                                   onClick={() => {
                                     if (tappedBar === i) {
                                       router.push(`/history?highlight=${e.timestamp}`);
