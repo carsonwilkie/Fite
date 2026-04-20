@@ -383,39 +383,22 @@ Current model:
 - Returns `{ feedback, score }`
 - If the answer is blank, returns score `0` and a timeout-style message
 
-### `POST /api/interview-generate`
-- Input: `{ category, difficulty, math, customPrompt }`
-- Increments the aggregate question counter by `4` because interview mode always generates a 4-question set
-- Returns:
-```json
-{
-  "scenario": "...",
-  "questions": [
-    { "question": "...", "idealAnswer": "..." },
-    { "question": "...", "idealAnswer": "..." },
-    { "question": "...", "idealAnswer": "..." },
-    { "question": "...", "idealAnswer": "..." }
-  ],
-  "resolvedCategory": "..."
-}
-```
+### `POST /api/interview`
+Unified interview endpoint. Dispatches on `action` in the request body:
 
-### `POST /api/interview-respond`
-- Input: `{ scenario, questionIndex, question, idealAnswer, userAnswer, isLast }`
-- Returns:
-```json
-{
-  "score": 0,
-  "onTrack": false,
-  "response": "..."
-}
-```
-- Blank answers are explicitly handled and scored `0`
+- `action: "generate"`
+  - Extra input: `{ category, difficulty, math, customPrompt }`
+  - Increments the aggregate question counter by `4` because interview mode always generates a 4-question set
+  - Returns: `{ scenario, questions: [{ question, idealAnswer } x4], resolvedCategory }`
+- `action: "respond"`
+  - Extra input: `{ scenario, questionIndex, question, idealAnswer, userAnswer, isLast }`
+  - Returns: `{ score, onTrack, response }`
+  - Blank answers are explicitly handled and scored `0`
+- `action: "debrief"`
+  - Extra input: `{ scenario, questions, category, difficulty }`
+  - Returns: `{ feedback }` — concise, direct debrief for the candidate
 
-### `POST /api/interview-debrief`
-- Input: `{ scenario, questions, category, difficulty }`
-- Returns `{ feedback }`
-- Produces a concise direct debrief for the candidate
+Consolidated from three separate `interview-*` routes to stay under Vercel Hobby's 12-function cap.
 
 ### `POST /api/webhook`
 - Stripe webhook handler
