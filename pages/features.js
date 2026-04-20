@@ -256,6 +256,15 @@ export default function FeaturesPage() {
   const handleUpgrade = useUpgrade();
   const scrambleRef = useRef(null);
   const [scrambleTrigger, setScramble] = useState(false);
+  const [totalQuestions, setTotalQuestions] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/total-questions")
+      .then((r) => r.json())
+      .then((d) => setTotalQuestions(d.total))
+      .catch(() => setTotalQuestions(null));
+  }, []);
+
   // Scramble trigger via IntersectionObserver
   useEffect(() => {
     const el = scrambleRef.current;
@@ -318,7 +327,7 @@ export default function FeaturesPage() {
             <ScrollReveal style={{ marginBottom: 64 }}>
               <div className="lp-stats-strip" style={{ display: "flex", flexWrap: "wrap", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(21,101,192,0.2)" }}>
                 {[
-                  { label: "Questions Generated",     val: 50000, suffix: "+",    prefix: ""  },
+                  { label: "Questions Generated",     val: totalQuestions ?? 50000, suffix: "+",    prefix: ""  },
                   { label: "Categories",              val: 8,     suffix: "",     prefix: ""  },
                   { label: "Score Improvement",       val: 40,    suffix: "%",    prefix: ""  },
                   { label: "Price",                   val: 3,     suffix: "/mo",  prefix: "$" },
