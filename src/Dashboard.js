@@ -792,6 +792,7 @@ export default function Dashboard() {
   // Mobile state
   const [isMobile,    setIsMobile]    = useState(false);
   const [drawerOpen,  setDrawerOpen]  = useState(false);
+  const [navOpen,     setNavOpen]     = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -1100,16 +1101,62 @@ export default function Dashboard() {
                 </SignUpButton>
               </>
             )}
-            {/* Mobile: configure button (labeled) */}
+            {/* Mobile: nav + config buttons */}
             {isMobile && (
-              <motion.button
-                onClick={() => setDrawerOpen(true)}
-                whileTap={{ scale: 0.92 }}
-                style={{ height: 38, padding: "0 12px", borderRadius: 10, border: `1px solid ${C.border}`, background: "rgba(21,101,192,0.12)", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
-              >
-                <Icon name="tune" size={16} style={{ color: C.secondary }} />
-                <span style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>Config</span>
-              </motion.button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, position: "relative" }}>
+                {/* Home nav dropdown */}
+                <div style={{ position: "relative" }}>
+                  <motion.button
+                    onClick={() => setNavOpen(v => !v)}
+                    whileTap={{ scale: 0.92 }}
+                    style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${C.border}`, background: navOpen ? "rgba(21,101,192,0.18)" : "rgba(21,101,192,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
+                    <Icon name="home" size={18} style={{ color: navOpen ? C.secondary : C.textMuted }} />
+                  </motion.button>
+                  <AnimatePresence>
+                    {navOpen && (
+                      <>
+                        <motion.div
+                          key="nav-backdrop"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          onClick={() => setNavOpen(false)}
+                          style={{ position: "fixed", inset: 0, zIndex: 500 }}
+                        />
+                        <motion.div
+                          key="nav-dropdown"
+                          initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                          transition={{ duration: 0.15 }}
+                          style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 600, backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: "6px", minWidth: 150, boxShadow: "0 12px 32px rgba(0,0,0,0.5)" }}
+                        >
+                          {[["home", "Home", "/"], ["info", "Features", "/features"]].map(([icon, label, href]) => (
+                            <motion.button
+                              key={href}
+                              onClick={() => { setNavOpen(false); router.push(href); }}
+                              whileTap={{ scale: 0.96 }}
+                              style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "none", border: "none", cursor: "pointer", color: C.text, fontSize: 13, fontWeight: 700, fontFamily: "Inter, sans-serif", textAlign: "left" }}
+                            >
+                              <Icon name={icon} size={16} style={{ color: C.secondary }} />
+                              {label}
+                            </motion.button>
+                          ))}
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+                {/* Config button — icon only */}
+                <motion.button
+                  onClick={() => setDrawerOpen(true)}
+                  whileTap={{ scale: 0.92 }}
+                  style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${C.border}`, background: "rgba(21,101,192,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
+                  <Icon name="tune" size={18} style={{ color: C.secondary }} />
+                </motion.button>
+              </div>
             )}
           </div>
         </motion.header>
@@ -1336,33 +1383,36 @@ export default function Dashboard() {
             <span style={{ fontSize: 9, fontWeight: 700, color: isPaid ? C.textMuted : `${C.textMuted}40`, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Stats</span>
           </motion.button>
 
-          {/* Upgrade / Account / Sign In */}
+          {/* Upgrade — free signed-in users only */}
+          {isSignedIn && !isPaid && (
+            <motion.button
+              onClick={handleUpgrade}
+              whileTap={{ scale: 0.88 }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 10 }}
+            >
+              <Icon name="workspace_premium" size={22} style={{ color: C.gold }} />
+              <span style={{ fontSize: 9, fontWeight: 700, color: C.gold, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Upgrade</span>
+            </motion.button>
+          )}
+
+          {/* Account / Sign In */}
           {!isSignedIn ? (
             <SignInButton mode="modal">
               <motion.button
                 whileTap={{ scale: 0.88 }}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 12px", borderRadius: 10 }}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 10 }}
               >
                 <Icon name="login" size={22} style={{ color: C.secondary }} />
                 <span style={{ fontSize: 9, fontWeight: 700, color: C.secondary, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Sign In</span>
               </motion.button>
             </SignInButton>
-          ) : isPaid ? (
+          ) : (
             <motion.button
               whileTap={{ scale: 0.88 }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "default", padding: "6px 12px", borderRadius: 10 }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "default", padding: "6px 8px", borderRadius: 10 }}
             >
               <UserButton appearance={{ elements: { avatarBox: { width: 22, height: 22 } } }} />
               <span style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Account</span>
-            </motion.button>
-          ) : (
-            <motion.button
-              onClick={handleUpgrade}
-              whileTap={{ scale: 0.88 }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 12px", borderRadius: 10 }}
-            >
-              <Icon name="workspace_premium" size={22} style={{ color: C.gold }} />
-              <span style={{ fontSize: 9, fontWeight: 700, color: C.gold, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Upgrade</span>
             </motion.button>
           )}
 
@@ -1433,30 +1483,17 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Categories */}
-                <div>
-                  <ControlLabel>Focus Category</ControlLabel>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
-                    {CATEGORIES.map(cat => (
-                      <motion.button key={cat} onClick={() => setCategory(cat)} whileTap={{ scale: 0.94 }}
-                        style={{ padding: "11px 10px", fontSize: 11, fontWeight: 800, textAlign: "left", borderRadius: 9, cursor: "pointer", fontFamily: "Manrope, sans-serif", letterSpacing: "0.02em", textTransform: "uppercase", transition: "all 0.18s", backgroundColor: category === cat ? "rgba(21,101,192,0.15)" : C.surfaceLow, color: category === cat ? C.secondary : C.textMuted, border: category === cat ? `1px solid ${C.borderActive}` : `1px solid ${C.border}`, lineHeight: 1.3 }}>
-                        {CATEGORY_LABELS[cat] || cat}
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Math toggle */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}` }}>
                   <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Include Math</span>
                   <ToggleSwitch checked={mathOn} onClick={() => setMathOn(v => !v)} />
                 </div>
 
-                {/* Timer toggle */}
-                <div style={{ background: C.surfaceLow, borderRadius: 12, border: `1px solid ${isPaid ? C.border : "rgba(201,168,76,0.2)"}`, overflow: "hidden", opacity: isPaid ? 1 : 0.7 }}>
+                {/* Timer toggle — visible but locked for free users */}
+                <div style={{ background: C.surfaceLow, borderRadius: 12, border: `1px solid ${isPaid ? C.border : "rgba(201,168,76,0.25)"}`, overflow: "hidden", opacity: isPaid ? 1 : 0.65 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px" }}>
                     <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>
-                      Timer{!isPaid && <span style={{ marginLeft: 6, color: C.gold, textTransform: "none", letterSpacing: 0 }}> — Premium</span>}
+                      Timer{!isPaid && <span style={{ marginLeft: 6, color: C.gold, fontWeight: 700, textTransform: "none", letterSpacing: 0, fontSize: 11 }}>— Premium</span>}
                     </span>
                     <ToggleSwitch
                       checked={isPaid && timerOn}
@@ -1476,6 +1513,19 @@ export default function Dashboard() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Categories */}
+                <div>
+                  <ControlLabel>Focus Category</ControlLabel>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+                    {CATEGORIES.map(cat => (
+                      <motion.button key={cat} onClick={() => setCategory(cat)} whileTap={{ scale: 0.94 }}
+                        style={{ padding: "11px 10px", fontSize: 11, fontWeight: 800, textAlign: "left", borderRadius: 9, cursor: "pointer", fontFamily: "Manrope, sans-serif", letterSpacing: "0.02em", textTransform: "uppercase", transition: "all 0.18s", backgroundColor: category === cat ? "rgba(21,101,192,0.15)" : C.surfaceLow, color: category === cat ? C.secondary : C.textMuted, border: category === cat ? `1px solid ${C.borderActive}` : `1px solid ${C.border}`, lineHeight: 1.3 }}>
+                        {CATEGORY_LABELS[cat] || cat}
+                      </motion.button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Custom descriptor */}

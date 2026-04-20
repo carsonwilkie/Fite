@@ -301,7 +301,7 @@ export default function FeaturesPage() {
         </button>
       </div>
 
-      <div style={{ color: C.onSurface }}>
+      <div style={{ color: C.onSurface, overflowX: "hidden" }}>
 
         {/* ── FEATURES ──────────────────────────────────────────────────────────── */}
         <section id="features-section" style={{ position: "relative", zIndex: 2, background: C.bg }}>
