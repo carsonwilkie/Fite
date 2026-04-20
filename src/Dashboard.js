@@ -1497,6 +1497,28 @@ export default function Dashboard() {
                   </div>
                 </div>
 
+                {/* Categories */}
+                <div>
+                  <ControlLabel>Focus Category</ControlLabel>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+                    {CATEGORIES.map(cat => (
+                      <motion.button key={cat} onClick={() => setCategory(cat)} whileTap={{ scale: 0.94 }}
+                        style={{ padding: "11px 10px", fontSize: 11, fontWeight: 800, textAlign: "left", borderRadius: 9, cursor: "pointer", fontFamily: "Manrope, sans-serif", letterSpacing: "0.02em", textTransform: "uppercase", transition: "all 0.18s", backgroundColor: category === cat ? "rgba(21,101,192,0.15)" : C.surfaceLow, color: category === cat ? C.secondary : C.textMuted, border: category === cat ? `1px solid ${C.borderActive}` : `1px solid ${C.border}`, lineHeight: 1.3 }}>
+                        {CATEGORY_LABELS[cat] || cat}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Math toggle */}
+                <div>
+                  <ControlLabel>Math</ControlLabel>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}` }}>
+                    <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Include Math</span>
+                    <ToggleSwitch checked={mathOn} onClick={() => setMathOn(v => !v)} />
+                  </div>
+                </div>
+
                 {/* Timer — wrapped with ControlLabel like other sections so it is unmistakable */}
                 <div>
                   <ControlLabel>
@@ -1531,25 +1553,6 @@ export default function Dashboard() {
                       ))}
                     </div>
                   )}
-                  </div>
-                </div>
-
-                {/* Math toggle */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}` }}>
-                  <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Include Math</span>
-                  <ToggleSwitch checked={mathOn} onClick={() => setMathOn(v => !v)} />
-                </div>
-
-                {/* Categories */}
-                <div>
-                  <ControlLabel>Focus Category</ControlLabel>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
-                    {CATEGORIES.map(cat => (
-                      <motion.button key={cat} onClick={() => setCategory(cat)} whileTap={{ scale: 0.94 }}
-                        style={{ padding: "11px 10px", fontSize: 11, fontWeight: 800, textAlign: "left", borderRadius: 9, cursor: "pointer", fontFamily: "Manrope, sans-serif", letterSpacing: "0.02em", textTransform: "uppercase", transition: "all 0.18s", backgroundColor: category === cat ? "rgba(21,101,192,0.15)" : C.surfaceLow, color: category === cat ? C.secondary : C.textMuted, border: category === cat ? `1px solid ${C.borderActive}` : `1px solid ${C.border}`, lineHeight: 1.3 }}>
-                        {CATEGORY_LABELS[cat] || cat}
-                      </motion.button>
-                    ))}
                   </div>
                 </div>
 
