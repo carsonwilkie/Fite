@@ -1104,6 +1104,14 @@ export default function Dashboard() {
             {/* Mobile: nav + config buttons */}
             {isMobile && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, position: "relative" }}>
+                {/* Config button — icon only */}
+                <motion.button
+                  onClick={() => setDrawerOpen(true)}
+                  whileTap={{ scale: 0.92 }}
+                  style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${C.border}`, background: "rgba(21,101,192,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
+                  Config <Icon name="tune" size={18} style={{ color: C.secondary }} />
+                </motion.button>
                 {/* Home nav dropdown */}
                 <div style={{ position: "relative" }}>
                   <motion.button
@@ -1148,14 +1156,6 @@ export default function Dashboard() {
                     )}
                   </AnimatePresence>
                 </div>
-                {/* Config button — icon only */}
-                <motion.button
-                  onClick={() => setDrawerOpen(true)}
-                  whileTap={{ scale: 0.92 }}
-                  style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${C.border}`, background: "rgba(21,101,192,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                >
-                  <Icon name="tune" size={18} style={{ color: C.secondary }} />
-                </motion.button>
               </div>
             )}
           </div>

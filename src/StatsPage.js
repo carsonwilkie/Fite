@@ -311,6 +311,7 @@ export default function StatsPage() {
                         {clampedN} question{clampedN !== 1 ? "s" : ""}
                       </div>
                       <input
+                        className="stats-slider-input"
                         type="range"
                         min={2}
                         max={maxN}
@@ -319,7 +320,7 @@ export default function StatsPage() {
                         onChange={e => setWindowN(+e.target.value)}
                         style={{ width: 150, accentColor: C.secondary, cursor: "pointer" }}
                       />
-                      <div style={{ display: "flex", justifyContent: "space-between", width: 150 }}>
+                      <div className="stats-slider-ticks" style={{ display: "flex", justifyContent: "space-between", width: 150 }}>
                         <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>2</span>
                         <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>{maxN}</span>
                       </div>
@@ -426,7 +427,14 @@ export default function StatsPage() {
                                   animate={{ height: `${pct}%` }}
                                   transition={{ duration: 0.4, delay: i * 0.02, ease: [0.22, 1, 0.36, 1] }}
                                   onMouseEnter={() => { setHoveredBar(i); setLastHoveredBar(i); }}
-                                  onClick={() => router.push(`/history?highlight=${e.timestamp}`)}
+                                  onClick={() => {
+                                    if (hoveredBar === i) {
+                                      router.push(`/history?highlight=${e.timestamp}`);
+                                    } else {
+                                      setHoveredBar(i);
+                                      setLastHoveredBar(i);
+                                    }
+                                  }}
                                   style={{ width: "100%", borderRadius: "2px 2px 0 0", background: isHov ? `linear-gradient(to top, ${color}, ${color}ee)` : `linear-gradient(to top, ${color}88, ${color}cc)`, minHeight: 2, boxShadow: isHov ? `0 0 8px ${color}70` : "none", transition: "background 0.18s, box-shadow 0.18s", cursor: "pointer" }}
                                 />
                               </div>
@@ -558,8 +566,10 @@ export default function StatsPage() {
           .page-topbar-cta { padding: 6px 10px !important; font-size: 10px !important; }
           .stats-content { padding: 20px 14px 80px !important; }
           .stats-chart-card { padding: 16px 14px !important; }
-          .stats-chart-header { flex-wrap: wrap; gap: 14px; }
-          .stats-slider-wrap { min-width: 100% !important; align-items: flex-start !important; }
+          .stats-chart-header { gap: 10px; }
+          .stats-slider-wrap { min-width: 110px !important; align-items: flex-end !important; }
+          .stats-slider-input { width: 100px !important; }
+          .stats-slider-ticks { width: 100px !important; }
           .stats-trend-row { flex-wrap: wrap; gap: 10px !important; }
           .stats-trend-row > div:not(.stats-trend-arrow) { min-width: calc(50% - 26px); }
           .stats-trend-arrow { order: 2; }

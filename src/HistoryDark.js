@@ -157,6 +157,7 @@ export default function HistoryDark() {
   const [selectedDifficulty,setSelectedDifficulty]= useState("");
   const [selectedMath,      setSelectedMath]      = useState("");
   const [sortOrder,         setSortOrder]         = useState("newest");
+  const [expandedDates,     setExpandedDates]     = useState(new Set());
   const [, startTransition] = useTransition();
   const highlightHandledRef = useRef(false);
 
@@ -183,6 +184,8 @@ export default function HistoryDark() {
     const idx = sorted.findIndex(e => e.timestamp === highlightTs);
     if (idx === -1) return;
     setExpandedIndex(idx);
+    const dateStr = new Date(highlightTs).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+    setExpandedDates(prev => new Set([...prev, dateStr]));
     setTimeout(() => {
       document.getElementById(`entry-${idx}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 300);
@@ -209,6 +212,16 @@ export default function HistoryDark() {
     if (!grouped[d]) grouped[d] = [];
     grouped[d].push(e);
   });
+
+  const isFiltering = !!(search || selectedCategory || selectedDifficulty || selectedMath);
+
+  const toggleDate = (date) => {
+    setExpandedDates(prev => {
+      const next = new Set(prev);
+      next.has(date) ? next.delete(date) : next.add(date);
+      return next;
+    });
+  };
 
   let globalIdx = 0;
 
@@ -337,25 +350,43 @@ export default function HistoryDark() {
             {entries.length === 0 ? "No history yet — answer some questions to get started." : "No results match your filters."}
           </div>
         ) : (
-          Object.entries(grouped).map(([date, group]) => (
-            <div key={date} style={{ marginBottom: 32 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: C.secondary, fontFamily: "Manrope, sans-serif", marginBottom: 10, paddingBottom: 8, borderBottom: `1px solid ${C.border}` }}>{date}</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {group.map(entry => {
-                  const gi = globalIdx++;
-                  return (
-                    <EntryCard
-                      key={gi}
-                      entry={entry}
-                      index={gi}
-                      expanded={expandedIndex === gi}
-                      onToggle={() => setExpandedIndex(expandedIndex === gi ? null : gi)}
-                    />
-                  );
-                })}
+          Object.entries(grouped).map(([date, group]) => {
+            const isOpen = isFiltering || expandedDates.has(date);
+            const groupStart = globalIdx;
+            const cards = group.map(entry => {
+              const gi = globalIdx++;
+              return { entry, gi };
+            });
+            return (
+              <div key={date} style={{ marginBottom: 16 }}>
+                {/* Date header — clickable toggle */}
+                <button
+                  onClick={() => toggleDate(date)}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", background: "none", border: "none", cursor: "pointer", padding: "8px 0", marginBottom: isOpen ? 10 : 0, borderBottom: `1px solid ${C.border}` }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: C.secondary, fontFamily: "Manrope, sans-serif" }}>{date}</span>
+                    <span style={{ fontSize: 10, color: C.textMuted, fontFamily: "Manrope, sans-serif" }}>({group.length})</span>
+                  </div>
+                  <span style={{ fontSize: 13, color: C.textMuted, transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+                </button>
+                {/* Entries */}
+                {isOpen && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {cards.map(({ entry, gi }) => (
+                      <EntryCard
+                        key={gi}
+                        entry={entry}
+                        index={gi}
+                        expanded={expandedIndex === gi}
+                        onToggle={() => setExpandedIndex(expandedIndex === gi ? null : gi)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

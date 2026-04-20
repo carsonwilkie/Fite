@@ -65,6 +65,7 @@ export default function LandingPage() {
   const endSignupRef    = useRef(null); // right sign-up card
   const progressBarRef  = useRef(null);
   const pendingFrameRef = useRef(null); // RAF handle for batched canvas draws
+  const frozenRef       = useRef(false); // set on routeChangeStart to stop canvas updates during cover
   const heroBlurRef     = useRef(null); // blur layer tied to hero text
   const midBlurRef      = useRef(null); // blur layer tied to mid-scroll text
   const endBlurRef      = useRef(null); // blur layer tied to end overlay
@@ -83,6 +84,19 @@ export default function LandingPage() {
   const isMobileHeroLayout = heroViewport.width > 0 && heroViewport.width <= 900;
   const heroFrameNumbers = isMobileHeroLayout ? MOBILE_FRAME_NUMBERS : DESKTOP_FRAME_NUMBERS;
   const heroFrameTotal = heroFrameNumbers.length;
+
+  // Freeze canvas updates as soon as navigation starts so the ScrollTrigger scrub
+  // doesn't rewind frames while the cover overlay is still sliding over the page.
+  useEffect(() => {
+    const freeze = () => { frozenRef.current = true; };
+    const unfreeze = () => { frozenRef.current = false; };
+    router.events.on("routeChangeStart", freeze);
+    router.events.on("routeChangeError", unfreeze);
+    return () => {
+      router.events.off("routeChangeStart", freeze);
+      router.events.off("routeChangeError", unfreeze);
+    };
+  }, [router.events]);
 
   // Hero text entrance — delayed so the global transition cover has partially lifted first
   useEffect(() => {
@@ -250,6 +264,7 @@ export default function LandingPage() {
         end: "bottom bottom",
         scrub: 0.4,
         onUpdate(self) {
+          if (frozenRef.current) return;
           const p = self.progress;
 
           // — Desktop intro phase (p: INTRO_DELAY → INTRO) —
