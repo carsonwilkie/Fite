@@ -1145,17 +1145,17 @@ export default function LandingPage() {
                 <p style={{
                   fontSize: "clamp(28px, 4.5vw, 46px)", fontWeight: 900,
                   color: C.onSurface, fontFamily: "Inter, sans-serif",
-                  letterSpacing: "-0.04em", lineHeight: 1.5,
+                  letterSpacing: "-0.04em", lineHeight: 1.4,
                   margin: 0,
                   textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,1), 0 4px 20px rgba(0,0,0,0.98), 0 8px 44px rgba(0,0,0,0.85), 0 16px 72px rgba(0,0,0,0.6)",
                 }}>
                   <span style={{ display: "block", whiteSpace: isMobileHeroLayout ? "normal" : "nowrap", textAlign: "center" }}>Built for every student at any skill level.</span>
                 </p>
                 <p style={{
-                  paddingTop: "2%",
+                  paddingTop: "3%",
                   fontSize: "clamp(28px, 4.5vw, 46px)", fontWeight: 900,
                   color: C.onSurface, fontFamily: "Inter, sans-serif",
-                  letterSpacing: "-0.04em", lineHeight: 1.5,
+                  letterSpacing: "-0.04em", lineHeight: 1.4,
                   margin: 0,
                   textShadow: "0 1px 0 rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,1), 0 4px 20px rgba(0,0,0,0.98), 0 8px 44px rgba(0,0,0,0.85), 0 16px 72px rgba(0,0,0,0.6)",
                 }}>
