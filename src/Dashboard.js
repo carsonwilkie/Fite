@@ -1523,7 +1523,7 @@ export default function Dashboard() {
                 <div>
                   <ControlLabel>
                     Practice Timer
-                    {!isPaid && <span style={{ marginLeft: 6, color: C.gold, textTransform: "none", letterSpacing: 0 }}>— Premium</span>}
+                    {!isPaid && <span style={{ marginLeft: 6, color: C.gold }}> — Premium</span>}
                   </ControlLabel>
                   <div style={{ background: isPaid ? C.surfaceLow : "rgba(201,168,76,0.08)", borderRadius: 12, border: `1px solid ${isPaid ? C.border : "rgba(201,168,76,0.45)"}`, overflow: "hidden" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px" }}>
