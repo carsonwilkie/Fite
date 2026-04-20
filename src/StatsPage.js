@@ -110,6 +110,7 @@ export default function StatsPage() {
   const [windowN, setWindowN]             = useState(20);
   const [hoveredBar, setHoveredBar]       = useState(null);
   const [lastHoveredBar, setLastHoveredBar] = useState(null);
+  const [tappedBar, setTappedBar]         = useState(null);
 
   useEffect(() => {
     if (loading) return;
@@ -410,7 +411,7 @@ export default function StatsPage() {
                       {/* Scrollable bars + labels — onMouseLeave on container so moving between bars doesn't flash */}
                       <div
                         style={{ display: "flex", gap: 3, overflowX: "auto", position: "relative", zIndex: 1 }}
-                        onMouseLeave={() => setHoveredBar(null)}
+                        onMouseLeave={() => { setHoveredBar(null); setTappedBar(null); }}
                       >
                         {windowBars.map((e, i) => {
                           const qNum  = maxN - clampedN + 1 + i;
@@ -426,11 +427,12 @@ export default function StatsPage() {
                                   initial={{ height: 0 }}
                                   animate={{ height: `${pct}%` }}
                                   transition={{ duration: 0.4, delay: i * 0.02, ease: [0.22, 1, 0.36, 1] }}
-                                  onMouseEnter={() => { setHoveredBar(i); setLastHoveredBar(i); }}
+                                  onMouseEnter={() => { setHoveredBar(i); setLastHoveredBar(i); setTappedBar(i); }}
                                   onClick={() => {
-                                    if (hoveredBar === i) {
+                                    if (tappedBar === i) {
                                       router.push(`/history?highlight=${e.timestamp}`);
                                     } else {
+                                      setTappedBar(i);
                                       setHoveredBar(i);
                                       setLastHoveredBar(i);
                                     }

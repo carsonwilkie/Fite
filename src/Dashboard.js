@@ -1104,13 +1104,14 @@ export default function Dashboard() {
             {/* Mobile: nav + config buttons */}
             {isMobile && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, position: "relative" }}>
-                {/* Config button — icon only */}
+                {/* Config button */}
                 <motion.button
                   onClick={() => setDrawerOpen(true)}
                   whileTap={{ scale: 0.92 }}
-                  style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${C.border}`, background: "rgba(21,101,192,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                  style={{ height: 36, padding: "0 10px", borderRadius: 9, border: `1px solid ${C.border}`, background: "rgba(21,101,192,0.12)", cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}
                 >
-                  Config <Icon name="tune" size={18} style={{ color: C.secondary }} />
+                  <Icon name="tune" size={16} style={{ color: C.secondary }} />
+                  <span className="db-config-label" style={{ fontSize: 10, fontWeight: 900, color: C.secondary, letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>Config</span>
                 </motion.button>
                 {/* Home nav dropdown */}
                 <div style={{ position: "relative" }}>
@@ -1579,6 +1580,9 @@ export default function Dashboard() {
         .dashboard-markdown li { font-size: 14px; color: ${C.text}; line-height: 1.6; margin: 3px 0; }
         .dashboard-markdown strong { color: ${C.secondary}; font-weight: 700; }
 
+        @media (max-width: 339px) {
+          .db-config-label { display: none !important; }
+        }
         @media (max-width: 767px) {
           /* Tighter question canvas spacing */
           .qc-wrap { gap: 18px !important; }
