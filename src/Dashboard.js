@@ -1315,30 +1315,57 @@ export default function Dashboard() {
       {/* ── Mobile Bottom Nav ── */}
       {isMobile && (
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 64, backgroundColor: C.surfaceLow, borderTop: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-around", zIndex: 200, backdropFilter: "blur(16px)" }}>
-          {[
-            { icon: "chat",     label: "Question",  action: () => setMode("question") ,  active: mode === "question" },
-            { icon: "groups",   label: "Interview", action: () => setMode("interview"),  active: mode === "interview" },
-            { icon: "history",  label: "History",   action: () => isPaid ? router.push("/history") : null, active: false, muted: !isPaid },
-            { icon: "person",   label: "Account",   action: null, active: false },
-          ].map(({ icon, label, action, active, muted }) => (
+
+          {/* History */}
+          <motion.button
+            onClick={() => isPaid ? router.push("/history") : null}
+            whileTap={{ scale: 0.88 }}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: isPaid ? "pointer" : "default", padding: "6px 12px", borderRadius: 10 }}
+          >
+            <Icon name="history" size={22} style={{ color: isPaid ? C.textMuted : `${C.textMuted}40` }} />
+            <span style={{ fontSize: 9, fontWeight: 700, color: isPaid ? C.textMuted : `${C.textMuted}40`, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>History</span>
+          </motion.button>
+
+          {/* Stats */}
+          <motion.button
+            onClick={() => isPaid ? router.push("/stats") : null}
+            whileTap={{ scale: 0.88 }}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: isPaid ? "pointer" : "default", padding: "6px 12px", borderRadius: 10 }}
+          >
+            <Icon name="bar_chart" size={22} style={{ color: isPaid ? C.textMuted : `${C.textMuted}40` }} />
+            <span style={{ fontSize: 9, fontWeight: 700, color: isPaid ? C.textMuted : `${C.textMuted}40`, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Stats</span>
+          </motion.button>
+
+          {/* Upgrade / Account / Sign In */}
+          {!isSignedIn ? (
+            <SignInButton mode="modal">
+              <motion.button
+                whileTap={{ scale: 0.88 }}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 12px", borderRadius: 10 }}
+              >
+                <Icon name="login" size={22} style={{ color: C.secondary }} />
+                <span style={{ fontSize: 9, fontWeight: 700, color: C.secondary, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Sign In</span>
+              </motion.button>
+            </SignInButton>
+          ) : isPaid ? (
             <motion.button
-              key={label}
-              onClick={action}
               whileTap={{ scale: 0.88 }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: action ? "pointer" : "default", padding: "6px 12px", borderRadius: 10 }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "default", padding: "6px 12px", borderRadius: 10 }}
             >
-              {label === "Account" ? (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <UserButton appearance={{ elements: { avatarBox: { width: 22, height: 22 } } }} />
-                </div>
-              ) : (
-                <Icon name={icon} size={22} style={{ color: active ? C.secondary : muted ? `${C.textMuted}40` : C.textMuted }} />
-              )}
-              <span style={{ fontSize: 9, fontWeight: 700, color: active ? C.secondary : muted ? `${C.textMuted}40` : C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                {label}
-              </span>
+              <UserButton appearance={{ elements: { avatarBox: { width: 22, height: 22 } } }} />
+              <span style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Account</span>
             </motion.button>
-          ))}
+          ) : (
+            <motion.button
+              onClick={handleUpgrade}
+              whileTap={{ scale: 0.88 }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 12px", borderRadius: 10 }}
+            >
+              <Icon name="workspace_premium" size={22} style={{ color: C.gold }} />
+              <span style={{ fontSize: 9, fontWeight: 700, color: C.gold, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Upgrade</span>
+            </motion.button>
+          )}
+
         </div>
       )}
 
