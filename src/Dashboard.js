@@ -1152,6 +1152,19 @@ export default function Dashboard() {
                               {label}
                             </motion.button>
                           ))}
+                          {isPaid && (
+                            <>
+                              <div style={{ height: 1, background: C.border, margin: "4px 6px" }} />
+                              <motion.button
+                                onClick={() => { setNavOpen(false); handleManageSub(); }}
+                                whileTap={{ scale: 0.96 }}
+                                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "none", border: "none", cursor: "pointer", color: C.text, fontSize: 13, fontWeight: 700, fontFamily: "Inter, sans-serif", textAlign: "left" }}
+                              >
+                                <Icon name="credit_card" size={16} style={{ color: C.gold }} />
+                                Manage Plan
+                              </motion.button>
+                            </>
+                          )}
                         </motion.div>
                       </>
                     )}
