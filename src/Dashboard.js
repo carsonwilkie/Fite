@@ -1491,9 +1491,9 @@ export default function Dashboard() {
                 </div>
 
                 {/* Timer toggle — visible but locked for free users */}
-                <div style={{ background: C.surfaceLow, borderRadius: 12, border: `1px solid ${isPaid ? C.border : "rgba(201,168,76,0.25)"}`, overflow: "hidden", opacity: isPaid ? 1 : 0.65 }}>
+                <div style={{ background: isPaid ? C.surfaceLow : "rgba(201,168,76,0.06)", borderRadius: 12, border: `1px solid ${isPaid ? C.border : "rgba(201,168,76,0.4)"}`, overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px" }}>
-                    <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>
+                    <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif", color: C.text }}>
                       Timer{!isPaid && <span style={{ marginLeft: 6, color: C.gold, fontWeight: 700, textTransform: "none", letterSpacing: 0, fontSize: 11 }}>— Premium</span>}
                     </span>
                     <ToggleSwitch
