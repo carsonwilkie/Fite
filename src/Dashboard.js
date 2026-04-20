@@ -1531,9 +1531,11 @@ export default function Dashboard() {
                         <div style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "Manrope, sans-serif", color: C.text }}>
                           {isPaid ? (timerOn ? "Timer On" : "Timer Off") : "Locked"}
                         </div>
-                        <div style={{ fontSize: 10, color: C.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 4 }}>
-                          {isPaid ? `Current: ${timerDuration === 60 ? "1 minute" : timerDuration === 120 ? "2 minutes" : timerDuration === 180 ? "3 minutes" : "5 minutes"}` : "Upgrade to enable"}
-                        </div>
+                        {timerOn (
+                          <div style={{ fontSize: 10, color: C.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 4 }}>
+                            {isPaid ? `Current: ${timerDuration === 60 ? "1 minute" : timerDuration === 120 ? "2 minutes" : timerDuration === 180 ? "3 minutes" : "5 minutes"}` : "Upgrade to enable"}
+                          </div>
+                        )}
                       </div>
                       <ToggleSwitch
                         checked={isPaid && timerOn}
