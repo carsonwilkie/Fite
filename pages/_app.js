@@ -3,7 +3,6 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { PaidStatusProvider } from "../src/PaidStatusContext";
-import ScrollToTop from "../src/ScrollToTop";
 import { useRouter } from "next/router";
 import "../src/index.css";
 import "../src/App.css";
@@ -25,6 +24,17 @@ function isHeroRoute(route) {
 
 function getCoverPauseMs(route) {
   return isHeroRoute(route) ? HERO_COVER_PAUSE_MS : COVER_PAUSE_MS;
+}
+
+function resetWindowScroll() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const opts = { top: 0, left: 0, behavior: "instant" };
+  window.scrollTo(opts);
+  document.documentElement.scrollTo(opts);
+  document.body.scrollTo(opts);
 }
 
 export default function App({ Component, pageProps }) {
@@ -57,6 +67,7 @@ export default function App({ Component, pageProps }) {
     pendingViewRef.current = null;
     routeReadyRef.current = false;
     phaseRef.current = "revealing";
+    resetWindowScroll();
     setDisplayedView(nextView);
 
     clearTimeout(revealPauseTimerRef.current);
@@ -139,6 +150,12 @@ export default function App({ Component, pageProps }) {
   }, [router.events]);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
+  useEffect(() => {
     const incomingView = {
       Component,
       pageProps,
@@ -158,6 +175,7 @@ export default function App({ Component, pageProps }) {
     pendingViewRef.current = incomingView;
 
     if (phaseRef.current === "idle") {
+      resetWindowScroll();
       setDisplayedView(incomingView);
       pendingViewRef.current = null;
       routeReadyRef.current = false;
@@ -177,7 +195,6 @@ export default function App({ Component, pageProps }) {
       <PaidStatusProvider>
         <Analytics />
         <SpeedInsights />
-        <ScrollToTop />
         <displayedView.Component {...displayedView.pageProps} />
 
         {/* ── Global page-transition overlay ─────────────────────────────────── */}
