@@ -132,7 +132,7 @@ export default function LandingPage() {
   useEffect(() => {
     if (!canvasRef.current || !heroViewport.width) return;
     canvasRef.current.style.transform = isMobileHeroLayout
-      ? ""
+      ? "translateX(0) translateZ(0)"
       : "translateX(24%) translateZ(0)";
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobileHeroLayout, heroViewport.width]);
@@ -252,7 +252,74 @@ export default function LandingPage() {
 
   // GSAP ScrollTrigger — drives canvas frame scrub + all overlay animations via direct DOM
   useEffect(() => {
+    if (!heroViewport.width || !heroViewport.height || !heroSectionRef.current) {
+      return undefined;
+    }
+
     let st;
+
+    const resetHeroScene = () => {
+      if (canvasRef.current) {
+        canvasRef.current.style.transform = isMobileHeroLayout
+          ? "translateX(0) translateZ(0)"
+          : "translateX(24%) translateZ(0)";
+      }
+
+      if (introColRef.current) {
+        introColRef.current.style.transform = "translateX(0) translateZ(0)";
+        introColRef.current.style.opacity = "1";
+      }
+
+      if (heroOverlayRef.current) {
+        heroOverlayRef.current.style.opacity = "1";
+        heroOverlayRef.current.style.pointerEvents = "auto";
+      }
+
+      if (heroBlurRef.current) heroBlurRef.current.style.opacity = "1";
+      if (midBlurRef.current) midBlurRef.current.style.opacity = "0";
+      if (midTagRef.current) midTagRef.current.style.opacity = "0";
+
+      if (line1Ref.current) line1Ref.current.style.transform = "translateX(0)";
+      if (line2Ref.current) line2Ref.current.style.transform = "scale(1)";
+      if (line3Ref.current) line3Ref.current.style.transform = "translateX(0)";
+      if (scrollHintRef.current) scrollHintRef.current.style.opacity = "1";
+
+      if (cmpRef.current) {
+        cmpRef.current.style.opacity = "0";
+        cmpRef.current.style.visibility = "hidden";
+        cmpRef.current.style.transform = "translate3d(0,22px,0)";
+      }
+      if (cmpBlurRef.current) {
+        cmpBlurRef.current.style.opacity = "0";
+        cmpBlurRef.current.style.visibility = "hidden";
+      }
+      if (cmpLeftRef.current) {
+        cmpLeftRef.current.style.transform = isMobileHeroLayout
+          ? "translate3d(-50%,18px,0)"
+          : "translate3d(-44px,-50%,0)";
+      }
+      if (cmpRightRef.current) {
+        cmpRightRef.current.style.transform = isMobileHeroLayout
+          ? "translate3d(-50%,22px,0)"
+          : "translate3d(44px,-50%,0)";
+      }
+      if (cmpNumRef.current) cmpNumRef.current.style.transform = "scale(1) translateZ(0)";
+
+      if (endDetailsRef.current) {
+        endDetailsRef.current.style.opacity = "0";
+        endDetailsRef.current.style.pointerEvents = "none";
+      }
+      if (endBlurRef.current) endBlurRef.current.style.opacity = "0";
+      if (endBrandRef.current) endBrandRef.current.style.transform = "translateX(-120px)";
+
+      endSpawnRef.current = false;
+      midTagSpawnRef.current = false;
+      endPracticeRef.current?.classList.remove("practice-panel-in");
+      endSignupRef.current?.classList.remove("signup-panel-in");
+    };
+
+    resetHeroScene();
+
     async function init() {
       const { gsap }          = await import("gsap");
       const { ScrollTrigger } = await import("gsap/ScrollTrigger");
@@ -420,9 +487,11 @@ export default function LandingPage() {
       ScrollTrigger.refresh();
     }
     init();
-    return () => st?.kill();
+    return () => {
+      st?.kill();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [heroViewport.height, heroFrameTotal]);
+  }, [heroViewport.width, heroViewport.height, heroFrameTotal, isMobileHeroLayout]);
 
   return (
     <>

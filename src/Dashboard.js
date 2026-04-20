@@ -1484,18 +1484,17 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Math toggle */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}` }}>
-                  <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Include Math</span>
-                  <ToggleSwitch checked={mathOn} onClick={() => setMathOn(v => !v)} />
-                </div>
-
-                {/* Timer toggle — visible but locked for free users */}
+                {/* Timer toggle — surfaced near the top on mobile so it is easy to find */}
                 <div style={{ background: isPaid ? C.surfaceLow : "rgba(201,168,76,0.06)", borderRadius: 12, border: `1px solid ${isPaid ? C.border : "rgba(201,168,76,0.4)"}`, overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px" }}>
-                    <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif", color: C.text }}>
-                      Timer{!isPaid && <span style={{ marginLeft: 6, color: C.gold, fontWeight: 700, textTransform: "none", letterSpacing: 0, fontSize: 11 }}>— Premium</span>}
-                    </span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif", color: C.text }}>
+                        Timer{!isPaid && <span style={{ marginLeft: 6, color: C.gold, fontWeight: 700, textTransform: "none", letterSpacing: 0, fontSize: 11 }}>— Premium</span>}
+                      </div>
+                      <div style={{ fontSize: 10, color: C.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 4 }}>
+                        {isPaid ? `Current setting: ${timerDuration === 60 ? "1 minute" : timerDuration === 120 ? "2 minutes" : timerDuration === 180 ? "3 minutes" : "5 minutes"}` : "Unlock timed practice with Premium"}
+                      </div>
+                    </div>
                     <ToggleSwitch
                       checked={isPaid && timerOn}
                       onClick={() => { if (!isPaid) { handleUpgrade(); return; } const next = !timerOn; setTimerOn(next); if (!next) stopTimer(); }}
@@ -1514,6 +1513,12 @@ export default function Dashboard() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Math toggle */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}` }}>
+                  <span style={{ fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>Include Math</span>
+                  <ToggleSwitch checked={mathOn} onClick={() => setMathOn(v => !v)} />
                 </div>
 
                 {/* Categories */}
