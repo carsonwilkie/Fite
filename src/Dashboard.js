@@ -1267,7 +1267,7 @@ export default function Dashboard() {
                 </ControlLabel>
                 <input
                   type="text"
-                  placeholder={isPaid ? "e.g. LBO Modeling focus..." : "Upgrade to unlock"}
+                  placeholder="e.g. focus on LBO Modeling..."
                   value={customPrompt}
                   onChange={e => isPaid && setCustomPrompt(e.target.value)}
                   disabled={!isPaid}
