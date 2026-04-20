@@ -1237,7 +1237,7 @@ export default function Dashboard() {
               <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${isPaid ? C.border : "rgba(201,168,76,0.2)"}`, overflow: "hidden", opacity: isPaid ? 1 : 0.7 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px" }}>
                   <span style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "Manrope, sans-serif" }}>
-                    Timer{!isPaid && <span style={{ marginLeft: 6, color: C.gold, textTransform: "none", letterSpacing: 0 }}> — Premium</span>}
+                    Timer{!isPaid && <span style={{ fontSize: 9, marginLeft: 6, color: C.gold }}> — Premium</span>}
                   </span>
                   <ToggleSwitch
                     checked={isPaid && timerOn}
