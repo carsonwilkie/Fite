@@ -53,8 +53,49 @@ export default function AccountPanel() {
     setTab(next);
   };
 
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
+    }
+  };
+
   return (
-    <div style={{ minHeight: "100vh", background: AUTH_COLORS.bg, color: AUTH_COLORS.text, padding: "96px 20px 64px" }}>
+    <div className="account-page" style={{ position: "relative", minHeight: "100vh", background: AUTH_COLORS.bg, color: AUTH_COLORS.text, padding: "96px 20px 64px" }}>
+      <motion.button
+        initial={{ opacity: 0, x: -8 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        whileHover={{ y: -1, borderColor: AUTH_COLORS.secondary }}
+        whileTap={{ scale: 0.97 }}
+        onClick={handleBack}
+        className="account-back-btn"
+        style={{
+          position: "absolute",
+          top: 28,
+          left: 28,
+          zIndex: 10,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "10px 16px",
+          borderRadius: 999,
+          border: `1px solid ${AUTH_COLORS.borderSoft}`,
+          background: "rgba(13,27,42,0.6)",
+          backdropFilter: "blur(10px)",
+          color: AUTH_COLORS.text,
+          fontFamily: "Manrope, sans-serif",
+          fontWeight: 700,
+          fontSize: 11,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          cursor: "pointer",
+        }}
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_back</span>
+        Back
+      </motion.button>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
         {/* Header */}
         <motion.div

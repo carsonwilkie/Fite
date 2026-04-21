@@ -3,13 +3,32 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/router";
 import { useClerk, useUser } from "@clerk/clerk-react";
 import { AUTH_COLORS, cyberGrad } from "./AuthPrimitives";
+import usePaidStatus from "../usePaidStatus";
 
 export default function UserMenu({ size = 32, align = "right" }) {
   const { user } = useUser();
   const { signOut } = useClerk();
   const router = useRouter();
+  const { isPaid } = usePaidStatus();
   const [open, setOpen] = useState(false);
+  const [managingSub, setManagingSub] = useState(false);
   const anchorRef = useRef(null);
+
+  const handleManageSub = async () => {
+    if (!user?.id || managingSub) return;
+    setManagingSub(true);
+    try {
+      const r = await fetch("/api/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, returnPath: router.asPath }),
+      });
+      const d = await r.json();
+      if (d.url) window.location.href = d.url;
+    } finally {
+      setManagingSub(false);
+    }
+  };
 
   useEffect(() => {
     if (!open) return undefined;
@@ -106,6 +125,13 @@ export default function UserMenu({ size = 32, align = "right" }) {
               label="Dashboard"
               onClick={() => { setOpen(false); router.push("/dashboard"); }}
             />
+            {isPaid && (
+              <MenuItem
+                icon="credit_card"
+                label={managingSub ? "Opening…" : "Manage subscription"}
+                onClick={() => { setOpen(false); handleManageSub(); }}
+              />
+            )}
             <div style={{ height: 1, background: AUTH_COLORS.borderSoft, margin: "6px 8px" }} />
             <MenuItem
               icon="logout"

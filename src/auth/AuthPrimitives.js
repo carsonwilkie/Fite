@@ -44,7 +44,7 @@ export function FloatingInput({
   const floating = focused || filled;
 
   return (
-    <div style={{ position: "relative", width: "100%" }}>
+    <div style={{ position: "relative", width: "100%", padding: 4, margin: -4 }}>
       <div
         style={{
           position: "relative",
@@ -55,7 +55,7 @@ export function FloatingInput({
           borderRadius: 12,
           transition: "border-color 0.2s, background 0.2s, box-shadow 0.2s",
           boxShadow: focused
-            ? `0 0 0 3px rgba(79,195,247,0.12), 0 8px 24px rgba(21,101,192,0.18)`
+            ? `0 0 0 2px rgba(79,195,247,0.14), 0 4px 14px rgba(21,101,192,0.14)`
             : "0 1px 2px rgba(0,0,0,0.2)",
           paddingLeft: icon ? 44 : 16,
           paddingRight: (isPassword || rightAdornment) ? 44 : 16,
@@ -100,6 +100,7 @@ export function FloatingInput({
           {label}
         </label>
         <input
+          className="auth-floating-input"
           id={id}
           type={effectiveType}
           value={value ?? ""}
