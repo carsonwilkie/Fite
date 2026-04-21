@@ -1,0 +1,110 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useUser } from "@clerk/clerk-react";
+import AuthCard from "./AuthCard";
+
+const AuthModalContext = createContext(null);
+
+export function useAuthModal() {
+  const ctx = useContext(AuthModalContext);
+  if (!ctx) throw new Error("useAuthModal must be used within AuthProvider");
+  return ctx;
+}
+
+export default function AuthProvider({ children }) {
+  const [state, setState] = useState({ open: false, view: "sign-in", redirectTo: null });
+  const { isSignedIn } = useUser();
+
+  const openAuth = useCallback((view = "sign-in", opts = {}) => {
+    setState({ open: true, view, redirectTo: opts.redirectTo || null });
+  }, []);
+
+  const closeAuth = useCallback(() => {
+    setState((s) => ({ ...s, open: false }));
+  }, []);
+
+  // Auto-close if user becomes signed in while modal is open.
+  useEffect(() => {
+    if (state.open && isSignedIn) {
+      const t = setTimeout(() => {
+        closeAuth();
+        if (state.redirectTo && typeof window !== "undefined") {
+          window.location.href = state.redirectTo;
+        }
+      }, 350);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [isSignedIn, state.open, state.redirectTo, closeAuth]);
+
+  // Lock body scroll when open.
+  useEffect(() => {
+    if (typeof document === "undefined") return undefined;
+    if (!state.open) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [state.open]);
+
+  // ESC closes.
+  useEffect(() => {
+    if (!state.open) return undefined;
+    const onKey = (e) => { if (e.key === "Escape") closeAuth(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [state.open, closeAuth]);
+
+  const value = useMemo(() => ({
+    openAuth,
+    closeAuth,
+    openSignIn: (opts) => openAuth("sign-in", opts),
+    openSignUp: (opts) => openAuth("sign-up", opts),
+  }), [openAuth, closeAuth]);
+
+  return (
+    <AuthModalContext.Provider value={value}>
+      {children}
+      <AnimatePresence>
+        {state.open && (
+          <motion.div
+            key="auth-modal-root"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 10000,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "24px 16px",
+              background: "rgba(2, 8, 23, 0.72)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
+            }}
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) closeAuth();
+            }}
+          >
+            <motion.div
+              key="auth-modal-card"
+              initial={{ opacity: 0, y: 18, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              style={{ width: "100%", maxWidth: 460 }}
+            >
+              <AuthCard
+                initialView={state.view}
+                onClose={closeAuth}
+                variant="modal"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </AuthModalContext.Provider>
+  );
+}

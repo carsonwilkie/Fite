@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
-import { useUser, UserButton, SignInButton, SignUpButton } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
+import { useAuthModal } from "./auth/AuthProvider";
+import UserMenu from "./auth/UserMenu";
 import { motion, AnimatePresence } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
@@ -779,10 +781,29 @@ function InterviewCanvas({ loadingInterviewGenerate, interviewProgress, intervie
   );
 }
 
+function MiniAvatar({ user, size = 22 }) {
+  const initials = (user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0] || "?").toUpperCase();
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: "50%", overflow: "hidden",
+      background: cyberGrad, display: "flex", alignItems: "center", justifyContent: "center",
+      boxShadow: "0 2px 8px rgba(21,101,192,0.3)",
+    }}>
+      {user?.imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={user.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : (
+        <span style={{ color: "#fff", fontSize: size * 0.48, fontWeight: 800, fontFamily: "Inter, sans-serif" }}>{initials}</span>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function Dashboard() {
   const router    = useRouter();
   const { user, isSignedIn } = useUser();
+  const { openSignIn, openSignUp } = useAuthModal();
   const { isPaid } = usePaidStatus();
   const price      = usePrice();
   const handleUpgrade = useUpgrade();
@@ -936,8 +957,7 @@ export default function Dashboard() {
 
   const handleManageSub = async () => { if (!user?.id) return; const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, returnPath: router.asPath }) }); const d = await r.json(); if (d.url) window.location.href = d.url; };
   const toggleProfilePanel = () => {
-    const trigger = profileCardRef.current?.querySelector("button, [role='button']");
-    trigger?.click();
+    router.push("/account");
   };
 
   const isLoading = loadingQuestion || loadingInterviewGenerate;
@@ -1019,7 +1039,7 @@ export default function Dashboard() {
             style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(21,101,192,0.06)", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10, transition: "background 0.15s, border-color 0.15s", cursor: "pointer", userSelect: "none" }}
           >
             <div onClick={(e) => e.stopPropagation()}>
-              <UserButton />
+              <UserMenu size={32} />
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: C.text }}>
@@ -1087,18 +1107,14 @@ export default function Dashboard() {
             )}
             {!isSignedIn && !isMobile && (
               <>
-                <SignInButton mode="modal">
-                  <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-                    style={{ padding: "8px 16px", borderRadius: 999, border: `1px solid rgba(79,195,247,0.4)`, background: "rgba(79,195,247,0.08)", color: C.secondary, fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
-                    Sign In
-                  </motion.button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-                    style={{ padding: "8px 16px", borderRadius: 999, border: "none", background: cyberGrad, color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", fontFamily: "Manrope, sans-serif", cursor: "pointer", boxShadow: "0 4px 14px rgba(21,101,192,0.4)" }}>
-                    Sign Up
-                  </motion.button>
-                </SignUpButton>
+                <motion.button onClick={() => openSignIn()} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                  style={{ padding: "8px 16px", borderRadius: 999, border: `1px solid rgba(79,195,247,0.4)`, background: "rgba(79,195,247,0.08)", color: C.secondary, fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
+                  Sign In
+                </motion.button>
+                <motion.button onClick={() => openSignUp()} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                  style={{ padding: "8px 16px", borderRadius: 999, border: "none", background: cyberGrad, color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", fontFamily: "Manrope, sans-serif", cursor: "pointer", boxShadow: "0 4px 14px rgba(21,101,192,0.4)" }}>
+                  Sign Up
+                </motion.button>
               </>
             )}
             {/* Mobile: nav + config buttons */}
@@ -1411,21 +1427,21 @@ export default function Dashboard() {
 
           {/* Account / Sign In */}
           {!isSignedIn ? (
-            <SignInButton mode="modal">
-              <motion.button
-                whileTap={{ scale: 0.88 }}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 10 }}
-              >
-                <Icon name="login" size={22} style={{ color: C.secondary }} />
-                <span style={{ fontSize: 9, fontWeight: 700, color: C.secondary, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Sign In</span>
-              </motion.button>
-            </SignInButton>
+            <motion.button
+              onClick={() => openSignIn()}
+              whileTap={{ scale: 0.88 }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 10 }}
+            >
+              <Icon name="login" size={22} style={{ color: C.secondary }} />
+              <span style={{ fontSize: 9, fontWeight: 700, color: C.secondary, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Sign In</span>
+            </motion.button>
           ) : (
             <motion.button
+              onClick={() => router.push("/account")}
               whileTap={{ scale: 0.88 }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "default", padding: "6px 8px", borderRadius: 10 }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 10 }}
             >
-              <UserButton appearance={{ elements: { avatarBox: { width: 22, height: 22 } } }} />
+              <MiniAvatar user={user} size={22} />
               <span style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Account</span>
             </motion.button>
           )}

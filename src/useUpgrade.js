@@ -1,8 +1,9 @@
-import { useUser, useClerk } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
+import { useAuthModal } from "./auth/AuthProvider";
 
 export default function useUpgrade() {
   const { user } = useUser();
-  const { openSignIn } = useClerk();
+  const { openSignIn } = useAuthModal();
 
   return async function handleUpgrade() {
     if (!user?.id) {

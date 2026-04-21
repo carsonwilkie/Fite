@@ -2,12 +2,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useRef, useEffect, useState, useCallback } from "react";
 import LandingNav from "../src/LandingNav";
-import {
-  SignedIn,
-  SignedOut,
-  SignUpButton,
-  useUser,
-} from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
+import { useAuthModal } from "../src/auth/AuthProvider";
 import usePaidStatus from "../src/usePaidStatus";
 import useUpgrade from "../src/useUpgrade";
 import useStableViewport, { toViewportCssValue } from "../src/useStableViewport";
@@ -37,7 +33,8 @@ const heroFrameCache = new Map();
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const router = useRouter();
-  const { isLoaded } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
+  const { openSignUp } = useAuthModal();
   const { isPaid } = usePaidStatus();
   const handleUpgrade = useUpgrade();
   const heroViewport = useStableViewport();
@@ -1283,24 +1280,22 @@ export default function LandingPage() {
                 </p>
                 {isLoaded && (
                   <>
-                    <SignedOut>
-                      <SignUpButton mode="modal">
-                        <button className="lp-btn-mission" style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Start For Free</button>
-                      </SignUpButton>
-                      <SignUpButton mode="modal">
-                        <button className="lp-btn-upgrade" style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Upgrade to Premium</button>
-                      </SignUpButton>
-                    </SignedOut>
-                    <SignedIn>
-                      {isPaid ? (
+                    {!isSignedIn && (
+                      <>
+                        <button className="lp-btn-mission" onClick={() => openSignUp()} style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Start For Free</button>
+                        <button className="lp-btn-upgrade" onClick={() => openSignUp()} style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Upgrade to Premium</button>
+                      </>
+                    )}
+                    {isSignedIn && (
+                      isPaid ? (
                         <button className="lp-btn-mission-gold" onClick={() => router.push("/dashboard")} style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Start Practicing</button>
                       ) : (
                         <>
                           <button className="lp-btn-mission" onClick={() => router.push("/dashboard")} style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Start Practicing</button>
                           <button className="lp-btn-upgrade" onClick={handleUpgrade} style={isMobileHeroLayout ? { padding: "11px 20px", fontSize: 14 } : undefined}>Upgrade to Premium</button>
                         </>
-                      )}
-                    </SignedIn>
+                      )
+                    )}
                     {!isPaid && !isMobileHeroLayout && (
                       <p style={{ fontSize: 11, textAlign: "center", color: C.muted, margin: "10px 0 0", fontFamily: "Manrope, sans-serif", opacity: 0.7 }}>
                         Unlock all features for $3 / month

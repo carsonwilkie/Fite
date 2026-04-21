@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { PaidStatusProvider } from "../src/PaidStatusContext";
+import AuthProvider from "../src/auth/AuthProvider";
 import { useRouter } from "next/router";
 import "../src/index.css";
 import "../src/App.css";
@@ -212,8 +213,16 @@ export default function App({ Component, pageProps }) {
   }
 
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} {...pageProps}>
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+      {...pageProps}
+    >
       <PaidStatusProvider>
+        <AuthProvider>
         <Analytics />
         <SpeedInsights />
         <div
@@ -257,6 +266,7 @@ export default function App({ Component, pageProps }) {
             transition: "none",
           }} />
         </div>
+        </AuthProvider>
       </PaidStatusProvider>
     </ClerkProvider>
   );

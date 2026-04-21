@@ -1,6 +1,8 @@
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
 import { useRouter } from "next/router";
 import usePaidStatus from "./usePaidStatus";
+import { useAuthModal } from "./auth/AuthProvider";
+import UserMenu from "./auth/UserMenu";
 
 const C_PRIMARY   = "#1565C0";
 const C_SECONDARY = "#4FC3F7";
@@ -10,6 +12,8 @@ const C_MUTED     = "#94a3b8";
 export default function LandingNav() {
   const router = useRouter();
   const { isPaid } = usePaidStatus();
+  const { isSignedIn, isLoaded } = useUser();
+  const { openSignIn, openSignUp } = useAuthModal();
   const onHero      = router.pathname === "/";
   const onDashboard = router.pathname === "/dashboard";
 
@@ -39,28 +43,24 @@ export default function LandingNav() {
         </div>
 
         <div className="landing-nav__actions">
-          <SignedOut>
+          {isLoaded && !isSignedIn && (
             <>
-              <SignInButton mode="modal">
-                <button style={ghostBtn}>
-                  Sign In
-                </button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button style={primaryBtn}>
-                  Sign Up
-                </button>
-              </SignUpButton>
+              <button onClick={() => openSignIn()} style={ghostBtn}>
+                Sign In
+              </button>
+              <button onClick={() => openSignUp()} style={primaryBtn}>
+                Sign Up
+              </button>
             </>
-          </SignedOut>
-          <SignedIn>
+          )}
+          {isLoaded && isSignedIn && (
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <button onClick={() => router.push("/dashboard")} style={primaryBtn}>
                 Practice
               </button>
-              <UserButton />
+              <UserMenu />
             </div>
-          </SignedIn>
+          )}
         </div>
       </nav>
 

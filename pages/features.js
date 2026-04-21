@@ -3,11 +3,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import LandingNav from "../src/LandingNav";
 import { useRef, useEffect, useState } from "react";
-import {
-  SignedIn,
-  SignedOut,
-  SignUpButton,
-} from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
+import { useAuthModal } from "../src/auth/AuthProvider";
 import usePaidStatus from "../src/usePaidStatus";
 import useUpgrade from "../src/useUpgrade";
 
@@ -435,6 +432,8 @@ export default function FeaturesPage() {
   const router = useRouter();
   const { isPaid } = usePaidStatus();
   const handleUpgrade = useUpgrade();
+  const { isSignedIn } = useUser();
+  const { openSignUp } = useAuthModal();
   const scrambleRef = useRef(null);
   const [scrambleTrigger, setScramble] = useState(false);
   const [totalQuestions, setTotalQuestions] = useState(null);
@@ -780,9 +779,7 @@ export default function FeaturesPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "1.4fr 0.8fr 0.8fr", padding: "22px 24px", alignItems: "center" }}>
                   <div />
                   <div style={{ textAlign: "center" }}>
-                    <SignUpButton mode="modal">
-                      <button className="lp-btn-outline-block" style={{ padding: "10px 18px", fontSize: 12 }}>Start Free</button>
-                    </SignUpButton>
+                    <button className="lp-btn-outline-block" onClick={() => openSignUp()} style={{ padding: "10px 18px", fontSize: 12 }}>Start Free</button>
                   </div>
                   <div style={{ textAlign: "center" }}>
                     <button
@@ -844,9 +841,7 @@ export default function FeaturesPage() {
                   </li>
                 ))}
               </ul>
-              <SignUpButton mode="modal">
-                <button className="lp-btn-outline-block">Get Started Free</button>
-              </SignUpButton>
+              <button className="lp-btn-outline-block" onClick={() => openSignUp()}>Get Started Free</button>
             </ScrollReveal>
             </PricingCardWrapper>
 
@@ -886,18 +881,15 @@ export default function FeaturesPage() {
                     </li>
                   ))}
                 </ul>
-                <SignedIn>
-                  {isPaid ? (
+                {isSignedIn ? (
+                  isPaid ? (
                     <button className="lp-btn-premium" onClick={() => router.push("/dashboard")}>Go to Dashboard →</button>
                   ) : (
                     <button className="lp-btn-premium" onClick={handleUpgrade}>Go Premium →</button>
-                  )}
-                </SignedIn>
-                <SignedOut>
-                  <SignUpButton mode="modal">
-                    <button className="lp-btn-premium">Go Premium →</button>
-                  </SignUpButton>
-                </SignedOut>
+                  )
+                ) : (
+                  <button className="lp-btn-premium" onClick={() => openSignUp()}>Go Premium →</button>
+                )}
                 <p style={{ fontSize: 10, textAlign: "center", margin: "12px 0 0", color: C.muted, opacity: 0.6, fontFamily: "Manrope, sans-serif" }}>
                   Secure payment powered by Stripe
                 </p>
@@ -994,9 +986,7 @@ export default function FeaturesPage() {
                 </h2>
               </ScrollReveal>
               <ScrollReveal startOffset={0.15} style={{ position: "relative", zIndex: 1 }}>
-                <SignUpButton mode="modal">
-                  <button className="lp-btn-cta">Get Started for Free</button>
-                </SignUpButton>
+                <button className="lp-btn-cta" onClick={() => openSignUp()}>Get Started for Free</button>
               </ScrollReveal>
             </>
           )}
