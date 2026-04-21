@@ -496,25 +496,25 @@ export default function LandingPage() {
   return (
     <>
       <Head>
-        <title>Fite Finance | Precision in Preparation</title>
-        <meta name="description" content="AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview." />
+        <title>Fite Finance | Precise Preparation</title>
+        <meta name="description" content="Free, AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview." />
         <link rel="canonical" href="https://fitefinance.com/" />
 
         {/* Open Graph (Facebook, LinkedIn, iMessage) */}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Fite Finance" />
         <meta property="og:url" content="https://fitefinance.com/" />
-        <meta property="og:title" content="Fite Finance | Precision in Preparation" />
+        <meta property="og:title" content="Fite Finance | Precise Preparation" />
         <meta property="og:description" content="AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview." />
-        <meta property="og:image" content="https://fitefinance.com/logo-insta.jpg" />
+        <meta property="og:image" content="https://fitefinance.com/logo-og.jpg" />
         <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
+        <meta property="og:image:height" content="669" />
 
         {/* Twitter / X */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Fite Finance | Precision in Preparation" />
+        <meta name="twitter:title" content="Fite Finance | Precise Preparation" />
         <meta name="twitter:description" content="AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview." />
-        <meta name="twitter:image" content="https://fitefinance.com/logo-insta.jpg" />
+        <meta name="twitter:image" content="https://fitefinance.com/logo-og.jpg" />
       </Head>
 
       <LandingNav />
@@ -735,7 +735,7 @@ export default function LandingPage() {
 
             {/* Corner HUD — bottom right */}
             <div style={{ position: "absolute", bottom: 28, right: 32, fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", color: C.secondary, opacity: 0.4, textTransform: "uppercase", pointerEvents: "none" }}>
-              PRECISION IN PREPARATION
+              PRECISE IN PREPARATION
             </div>
 
             {/* Hero text overlay — mobile only (desktop uses intro column) */}
@@ -1266,6 +1266,7 @@ export default function LandingPage() {
                 minWidth: 0,
                 width: isMobileHeroLayout ? "calc(100% - 60px)" : "28%",
                 maxWidth: "none",
+                marginTop: isMobileHeroLayout ? undefined : "clamp(-80px, -4vw, -40px)",
                 marginLeft: isMobileHeroLayout ? 30 : undefined,
                 marginRight: isMobileHeroLayout ? 30 : undefined,
                 boxSizing: "border-box",
