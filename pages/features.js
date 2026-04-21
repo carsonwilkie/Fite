@@ -537,8 +537,7 @@ export default function FeaturesPage() {
                 </p>
               </ScrollReveal>
 
-              {/* Stats strip */}
-              <ScrollReveal style={{ marginBottom: 12 }}>
+              {/* <ScrollReveal style={{ marginBottom: 12 }}>
                 <div className="lp-stats-strip" style={{ display: "flex", flexWrap: "wrap", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(21,101,192,0.2)" }}>
                   {[
                     { label: "Questions Generated",     val: totalQuestions ?? 50000, suffix: "+",    prefix: ""  },
@@ -554,7 +553,7 @@ export default function FeaturesPage() {
                     </div>
                   ))}
                 </div>
-              </ScrollReveal>
+              </ScrollReveal> */}
             </div>
           </div>
         </section>
