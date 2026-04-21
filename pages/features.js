@@ -519,12 +519,14 @@ export default function FeaturesPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold, boxShadow: "0 0 8px rgba(201,168,76,0.8)" }} />
                   <span style={{ fontFamily: "Manrope, sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.gold }}>Brand New · Actively Shipping</span>
                 </div>
-                <div className="features-hero-heading-row" style={{ display: "flex", alignItems: "center", gap: "clamp(16px, 3vw, 40px)" }}>
-                  <h1 style={{ fontSize: "clamp(40px, 7.5vw, 96px)", fontWeight: 900, letterSpacing: "-0.04em", margin: "0 0 12px 0", lineHeight: 0.95, textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
+                <div className="features-hero-heading-row" style={{ display: "flex", alignItems: "center" }}>
+                  <h1 style={{ fontSize: "clamp(40px, 7.5vw, 96px)", fontWeight: 900, letterSpacing: "-0.04em", margin: "0 0 12px 0", lineHeight: 0.95, textTransform: "uppercase", fontFamily: "Inter, sans-serif", flexShrink: 0 }}>
                     Built for the<br />
                     <span style={{ background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Grind</span><span style={{ marginLeft: "-1%", }}> .</span>
                   </h1>
-                  <img src="/logo-realistic.webp" alt="" aria-hidden className="features-hero-logo-inline" style={{ width: "clamp(140px, 20vw, 260px)", height: "auto", flexShrink: 0, filter: "drop-shadow(0 12px 40px rgba(79,195,247,0.25))" }} />
+                  <div className="features-hero-logo-slot" style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", minWidth: 0, transform: "translateX(8%)" }}>
+                    <img src="/logo-realistic.webp" alt="" aria-hidden className="features-hero-logo-inline" style={{ width: "clamp(140px, 20vw, 260px)", height: "auto", filter: "drop-shadow(0 12px 40px rgba(79,195,247,0.25))" }} />
+                  </div>
                 </div>
                 <div style={{ height: 4, width: 128, background: cyberGrad, borderRadius: 2 }} />
               </ScrollReveal>
