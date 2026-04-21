@@ -120,11 +120,6 @@ export default function UserMenu({ size = 32, align = "right" }) {
               label="Manage account"
               onClick={() => { setOpen(false); router.push("/account"); }}
             />
-            <MenuItem
-              icon="dashboard"
-              label="Dashboard"
-              onClick={() => { setOpen(false); router.push("/dashboard"); }}
-            />
             {isPaid && (
               <MenuItem
                 icon="credit_card"
@@ -132,6 +127,11 @@ export default function UserMenu({ size = 32, align = "right" }) {
                 onClick={() => { setOpen(false); handleManageSub(); }}
               />
             )}
+            <MenuItem
+              icon="dashboard"
+              label="Dashboard"
+              onClick={() => { setOpen(false); router.push("/dashboard"); }}
+            />
             <div style={{ height: 1, background: AUTH_COLORS.borderSoft, margin: "6px 8px" }} />
             <MenuItem
               icon="logout"
