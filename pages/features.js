@@ -58,7 +58,7 @@ function ScrollReveal({ children, direction = "up", startOffset = 0, className, 
     <div ref={ref} className={className} style={{
       opacity: visible ? 1 : 0,
       transform: `translateY(${yPx}px) translateX(${xPx}px) scale(${sc})`,
-      transition: `opacity 0.6s ease ${delay}, transform 0.65s cubic-bezier(0.22,1,0.36,1) ${delay}`,
+      transition: `opacity 0.6s ease ${delay}, transform 0.65s cubic-bezier(0.22,1,0.36,1) ${delay}, box-shadow 1.2s ease-out, border-color 1.2s ease-out, filter 1.2s ease-out`,
       willChange: "opacity, transform",
       ...style,
     }}>{children}</div>
@@ -247,9 +247,10 @@ function TypewriterParagraph({ text, active, wordDelayMs = 55, style }) {
 function CountUp({ target, suffix = "", prefix = "", duration = 1800 }) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
+  const isNumeric = typeof target === 'number';
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || !isNumeric) return;
     const obs = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting) return;
       obs.disconnect();
@@ -263,8 +264,8 @@ function CountUp({ target, suffix = "", prefix = "", duration = 1800 }) {
     }, { threshold: 0.3 });
     obs.observe(el);
     return () => obs.disconnect();
-  }, [target, duration]);
-  return <span ref={ref}>{prefix}{count}{suffix}</span>;
+  }, [target, duration, isNumeric]);
+  return <span ref={ref}>{prefix}{isNumeric ? count : target}{suffix}</span>;
 }
 
 // ─── AnimatedBar ──────────────────────────────────────────────────────────────
@@ -285,6 +286,72 @@ function AnimatedBar({ pct, color = cyberGrad, delay = 0 }) {
   return (
     <div ref={ref} style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 999, overflow: "hidden" }}>
       <div style={{ height: "100%", width: `${width}%`, background: color, borderRadius: 999, transition: `width 1.2s cubic-bezier(0.22,1,0.36,1) ${delay}ms`, boxShadow: "0 0 10px rgba(79,195,247,0.4)" }} />
+    </div>
+  );
+}
+
+// ─── PricingCardWrapper — hover-tracking interactive card ────────────────────
+function PricingCardWrapper({ children }) {
+  const ref = useRef(null);
+  const [transform, setTransform] = useState("perspective(1200px) rotateX(0deg) rotateY(0deg)");
+  const [insetShadow, setInsetShadow] = useState("none");
+  const [isHovering, setIsHovering] = useState(false);
+
+  const handleMouseMove = (e) => {
+    if (!ref.current) return;
+    setIsHovering(true);
+    const rect = ref.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((centerY - y) / centerY) * 4;
+    const rotateY = ((x - centerX) / centerX) * 4;
+    setTransform(`perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`);
+
+    // Calculate which corner is closest to mouse for press effect
+    const corners = [
+      { x: 0, y: 0, name: "top-left" },
+      { x: rect.width, y: 0, name: "top-right" },
+      { x: 0, y: rect.height, name: "bottom-left" },
+      { x: rect.width, y: rect.height, name: "bottom-right" },
+    ];
+    const closest = corners.reduce((min, corner) => {
+      const dist = Math.hypot(x - corner.x, y - corner.y);
+      return dist < min.dist ? { ...corner, dist } : min;
+    });
+
+    // Create inset shadow based on closest corner for press-in effect
+    const shadowSize = 60;
+    const shadowBlur = 40;
+    let shadowStr = "";
+    if (closest.name === "top-left") {
+      shadowStr = `inset ${shadowSize}px ${shadowSize}px ${shadowBlur}px rgba(0,0,0,0.35)`;
+    } else if (closest.name === "top-right") {
+      shadowStr = `inset -${shadowSize}px ${shadowSize}px ${shadowBlur}px rgba(0,0,0,0.35)`;
+    } else if (closest.name === "bottom-left") {
+      shadowStr = `inset ${shadowSize}px -${shadowSize}px ${shadowBlur}px rgba(0,0,0,0.35)`;
+    } else if (closest.name === "bottom-right") {
+      shadowStr = `inset -${shadowSize}px -${shadowSize}px ${shadowBlur}px rgba(0,0,0,0.35)`;
+    }
+    setInsetShadow(shadowStr);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    setTransform("perspective(1200px) rotateX(0deg) rotateY(0deg)");
+    setInsetShadow("none");
+  };
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={isHovering ? "pricing-card-hovering" : ""}
+      style={{ transform, boxShadow: insetShadow, transition: "transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s ease-out", transformStyle: "preserve-3d" }}
+    >
+      {children}
     </div>
   );
 }
@@ -444,7 +511,7 @@ export default function FeaturesPage() {
             <div aria-hidden style={{ position: "absolute", top: 120, left: -140, width: 420, height: 420, background: "radial-gradient(circle, rgba(79,195,247,0.14), transparent 60%)", filter: "blur(40px)", pointerEvents: "none", zIndex: 0 }} />
 
             <div style={{ position: "relative", zIndex: 1 }}>
-              <SectionScan label="Every Feature. Every Reason." />
+              <SectionScan label="Precise Preparation" />
               <ScrollReveal direction="left" style={{ marginBottom: 16 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "6px 14px", borderRadius: 999, border: "1px solid rgba(201,168,76,0.35)", background: "rgba(201,168,76,0.08)", marginBottom: 24 }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold, boxShadow: "0 0 8px rgba(201,168,76,0.8)" }} />
@@ -452,14 +519,14 @@ export default function FeaturesPage() {
                 </div>
                 <h1 style={{ fontSize: "clamp(40px, 7.5vw, 96px)", fontWeight: 900, letterSpacing: "-0.04em", margin: "0 0 12px 0", lineHeight: 0.95, textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
                   Built for the<br />
-                  <span style={{ background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Grind</span>.
+                  <span style={{ background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Grind</span><span style={{ marginLeft: "-1%", }}> .</span>
                 </h1>
                 <div style={{ height: 4, width: 128, background: cyberGrad, borderRadius: 2 }} />
               </ScrollReveal>
 
               <ScrollReveal direction="left" startOffset={0.08} style={{ marginTop: 24, marginBottom: 48, maxWidth: 680 }}>
                 <p style={{ color: C.muted, fontFamily: "Manrope, sans-serif", fontSize: "clamp(14px, 1.4vw, 17px)", lineHeight: 1.65, margin: 0 }}>
-                  A full look at what Fite Finance does today, what&apos;s unlocked with Premium, and a live roadmap of what&apos;s landing next. One student built it. Thousands of students use it. $3/month, forever.
+                  A full look at what Fite Finance does today, what&apos;s unlocked with Premium, and a live roadmap of what&apos;s landing next. Built by students for all students. $3/month, forever.
                 </p>
               </ScrollReveal>
 
@@ -468,7 +535,7 @@ export default function FeaturesPage() {
                 <div className="lp-stats-strip" style={{ display: "flex", flexWrap: "wrap", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(21,101,192,0.2)" }}>
                   {[
                     { label: "Questions Generated",     val: totalQuestions ?? 50000, suffix: "+",    prefix: ""  },
-                    { label: "Categories",              val: 8,     suffix: "",     prefix: ""  },
+                    { label: "Questions",              val: '∞',     suffix: "",     prefix: ""  },
                     { label: "Score Improvement",       val: 40,    suffix: "%",    prefix: ""  },
                     { label: "Price",                   val: 3,     suffix: "/mo",  prefix: "$" },
                   ].map(({ label, val, suffix, prefix }, i) => (
@@ -505,27 +572,27 @@ export default function FeaturesPage() {
 
                 <TypewriterParagraph
                   active={aboutActive}
-                  text="I'm Carson — a 20-year-old at Colgate University. Last cycle I went through finance recruiting for the first time: the 7 AM networking calls, the stack of superdays, the technical question I choked on in a Goldman interview that I replay in my head to this day."
-                  style={{ color: "rgba(219,226,248,0.88)", fontFamily: "Manrope, sans-serif", fontSize: 16, lineHeight: 1.7, margin: "0 0 20px 0" }}
+                  text="I'm Carson — a 20-year-old at Colgate University. Last cycle I went through finance recruiting for the first time: endless networking calls, the stack of superdays, the technical question I choked on in an interview that I constantly replay in my head."
+                  style={{ color: "rgba(219,226,248,0.88)", fontFamily: "Manrope, sans-serif", fontSize: 16, lineHeight: 1.7, margin: "0 0 20px 0", overflowWrap: "break-word", wordBreak: "break-word" }}
                 />
                 <TypewriterParagraph
                   active={aboutActive}
                   wordDelayMs={50}
-                  text="The problem wasn't a shortage of prep material. It was the opposite. There were $500 interview guides, $200-an-hour tutors, Notion docs passed around in GroupMe with half-right answers, and a hundred-page PDF that somehow still didn't cover the one question you got asked. The good stuff sat behind a paywall most undergrads just can't stomach."
-                  style={{ color: "rgba(219,226,248,0.85)", fontFamily: "Manrope, sans-serif", fontSize: 16, lineHeight: 1.7, margin: "0 0 20px 0" }}
+                  text="The problem wasn't a shortage of prep material. It was the opposite. There were $500 prep courses, $200-an-hour tutors, Notion docs passed around in GroupMe chats with half-right answers, and a hundred-page PDF that somehow still didn't cover the one question you got asked. The good stuff sat behind a paywall most undergrads just can't stomach."
+                  style={{ color: "rgba(219,226,248,0.85)", fontFamily: "Manrope, sans-serif", fontSize: 16, lineHeight: 1.7, margin: "0 0 20px 0", overflowWrap: "break-word", wordBreak: "break-word" }}
                 />
                 <TypewriterParagraph
                   active={aboutActive}
                   wordDelayMs={50}
-                  text="So I built the tool I wished I had: AI-generated technicals at any difficulty, instant grading on my actual answer, a mock interview that pushes back, and history I can actually review. The whole thing runs for $3 a month — roughly what it costs to keep the servers and models online. No upsells, no tiered drip, no locking the good stuff behind Premium-Plus-Pro-Ultra."
-                  style={{ color: "rgba(219,226,248,0.85)", fontFamily: "Manrope, sans-serif", fontSize: 16, lineHeight: 1.7, margin: "0 0 28px 0" }}
+                  text="So I built the tool I wish I had: AI-generated technicals at any difficulty, instant grading on my actual answer, a mock interview that pushes back, and history I can actually review. The whole thing runs for $3 a month — roughly what it costs to keep the servers and models online. No upsells, no tiered drip, no locking the good stuff behind Premium-Plus-Pro-Ultra. I hope this helps."
+                  style={{ color: "rgba(219,226,248,0.85)", fontFamily: "Manrope, sans-serif", fontSize: 16, lineHeight: 1.7, margin: "0 0 28px 0", overflowWrap: "break-word", wordBreak: "break-word" }}
                 />
 
                 <div style={{ display: "flex", alignItems: "center", gap: 16, paddingTop: 20, borderTop: "1px solid rgba(79,195,247,0.18)" }}>
                   <div style={{ width: 44, height: 44, borderRadius: "50%", background: cyberGrad, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 16, color: "#011838", letterSpacing: "-0.02em", boxShadow: "0 8px 22px rgba(21,101,192,0.45)" }}>CW</div>
                   <div>
                     <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 800, fontSize: 15, color: C.onSurface }}>Carson Wilkie</div>
-                    <div style={{ fontFamily: "Manrope, sans-serif", fontSize: 12, color: C.muted, letterSpacing: "0.08em", textTransform: "uppercase" }}>Founder · Colgate &apos;27</div>
+                    <div style={{ fontFamily: "Manrope, sans-serif", fontSize: 12, color: C.muted, letterSpacing: "0.08em", textTransform: "uppercase" }}>Founder · Colgate &apos;28</div>
                   </div>
                 </div>
               </ScrollReveal>
@@ -654,9 +721,8 @@ export default function FeaturesPage() {
                 </ScrollReveal>
               ))}
             </div>
-
             {/* Scramble quote */}
-            <div className="features-quote-block" ref={scrambleRef} style={{ marginTop: 80, textAlign: "center", padding: "64px 32px", borderRadius: 24, background: "linear-gradient(135deg, rgba(21,101,192,0.08), rgba(79,195,247,0.04))", border: "1px solid rgba(21,101,192,0.15)" }}>
+            <div className="features-quote-block" ref={scrambleRef} style={{ marginTop: 120, textAlign: "center", padding: "64px 32px", borderRadius: 24, background: "linear-gradient(135deg, rgba(21,101,192,0.08), rgba(79,195,247,0.04))", border: "1px solid rgba(21,101,192,0.15)" }}>
               <p style={{ fontSize: "clamp(18px, 2.8vw, 30px)", fontWeight: 800, fontFamily: "Inter, sans-serif", letterSpacing: "-0.02em", color: C.onSurface, margin: 0, lineHeight: 1.45 }}>
                 <ScrambleText
                   text="The edge between a good candidate and a great one is preparation."
@@ -673,7 +739,7 @@ export default function FeaturesPage() {
             <SectionScan label="Free vs Premium" align="center" />
             <ScrollReveal style={{ textAlign: "center", marginBottom: 48 }}>
               <h2 style={{ fontSize: "clamp(28px, 3.6vw, 46px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 12px 0", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
-                What Unlocks With Premium
+                What Premium Unlocks
               </h2>
               <p style={{ color: C.muted, fontFamily: "Manrope, sans-serif", fontSize: 15, margin: 0, maxWidth: 600, marginLeft: "auto", marginRight: "auto" }}>
                 Every limit removed, every tool turned on. One price, no hidden tiers.
@@ -691,7 +757,6 @@ export default function FeaturesPage() {
                   <div style={{ position: "relative" }}>
                     <div className="ff-compare-head-title" style={{ background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Premium</div>
                     <div className="ff-compare-head-sub">$3<span style={{ color: C.muted, fontWeight: 400 }}>/mo</span></div>
-                    <div style={{ position: "absolute", top: -14, right: "50%", transform: "translateX(50%)", fontSize: 9, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: C.gold, background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.35)", padding: "3px 10px", borderRadius: 999, fontFamily: "Manrope, sans-serif", whiteSpace: "nowrap" }}>Recommended</div>
                   </div>
                 </div>
 
@@ -703,7 +768,7 @@ export default function FeaturesPage() {
                 <ComparisonRow label="Mock interview mode (4-Q)"       free={false}     premium={true}                delay={300} />
                 <ComparisonRow label="Focus timer (60s / 2m / 3m / 5m)" free={false}    premium={true}                delay={360} highlight />
                 <ComparisonRow label="Custom descriptor field"         free={false}     premium={true}                delay={420} />
-                <ComparisonRow label="Anti-repeat filter (24h)"        free={true}      premium={true}                delay={480} highlight />
+                <ComparisonRow label="Anti-repeat filter (24hr)"        free={true}      premium={true}                delay={480} highlight />
                 <ComparisonRow label="Priority support + feature votes" free={false}    premium={true}                delay={540} />
 
                 <div style={{ display: "grid", gridTemplateColumns: "1.4fr 0.8fr 0.8fr", padding: "22px 24px", alignItems: "center" }}>
@@ -744,6 +809,7 @@ export default function FeaturesPage() {
           </ScrollReveal>
 
           <div className="lp-pricing-grid">
+            <PricingCardWrapper>
             <ScrollReveal direction="left" startOffset={0.1} className="features-pricing-card" style={{ background: C.surface, border: "1px solid rgba(51,65,85,0.3)", padding: 40, borderRadius: 16, display: "flex", flexDirection: "column" }}>
               <div style={{ marginBottom: 28 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 4px 0", fontFamily: "Inter, sans-serif" }}>Free Tier</h3>
@@ -776,10 +842,12 @@ export default function FeaturesPage() {
                 <button className="lp-btn-outline-block">Get Started Free</button>
               </SignUpButton>
             </ScrollReveal>
+            </PricingCardWrapper>
 
+            <PricingCardWrapper>
             <div>
               <ScrollReveal direction="right" startOffset={0.2} className="lp-glass-card-solid features-pricing-card" style={{ padding: 40, borderRadius: 16, display: "flex", flexDirection: "column", position: "relative", boxShadow: "0 30px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,195,247,0.18)", background: "linear-gradient(#0b1120, #0b1120) padding-box, linear-gradient(45deg, rgba(21,101,192,0.95), rgba(79,195,247,0.95)) border-box" }}>
-                <div style={{ position: "absolute", top: 0, right: 40, transform: "translateY(-50%)", background: cyberGrad, color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 12px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "Manrope, sans-serif", boxShadow: "0 4px 12px rgba(21,101,192,0.4)" }}>
+                <div style={{ position: "absolute", top: 28, right: 40, transform: "translateY(-50%)", background: cyberGrad, color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 12px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "Manrope, sans-serif", boxShadow: "0 4px 12px rgba(21,101,192,0.4)" }}>
                   Recommended
                 </div>
                 <div style={{ marginBottom: 28 }}>
@@ -829,6 +897,7 @@ export default function FeaturesPage() {
                 </p>
               </ScrollReveal>
             </div>
+            </PricingCardWrapper>
           </div>
         </section>
 
@@ -848,7 +917,7 @@ export default function FeaturesPage() {
                 <span style={{ background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>the beginning</span>.
               </h2>
               <p style={{ color: C.muted, fontFamily: "Manrope, sans-serif", fontSize: 15, margin: "0 0 16px 0", maxWidth: 620 }}>
-                Fite Finance launched in 2026 and new features ship constantly. Premium users get them all, forever, without a price bump. Here&apos;s what&apos;s on deck.
+                Fite Finance launched in 2026 and new features ship constantly. Premium users get them all, forever. Here are some potential features on deck.
               </p>
               <div style={{ height: 4, width: 96, background: cyberGrad, borderRadius: 2 }} />
             </ScrollReveal>
@@ -875,11 +944,11 @@ export default function FeaturesPage() {
               ))}
             </div>
 
-            <ScrollReveal style={{ marginTop: 56, textAlign: "center" }}>
+            <ScrollReveal style={{ marginTop: 120, marginBottom: -30, textAlign: "center" }}>
               <div style={{ padding: "24px 32px", borderRadius: 16, border: "1px dashed rgba(79,195,247,0.3)", background: "rgba(79,195,247,0.04)", display: "inline-flex", flexDirection: "column", gap: 10, maxWidth: 620 }}>
                 <div style={{ fontFamily: "Manrope, sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: C.secondary }}>Feature Requests</div>
                 <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: C.onSurface, lineHeight: 1.55 }}>
-                  Have a feature in mind? Premium members vote on what ships next. Shoot a note to{" "}
+                  Have a feature in mind? Premium users can vote on what ships next. Shoot a note to{" "}
                   <a href="mailto:support@fitefinance.com" style={{ color: C.secondary, textDecoration: "underline", textUnderlineOffset: 3 }}>support@fitefinance.com</a>.
                 </div>
               </div>
@@ -915,7 +984,7 @@ export default function FeaturesPage() {
             <>
               <ScrollReveal startOffset={0} style={{ position: "relative", zIndex: 1 }}>
                 <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 32px 0", fontFamily: "Inter, sans-serif" }}>
-                  Ready to secure the offer?
+                  Secure your offer.
                 </h2>
               </ScrollReveal>
               <ScrollReveal startOffset={0.15} style={{ position: "relative", zIndex: 1 }}>
@@ -1018,6 +1087,28 @@ export default function FeaturesPage() {
         }
         @media (max-width: 900px) {
           .ff-bento { grid-template-columns: 1fr; }
+        }
+
+        /* Pricing cards hover */
+        .features-pricing-card {
+          transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 1.2s ease-out, border-color 1.2s ease-out, filter 1.2s ease-out;
+          position: relative;
+        }
+        .features-pricing-card:hover,
+        .pricing-card-hovering .features-pricing-card {
+          transform: translateY(-6px);
+          box-shadow: 0 28px 60px rgba(79, 195, 247, 0.2), 0 0 32px rgba(21, 101, 192, 0.18), 0 0 60px rgba(79, 195, 247, 0.12) !important;
+          border-color: rgba(79, 195, 247, 0.45) !important;
+          filter: drop-shadow(0 0 40px rgba(79, 195, 247, 0.18));
+        }
+        .lp-glass-card-solid.features-pricing-card {
+          transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 1.2s ease-out, border-color 1.2s ease-out, filter 1.2s ease-out;
+        }
+        .lp-glass-card-solid.features-pricing-card:hover,
+        .pricing-card-hovering .lp-glass-card-solid.features-pricing-card {
+          box-shadow: 0 32px 80px rgba(79, 195, 247, 0.25), 0 0 50px rgba(79, 195, 247, 0.3), inset 0 0 60px rgba(79, 195, 247, 0.08) !important;
+          filter: drop-shadow(0 0 50px rgba(79, 195, 247, 0.22));
+          border-color: rgba(79, 195, 247, 0.55) !important;
         }
 
         /* Feature grid */

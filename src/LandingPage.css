@@ -405,6 +405,45 @@ html {
     text-align: center;
   }
 }
+/* ── Pricing cards ────────────────────────────────────────────────────────── */
+.features-pricing-card {
+  transition: all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.features-pricing-card:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 32px 80px rgba(79, 195, 247, 0.25),
+    0 0 50px rgba(79, 195, 247, 0.3),
+    inset 0 0 60px rgba(79, 195, 247, 0.08);
+  filter: drop-shadow(0 0 40px rgba(79, 195, 247, 0.18));
+}
+
+.lp-glass-card-solid.features-pricing-card:hover {
+  box-shadow:
+    0 32px 80px rgba(79, 195, 247, 0.25),
+    0 0 50px rgba(79, 195, 247, 0.3),
+    inset 0 0 60px rgba(79, 195, 247, 0.08);
+  filter: drop-shadow(0 0 50px rgba(79, 195, 247, 0.22));
+}
+
+.pricing-card-hovering .features-pricing-card {
+  transform: translateY(-6px);
+  box-shadow:
+    0 32px 80px rgba(79, 195, 247, 0.25),
+    0 0 50px rgba(79, 195, 247, 0.3),
+    inset 0 0 60px rgba(79, 195, 247, 0.08);
+  filter: drop-shadow(0 0 40px rgba(79, 195, 247, 0.18));
+}
+
+.pricing-card-hovering .lp-glass-card-solid.features-pricing-card {
+  box-shadow:
+    0 32px 80px rgba(79, 195, 247, 0.25),
+    0 0 50px rgba(79, 195, 247, 0.3),
+    inset 0 0 60px rgba(79, 195, 247, 0.08);
+  filter: drop-shadow(0 0 50px rgba(79, 195, 247, 0.22));
+}
+
 .lp-footer-link {
   color: #94a3b8;
   text-decoration: none;

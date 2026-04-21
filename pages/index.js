@@ -1303,7 +1303,7 @@ export default function LandingPage() {
                 style={{ background: cyberGrad, color: "#fff", border: "none", cursor: "pointer", fontFamily: "Inter, sans-serif", fontSize: isMobileHeroLayout ? 13 : 15, fontWeight: 700, padding: isMobileHeroLayout ? "11px 24px" : "14px 36px", borderRadius: 999, boxShadow: "0 0 32px rgba(21,101,192,0.55), 0 0 8px rgba(79,195,247,0.3)", letterSpacing: "0.04em", width: isMobileHeroLayout ? "100%" : "auto" }}
                 className="explore-btn"
               >
-                Explore Features
+                Explore Fite
               </button>
             </div>
 
