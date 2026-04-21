@@ -506,6 +506,8 @@ export default function FeaturesPage() {
         {/* ── HERO ─────────────────────────────────────────────────────────────── */}
         <section id="features-section" style={{ position: "relative", zIndex: 2, background: C.bg }}>
           <div className="features-page-intro" style={{ padding: "clamp(152px, 18vw, 176px) 32px 64px", maxWidth: 1280, margin: "0 auto", position: "relative" }}>
+            {/* Mobile-only blurred darkened background logo */}
+            <img src="/logo-realistic.webp" alt="" aria-hidden className="features-hero-bg-logo" />
             {/* Ambient hero glow */}
             <div aria-hidden style={{ position: "absolute", top: -80, right: -120, width: 520, height: 520, background: "radial-gradient(circle, rgba(21,101,192,0.22), transparent 62%)", filter: "blur(40px)", pointerEvents: "none", zIndex: 0 }} />
             <div aria-hidden style={{ position: "absolute", top: 120, left: -140, width: 420, height: 420, background: "radial-gradient(circle, rgba(79,195,247,0.14), transparent 60%)", filter: "blur(40px)", pointerEvents: "none", zIndex: 0 }} />
@@ -517,10 +519,13 @@ export default function FeaturesPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold, boxShadow: "0 0 8px rgba(201,168,76,0.8)" }} />
                   <span style={{ fontFamily: "Manrope, sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.gold }}>Brand New · Actively Shipping</span>
                 </div>
-                <h1 style={{ fontSize: "clamp(40px, 7.5vw, 96px)", fontWeight: 900, letterSpacing: "-0.04em", margin: "0 0 12px 0", lineHeight: 0.95, textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
-                  Built for the<br />
-                  <span style={{ background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Grind</span><span style={{ marginLeft: "-1%", }}> .</span>
-                </h1>
+                <div className="features-hero-heading-row" style={{ display: "flex", alignItems: "center", gap: "clamp(16px, 3vw, 40px)" }}>
+                  <h1 style={{ fontSize: "clamp(40px, 7.5vw, 96px)", fontWeight: 900, letterSpacing: "-0.04em", margin: "0 0 12px 0", lineHeight: 0.95, textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
+                    Built for the<br />
+                    <span style={{ background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Grind</span><span style={{ marginLeft: "-1%", }}> .</span>
+                  </h1>
+                  <img src="/logo-realistic.webp" alt="" aria-hidden className="features-hero-logo-inline" style={{ width: "clamp(140px, 20vw, 260px)", height: "auto", flexShrink: 0, filter: "drop-shadow(0 12px 40px rgba(79,195,247,0.25))" }} />
+                </div>
                 <div style={{ height: 4, width: 128, background: cyberGrad, borderRadius: 2 }} />
               </ScrollReveal>
 
@@ -1203,11 +1208,27 @@ export default function FeaturesPage() {
           .ff-pulse-dot { animation: none !important; }
         }
 
+        .features-hero-bg-logo { display: none; }
+
         @media (max-width: 720px) {
           .features-home-cta { top: 132px; left: 16px; }
           .back-home-btn { padding: 8px 20px !important; font-size: 12px !important; }
 
           .features-page-intro { padding: 224px 18px 48px !important; }
+          .features-hero-logo-inline { display: none !important; }
+          .features-hero-bg-logo {
+            display: block;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            filter: blur(28px) brightness(0.28) saturate(0.85);
+            opacity: 0.55;
+            pointer-events: none;
+            z-index: 0;
+          }
           .features-quote-block {
             margin-top: 40px !important;
             padding: 32px 20px !important;
