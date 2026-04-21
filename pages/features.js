@@ -521,8 +521,8 @@ export default function FeaturesPage() {
                 </div>
                 <div className="features-hero-heading-row" style={{ display: "flex", alignItems: "center" }}>
                   <h1 style={{ fontSize: "clamp(40px, 7.5vw, 96px)", fontWeight: 900, letterSpacing: "-0.04em", margin: "0 0 12px 0", lineHeight: 0.95, textTransform: "uppercase", fontFamily: "Inter, sans-serif", flexShrink: 0 }}>
-                    Built for the<br />
-                    <span style={{ background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Grind</span><span style={{ marginLeft: "-1%", }}> .</span>
+                    Built for<br />
+                    <span style={{ background: cyberGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Everyone</span><span style={{ marginLeft: "-1%", }}> .</span>
                   </h1>
                   <div className="features-hero-logo-slot" style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", minWidth: 0, transform: "translateX(8%)" }}>
                     <img src="/logo-realistic.webp" alt="" aria-hidden className="features-hero-logo-inline" style={{ width: "clamp(140px, 20vw, 260px)", height: "auto", filter: "drop-shadow(0 12px 40px rgba(79,195,247,0.25))" }} />
