@@ -371,7 +371,7 @@ function EmailCard({ user }) {
 
 /* ─── Security pane ───────────────────────────────────────────────────────── */
 function SecurityPane({ user }) {
-  const [current, setCurrent] = useState("");
+  const [verify, setVerify] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
   const [err, setErr] = useState(null);
@@ -386,15 +386,16 @@ function SecurityPane({ user }) {
     if (loading) return;
     if (next.length < 8) { setErr("New password must be at least 8 characters."); return; }
     if (next !== confirm) { setErr("Passwords don't match."); setShake((s) => s + 1); return; }
+    if (passwordEnabled && !verify) { setErr("Enter your current password to confirm."); setShake((s) => s + 1); return; }
     setLoading(true); setErr(null); setMsg(null);
     try {
       await user.updatePassword({
-        currentPassword: passwordEnabled ? current : undefined,
+        currentPassword: passwordEnabled ? verify : undefined,
         newPassword: next,
         signOutOfOtherSessions: true,
       });
       setMsg("Password updated. Other sessions have been signed out.");
-      setCurrent(""); setNext(""); setConfirm("");
+      setVerify(""); setNext(""); setConfirm("");
     } catch (e) {
       setErr(friendlyError(e));
       setShake((s) => s + 1);
@@ -419,9 +420,10 @@ function SecurityPane({ user }) {
                 type="password"
                 label="Current password"
                 icon="lock"
-                value={current}
-                onChange={setCurrent}
-                autoComplete="current-password"
+                value="••••••••••"
+                onChange={() => {}}
+                disabled
+                autoComplete="off"
               />
             )}
             <div>
@@ -445,11 +447,27 @@ function SecurityPane({ user }) {
               onChange={setConfirm}
               autoComplete="new-password"
             />
+            {passwordEnabled && (
+              <div>
+                <FloatingInput
+                  id="sec-verify"
+                  type="password"
+                  label="Verify with current password"
+                  icon="verified_user"
+                  value={verify}
+                  onChange={setVerify}
+                  autoComplete="current-password"
+                />
+                <div style={{ fontSize: 11, color: AUTH_COLORS.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 6, letterSpacing: "0.02em" }}>
+                  Confirms it's you before saving your new password.
+                </div>
+              </div>
+            )}
           </div>
         </ShakeWrapper>
         <StatusLine error={err} message={msg} />
         <div>
-          <PrimaryButton type="submit" loading={loading} disabled={(passwordEnabled && !current) || !next || !confirm} style={{ width: "auto", paddingLeft: 22, paddingRight: 22 }}>
+          <PrimaryButton type="submit" loading={loading} disabled={(passwordEnabled && !verify) || !next || !confirm} style={{ width: "auto", paddingLeft: 22, paddingRight: 22 }}>
             {passwordEnabled ? "Update password" : "Set password"}
           </PrimaryButton>
         </div>
