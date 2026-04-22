@@ -470,7 +470,7 @@ export default function FeaturesPage() {
   return (
     <>
       <Head>
-        <title>Fite Finance | Features</title>
+        <title>Fite Finance · Features</title>
         <meta name="description" content="Explore every feature inside Fite Finance — AI grading, mock interview mode, timer, custom descriptors, history, and a roadmap of what's coming next. Built by a student, for students. $3/mo." />
       </Head>
 
