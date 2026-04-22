@@ -196,42 +196,45 @@ export default function AuthCard({
       )}
 
       {/* Body views */}
-      <motion.div
-        initial={false}
-        animate={{ height: bodyHeight }}
-        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-        style={{ position: "relative", zIndex: 2, overflow: "hidden" }}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          overflow: "hidden",
+          height: bodyHeight === "auto" ? "auto" : `${bodyHeight}px`,
+          transition: bodyHeight === "auto" ? "none" : "height 0.32s cubic-bezier(0.22, 1, 0.36, 1)",
+        }}
       >
         <div ref={bodyInnerRef}>
-          <AnimatePresence mode="popLayout" custom={dir} initial={false}>
+          <AnimatePresence mode="popLayout" initial={false}>
             {view === "sign-in" && (
-              <ViewWrap key="sign-in" dir={dir}>
+              <ViewWrap key="sign-in">
                 <SignInView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
               </ViewWrap>
             )}
             {view === "sign-up" && (
-              <ViewWrap key="sign-up" dir={dir}>
+              <ViewWrap key="sign-up">
                 <SignUpView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
               </ViewWrap>
             )}
             {view === "verify" && (
-              <ViewWrap key="verify" dir={dir}>
+              <ViewWrap key="verify">
                 <VerifyView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
               </ViewWrap>
             )}
             {view === "forgot" && (
-              <ViewWrap key="forgot" dir={dir}>
+              <ViewWrap key="forgot">
                 <ForgotView onSwitch={(v, d) => go(v, d)} />
               </ViewWrap>
             )}
             {view === "reset" && (
-              <ViewWrap key="reset" dir={dir}>
+              <ViewWrap key="reset">
                 <ResetView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
               </ViewWrap>
             )}
           </AnimatePresence>
         </div>
-      </motion.div>
+      </div>
 
       {/* Footer legal (sign-up) */}
       {view === "sign-up" && (
@@ -267,21 +270,20 @@ function CardTitle({ view }) {
   );
 }
 
-const slideVariants = {
-  enter: (dir) => ({ x: dir > 0 ? 20 : -20, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit:  (dir) => ({ x: dir > 0 ? -20 : 20, opacity: 0 }),
+const fadeVariants = {
+  enter: { opacity: 0 },
+  center: { opacity: 1 },
+  exit:  { opacity: 0 },
 };
 
-function ViewWrap({ children, dir }) {
+function ViewWrap({ children }) {
   return (
     <motion.div
-      custom={dir}
-      variants={slideVariants}
+      variants={fadeVariants}
       initial="enter"
       animate="center"
       exit="exit"
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
     >
       {children}
     </motion.div>
