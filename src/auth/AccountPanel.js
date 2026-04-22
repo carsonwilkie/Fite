@@ -119,7 +119,7 @@ export default function AccountPanel() {
           <motion.button
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => signOut(() => router.push("/"))}
+            onClick={async () => { await signOut(); window.location.href = "/"; }}
             style={{
               padding: "10px 18px", borderRadius: 12,
               border: `1px solid ${AUTH_COLORS.border}`,
@@ -140,7 +140,7 @@ export default function AccountPanel() {
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 220px) 1fr", gap: 24 }} className="account-layout">
           {/* Sidebar tabs */}
           <aside style={{
-            position: "sticky", top: 96, alignSelf: "start",
+            alignSelf: "start",
             background: "rgba(13,27,42,0.55)",
             border: `1px solid ${AUTH_COLORS.borderSoft}`,
             borderRadius: 16, padding: 8,
@@ -414,18 +414,6 @@ function SecurityPane({ user }) {
       <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <ShakeWrapper trigger={shake}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {passwordEnabled && (
-              <FloatingInput
-                id="sec-current"
-                type="password"
-                label="Current password"
-                icon="lock"
-                value="••••••••••"
-                onChange={() => {}}
-                disabled
-                autoComplete="off"
-              />
-            )}
             <div>
               <FloatingInput
                 id="sec-next"

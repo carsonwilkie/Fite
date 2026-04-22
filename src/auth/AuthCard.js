@@ -178,8 +178,8 @@ export default function AuthCard({
       )}
 
       {/* Body views */}
-      <div style={{ position: "relative", zIndex: 2, minHeight: 260 }}>
-        <AnimatePresence mode="wait" custom={dir}>
+      <motion.div layout style={{ position: "relative", zIndex: 2 }}>
+        <AnimatePresence mode="popLayout" custom={dir}>
           {view === "sign-in" && (
             <ViewWrap key="sign-in" dir={dir}>
               <SignInView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
@@ -206,7 +206,7 @@ export default function AuthCard({
             </ViewWrap>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
       {/* Footer legal (sign-up) */}
       {view === "sign-up" && (
@@ -243,9 +243,9 @@ function CardTitle({ view }) {
 }
 
 const slideVariants = {
-  enter: (dir) => ({ x: dir > 0 ? 40 : -40, opacity: 0 }),
+  enter: (dir) => ({ x: dir > 0 ? 20 : -20, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit:  (dir) => ({ x: dir > 0 ? -40 : 40, opacity: 0 }),
+  exit:  (dir) => ({ x: dir > 0 ? -20 : 20, opacity: 0 }),
 };
 
 function ViewWrap({ children, dir }) {
@@ -256,7 +256,7 @@ function ViewWrap({ children, dir }) {
       initial="enter"
       animate="center"
       exit="exit"
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
@@ -370,7 +370,7 @@ function SignInView({ onSwitch, afterAuthRedirect }) {
 
 /* ─── SIGN UP VIEW ────────────────────────────────────────────────────────── */
 function SignUpView({ onSwitch, afterAuthRedirect }) {
-  const { signUp, isLoaded } = useSignUp();
+  const { signUp, setActive, isLoaded } = useSignUp();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -399,14 +399,18 @@ function SignUpView({ onSwitch, afterAuthRedirect }) {
     setErr(null);
     setLoading(true);
     try {
-      await signUp.create({
+      const result = await signUp.create({
         emailAddress: email,
         password,
         firstName: firstName || undefined,
         lastName: lastName || undefined,
       });
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      onSwitch("verify", 1);
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+      } else {
+        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+        onSwitch("verify", 1);
+      }
     } catch (e) {
       setErr(friendlyError(e));
       setShake((s) => s + 1);

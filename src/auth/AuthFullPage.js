@@ -33,7 +33,7 @@ export default function AuthFullPage({ view = "sign-in", title, description }) {
         justifyContent: "center",
         padding: "80px 20px 40px",
         position: "relative",
-        overflow: "hidden",
+        overflowX: "hidden",
       }}>
         {/* Ambient background */}
         <motion.div

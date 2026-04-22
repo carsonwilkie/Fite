@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 
+function resetMobileZoom() {
+  if (typeof document === "undefined") return;
+  const viewport = document.querySelector('meta[name="viewport"]');
+  if (!viewport) return;
+  const orig = viewport.getAttribute("content") || "";
+  if (orig.includes("maximum-scale")) return;
+  viewport.setAttribute("content", orig + ",maximum-scale=1");
+  requestAnimationFrame(() => viewport.setAttribute("content", orig));
+}
+
 export const AUTH_COLORS = {
   bg: "#020817",
   surface: "#0d1b2a",
@@ -106,7 +116,7 @@ export function FloatingInput({
           value={value ?? ""}
           onChange={(e) => onChange?.(e.target.value, e)}
           onFocus={(e) => { setFocused(true); onFocus?.(e); }}
-          onBlur={(e) => { setFocused(false); onBlur?.(e); }}
+          onBlur={(e) => { setFocused(false); resetMobileZoom(); onBlur?.(e); }}
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           disabled={disabled}
@@ -120,13 +130,13 @@ export function FloatingInput({
             outline: "none",
             color: AUTH_COLORS.text,
             fontFamily: "Inter, sans-serif",
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: 500,
             paddingTop: floating ? 16 : 0,
             paddingBottom: floating ? 0 : 0,
           }}
         />
-        {isPassword && (
+        {isPassword && !disabled && (
           <button
             type="button"
             onClick={() => setShowPw((v) => !v)}

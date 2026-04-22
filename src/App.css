@@ -40,6 +40,23 @@ textarea:focus {
   border-color: #4FC3F7 !important;
 }
 
+/* Prevent browser autofill from overriding auth input backgrounds */
+.auth-floating-input:-webkit-autofill,
+.auth-floating-input:-webkit-autofill:hover,
+.auth-floating-input:-webkit-autofill:focus,
+.auth-floating-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #0d1b2a inset !important;
+  -webkit-text-fill-color: #f1f5f9 !important;
+  caret-color: #f1f5f9;
+}
+
+.auth-code-input:-webkit-autofill,
+.auth-code-input:-webkit-autofill:hover,
+.auth-code-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #0d1b2a inset !important;
+  -webkit-text-fill-color: #f1f5f9 !important;
+}
+
 .markdown h1, .markdown h2, .markdown h3 {
   font-size: 15px;
   font-weight: 700;

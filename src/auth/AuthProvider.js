@@ -76,32 +76,39 @@ export default function AuthProvider({ children }) {
               position: "fixed",
               inset: 0,
               zIndex: 10000,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "24px 16px",
+              overflowY: "auto",
               background: "rgba(2, 8, 23, 0.72)",
               backdropFilter: "blur(14px)",
               WebkitBackdropFilter: "blur(14px)",
             }}
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) closeAuth();
-            }}
           >
-            <motion.div
-              key="auth-modal-card"
-              initial={{ opacity: 0, y: 18, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              style={{ width: "100%", maxWidth: 460 }}
+            <div
+              style={{
+                display: "flex",
+                minHeight: "100%",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "24px 16px",
+              }}
+              onMouseDown={(e) => {
+                if (e.target === e.currentTarget) closeAuth();
+              }}
             >
-              <AuthCard
-                initialView={state.view}
-                onClose={closeAuth}
-                variant="modal"
-              />
-            </motion.div>
+              <motion.div
+                key="auth-modal-card"
+                initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.98 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                style={{ width: "100%", maxWidth: 460 }}
+              >
+                <AuthCard
+                  initialView={state.view}
+                  onClose={closeAuth}
+                  variant="modal"
+                />
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
