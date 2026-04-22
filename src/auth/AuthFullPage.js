@@ -29,7 +29,7 @@ export default function AuthFullPage({ view = "sign-in", title, description }) {
         background: AUTH_COLORS.bg,
         color: AUTH_COLORS.text,
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
         padding: "80px 20px 40px",
         position: "relative",

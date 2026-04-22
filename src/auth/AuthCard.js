@@ -57,7 +57,8 @@ export default function AuthCard({
   const showTabs = view === "sign-in" || view === "sign-up";
 
   return (
-    <div
+    <motion.div
+      layout
       className="auth-card"
       ref={cardRef}
       onMouseMove={handleMouseMove}
@@ -178,8 +179,8 @@ export default function AuthCard({
       )}
 
       {/* Body views */}
-      <div style={{ position: "relative", zIndex: 2 }}>
-        <AnimatePresence mode="wait" custom={dir} initial={false}>
+      <motion.div layout style={{ position: "relative", zIndex: 2, overflow: "hidden" }}>
+        <AnimatePresence mode="popLayout" custom={dir} initial={false}>
           {view === "sign-in" && (
             <ViewWrap key="sign-in" dir={dir}>
               <SignInView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
@@ -206,7 +207,7 @@ export default function AuthCard({
             </ViewWrap>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
       {/* Footer legal (sign-up) */}
       {view === "sign-up" && (
@@ -217,7 +218,7 @@ export default function AuthCard({
           <Link href="/privacy" style={{ color: AUTH_COLORS.secondary, textDecoration: "none" }} onClick={onClose}>Privacy Policy</Link>.
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 

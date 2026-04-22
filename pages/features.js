@@ -577,7 +577,7 @@ export default function FeaturesPage() {
 
                 <TypewriterParagraph
                   active={aboutActive}
-                  text="I'm Carson — a 20-year-old at Colgate University. Last cycle I went through finance recruiting for the first time: endless networking calls, the stack of superdays, the technical question I choked on in an interview that I constantly replay in my head."
+                  text="Hi. I'm Carson — a 20-year-old at Colgate University. Last cycle I went through finance recruiting for the first time: endless networking calls, the stack of superdays, the technical question I choked on in an interview that I constantly replay in my head."
                   style={{ color: "rgba(219,226,248,0.88)", fontFamily: "Manrope, sans-serif", fontSize: 16, lineHeight: 1.7, margin: "0 0 20px 0", overflowWrap: "break-word", wordBreak: "break-word" }}
                 />
                 <TypewriterParagraph
