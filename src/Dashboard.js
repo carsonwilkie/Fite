@@ -968,7 +968,11 @@ export default function Dashboard() {
 
   const handleManageSub = async () => { if (!user?.id) return; const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, returnPath: router.asPath }) }); const d = await r.json(); if (d.url) window.location.href = d.url; };
   const toggleProfilePanel = () => {
-    router.push("/account");
+    if (isSignedIn) {
+      router.push("/account");
+      return;
+    }
+    openSignIn({ redirectTo: "/account" });
   };
 
   const isLoading = loadingQuestion || loadingInterviewGenerate;

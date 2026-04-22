@@ -49,43 +49,38 @@ export default function AuthProvider({ children }) {
     return undefined;
   }, [isSignedIn, state.open, state.redirectTo, closeAuth]);
 
-  // Lock scroll without moving the page. We pin <body> in place with
-  // position:fixed + a negative top offset equal to the current scrollY, which
-  // visually anchors the page content (including the blurred background behind
-  // the modal) exactly where it was. The scrollbar gutter is reserved on <html>
-  // via padding-right so the content never shifts horizontally when the
-  // scrollbar disappears. On close we restore styles and instantly scrollTo
-  // the saved position (scroll-behavior forced to auto to avoid smooth-scroll).
+  // Lock scroll without moving the page. Two key ideas:
+  // 1. Keep the <html> scrollbar visible (overflow: scroll) if the page
+  //    originally had one, so the initial containing block that every
+  //    position:fixed descendant (modal backdrop, nav, etc.) resolves against
+  //    keeps the exact same geometry. This prevents the horizontal twitch.
+  // 2. Pin <body> using its measured getBoundingClientRect values so body
+  //    stays pixel-exact — no reliance on scrollbar math or ambient margins.
+  // On close, revert styles and instantly scrollTo the saved position.
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
     if (!state.open) return undefined;
     const html = document.documentElement;
     const body = document.body;
     const scrollY = window.scrollY;
-    const scrollbarWidth = window.innerWidth - html.clientWidth;
+    const bodyRect = body.getBoundingClientRect();
+    const hadScrollbar = (window.innerWidth - html.clientWidth) > 0;
     const prev = {
       htmlOverflow: html.style.overflow,
-      htmlPaddingRight: html.style.paddingRight,
       bodyPosition: body.style.position,
       bodyTop: body.style.top,
       bodyLeft: body.style.left,
       bodyRight: body.style.right,
       bodyWidth: body.style.width,
     };
-    html.style.overflow = "hidden";
-    if (scrollbarWidth > 0) {
-      html.style.paddingRight = `${scrollbarWidth}px`;
-    }
+    html.style.overflow = hadScrollbar ? "scroll" : "hidden";
     body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.left = "0";
-    body.style.right = "0";
-    body.style.width = scrollbarWidth > 0
-      ? `calc(100% - ${scrollbarWidth}px)`
-      : "100%";
+    body.style.top = `${bodyRect.top}px`;
+    body.style.left = `${bodyRect.left}px`;
+    body.style.right = "auto";
+    body.style.width = `${bodyRect.width}px`;
     return () => {
       html.style.overflow = prev.htmlOverflow;
-      html.style.paddingRight = prev.htmlPaddingRight;
       body.style.position = prev.bodyPosition;
       body.style.top = prev.bodyTop;
       body.style.left = prev.bodyLeft;
@@ -158,6 +153,7 @@ export default function AuthProvider({ children }) {
                   initialView={state.view}
                   onClose={closeAuth}
                   variant="modal"
+                  afterAuthRedirect={state.redirectTo || "/dashboard"}
                 />
               </motion.div>
             </div>
