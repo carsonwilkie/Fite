@@ -878,6 +878,7 @@ export default function Dashboard() {
   // Timer state
   const [timerOn,       setTimerOn]       = useState(false);
   const [timerDuration, setTimerDuration] = useState(120);
+  const [runningDuration, setRunningDuration] = useState(null);
   const [timeLeft,      setTimeLeft]      = useState(null);
   const [timerPaused,   setTimerPaused]   = useState(false);
   const timerIntervalRef  = useRef(null);
@@ -901,11 +902,12 @@ export default function Dashboard() {
     const d = (typeof raw === "number" && !isNaN(raw) && raw > 0) ? raw : 120;
     setTimerPaused(false);
     setTimeLeft(d);
+    setRunningDuration(d);
     runInterval();
   };
   const pauseTimer  = () => { clearInterval(timerIntervalRef.current); setTimerPaused(true); };
   const resumeTimer = () => { setTimerPaused(false); runInterval(); };
-  const stopTimer   = () => { clearInterval(timerIntervalRef.current); setTimeLeft(null); setTimerPaused(false); };
+  const stopTimer   = () => { clearInterval(timerIntervalRef.current); setTimeLeft(null); setRunningDuration(null); setTimerPaused(false); };
   useEffect(() => () => clearInterval(timerIntervalRef.current), []);
 
   // Session stats
@@ -955,7 +957,7 @@ export default function Dashboard() {
 
   const getAnswer = async () => { setAnswerRevealed(true); if (answer) return; setLoadingAnswer(true); try { const r = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "answer", question, category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, userId: user?.id }) }); const d = await r.json(); setAnswer(curr => curr || d.result); } catch (e) { console.error(e); } setLoadingAnswer(false); };
 
-  const handleGrade = async () => { setLoadingFeedback(true); try { const r = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, userAnswer, userId: user?.id }) }); const d = await r.json(); setFeedback(d.feedback); setScore(d.score ?? null); setGraded(true); if (d.score !== null) setSessionScores(p => [...p, d.score]); if (user?.id) await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { question, answer: answerRef.current, userAnswer: userAnswer.trim() || "No answer submitted.", feedback: d.feedback, score: d.score ?? null, category, difficulty, math: mathParam, customPrompt: customPrompt || null, timeTaken: (timerOn && timeLeft !== null) ? timerDuration - timeLeft : null, timestamp: Date.now() } }) }); } catch (e) { console.error(e); } setLoadingFeedback(false); };
+  const handleGrade = async () => { setLoadingFeedback(true); try { const r = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, userAnswer, userId: user?.id }) }); const d = await r.json(); setFeedback(d.feedback); setScore(d.score ?? null); setGraded(true); if (d.score !== null) setSessionScores(p => [...p, d.score]); if (user?.id) await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { question, answer: answerRef.current, userAnswer: userAnswer.trim() || "No answer submitted.", feedback: d.feedback, score: d.score ?? null, category, difficulty, math: mathParam, customPrompt: customPrompt || null, timeTaken: (timerOn && timeLeft !== null && runningDuration !== null) ? runningDuration - timeLeft : null, timestamp: Date.now() } }) }); } catch (e) { console.error(e); } setLoadingFeedback(false); };
 
   // ─── Interview handlers ──────────────────────────────────────────────────
   const resetInterview = () => { setInterviewSession(null); setInterviewStep(0); setInterviewUserAnswers([]); setInterviewResponses([]); setInterviewCurrentAnswer(""); setInterviewComplete(false); setInterviewDebrief(null); setInterviewAnswersRevealed(false); setInterviewProgress(0); };
@@ -1315,7 +1317,7 @@ export default function Dashboard() {
                   <div style={{ padding: "0 12px 12px", display: "flex", gap: 6 }}>
                     {TIMER_PRESETS.map(sec => (
                       <motion.button key={sec}
-                        onClick={() => { setTimerDuration(sec); timerDurationRef.current = sec; if (timeLeft !== null) startTimer(sec); }}
+                        onClick={() => { setTimerDuration(sec); timerDurationRef.current = sec; }}
                         whileTap={{ scale: 0.93 }}
                         style={{ flex: 1, padding: "5px 0", borderRadius: 7, border: `1px solid ${timerDuration === sec ? C.secondary : C.border}`, background: timerDuration === sec ? "rgba(79,195,247,0.1)" : "transparent", color: timerDuration === sec ? C.secondary : C.textMuted, fontSize: 10, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
                         {sec === 60 ? "1m" : sec === 120 ? "2m" : sec === 180 ? "3m" : "5m"}
@@ -1375,7 +1377,7 @@ export default function Dashboard() {
                   onUpgrade={handleUpgrade} price={price} questionsUsed={questionsUsed}
                   getScoreColor={getScoreColor} getScoreBg={getScoreBg}
                   timeLeft={timerOn ? timeLeft : null}
-                  timerDuration={timerDuration} timerPaused={timerPaused}
+                  timerDuration={runningDuration ?? timerDuration} timerPaused={timerPaused}
                   onPauseTimer={pauseTimer} onResumeTimer={resumeTimer}
                   onStartTimer={startTimer} timerOn={timerOn}
                   snapshotCategory={snapshotCategory} snapshotDifficulty={snapshotDifficulty} snapshotMath={snapshotMath}
@@ -1612,7 +1614,7 @@ export default function Dashboard() {
                     <div style={{ padding: "0 12px 12px", display: "flex", gap: 6 }}>
                       {TIMER_PRESETS.map(sec => (
                         <motion.button key={sec}
-                          onClick={() => { setTimerDuration(sec); timerDurationRef.current = sec; if (timeLeft !== null) startTimer(sec); }}
+                          onClick={() => { setTimerDuration(sec); timerDurationRef.current = sec; }}
                           whileTap={{ scale: 0.93 }}
                           style={{ flex: 1, padding: "6px 0", borderRadius: 7, border: `1px solid ${timerDuration === sec ? C.secondary : C.border}`, background: timerDuration === sec ? "rgba(79,195,247,0.1)" : "transparent", color: timerDuration === sec ? C.secondary : C.textMuted, fontSize: 11, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
                           {sec === 60 ? "1m" : sec === 120 ? "2m" : sec === 180 ? "3m" : "5m"}
