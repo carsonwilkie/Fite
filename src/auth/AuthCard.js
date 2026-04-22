@@ -402,8 +402,8 @@ function SignUpView({ onSwitch, afterAuthRedirect }) {
       const result = await signUp.create({
         emailAddress: email,
         password,
-        firstName: firstName || undefined,
-        lastName: lastName || undefined,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
       });
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
@@ -428,7 +428,7 @@ function SignUpView({ onSwitch, afterAuthRedirect }) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <FloatingInput
               id="signup-first"
-              label="First name"
+              label="First name *"
               value={firstName}
               onChange={setFirstName}
               autoComplete="given-name"
@@ -436,7 +436,7 @@ function SignUpView({ onSwitch, afterAuthRedirect }) {
             />
             <FloatingInput
               id="signup-last"
-              label="Last name"
+              label="Last name *"
               value={lastName}
               onChange={setLastName}
               autoComplete="family-name"
@@ -470,7 +470,7 @@ function SignUpView({ onSwitch, afterAuthRedirect }) {
 
       <ErrorBanner error={err} />
 
-      <PrimaryButton type="submit" loading={loading} disabled={!email || password.length < 8}>
+      <PrimaryButton type="submit" loading={loading} disabled={!firstName.trim() || !lastName.trim() || !email || password.length < 8}>
         Create Account
       </PrimaryButton>
 

@@ -366,12 +366,13 @@ function ProfilePane({ user }) {
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(false);
   const dirty = firstName !== (user.firstName || "") || lastName !== (user.lastName || "");
+  const valid = firstName.trim().length > 0 && lastName.trim().length > 0;
 
   const save = async () => {
-    if (!dirty || loading) return;
+    if (!dirty || !valid || loading) return;
     setLoading(true); setErr(null); setMsg(null);
     try {
-      await user.update({ firstName: firstName || "", lastName: lastName || "" });
+      await user.update({ firstName: firstName.trim(), lastName: lastName.trim() });
       setMsg("Profile updated.");
     } catch (e) {
       setErr(friendlyError(e));
@@ -384,12 +385,12 @@ function ProfilePane({ user }) {
     <>
       <Card title="Personal information" description="Update your name as it appears across Fite Finance.">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <FloatingInput id="profile-first" label="First name" value={firstName} onChange={setFirstName} />
-          <FloatingInput id="profile-last" label="Last name" value={lastName} onChange={setLastName} />
+          <FloatingInput id="profile-first" label="First name *" value={firstName} onChange={setFirstName} />
+          <FloatingInput id="profile-last" label="Last name *" value={lastName} onChange={setLastName} />
         </div>
         <StatusLine error={err} message={msg} />
         <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
-          <PrimaryButton onClick={save} loading={loading} disabled={!dirty} style={{ width: "auto", paddingLeft: 22, paddingRight: 22 }}>
+          <PrimaryButton onClick={save} loading={loading} disabled={!dirty || !valid} style={{ width: "auto", paddingLeft: 22, paddingRight: 22 }}>
             Save changes
           </PrimaryButton>
         </div>
