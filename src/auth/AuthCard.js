@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useSignIn, useSignUp, useClerk } from "@clerk/clerk-react";
@@ -36,9 +36,27 @@ export default function AuthCard({
   const [view, setView] = useState(initialView); // sign-in | sign-up | verify | forgot | reset
   const [dir, setDir] = useState(1);
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
+  const [bodyHeight, setBodyHeight] = useState("auto");
   const cardRef = useRef(null);
+  const bodyInnerRef = useRef(null);
 
   useEffect(() => { setView(initialView); }, [initialView]);
+
+  // Measure the in-flow body content so we can animate the wrapper's height
+  // explicitly (CSS height) rather than via FLIP transforms, which would
+  // visually stretch the content during the transition.
+  useLayoutEffect(() => {
+    const el = bodyInnerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const measure = () => {
+      const h = el.offsetHeight;
+      if (h > 0) setBodyHeight(h);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const go = useCallback((next, direction = 1) => {
     setDir(direction);
@@ -57,8 +75,7 @@ export default function AuthCard({
   const showTabs = view === "sign-in" || view === "sign-up";
 
   return (
-    <motion.div
-      layout
+    <div
       className="auth-card"
       ref={cardRef}
       onMouseMove={handleMouseMove}
@@ -179,34 +196,41 @@ export default function AuthCard({
       )}
 
       {/* Body views */}
-      <motion.div layout style={{ position: "relative", zIndex: 2, overflow: "hidden" }}>
-        <AnimatePresence mode="popLayout" custom={dir} initial={false}>
-          {view === "sign-in" && (
-            <ViewWrap key="sign-in" dir={dir}>
-              <SignInView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
-            </ViewWrap>
-          )}
-          {view === "sign-up" && (
-            <ViewWrap key="sign-up" dir={dir}>
-              <SignUpView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
-            </ViewWrap>
-          )}
-          {view === "verify" && (
-            <ViewWrap key="verify" dir={dir}>
-              <VerifyView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
-            </ViewWrap>
-          )}
-          {view === "forgot" && (
-            <ViewWrap key="forgot" dir={dir}>
-              <ForgotView onSwitch={(v, d) => go(v, d)} />
-            </ViewWrap>
-          )}
-          {view === "reset" && (
-            <ViewWrap key="reset" dir={dir}>
-              <ResetView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
-            </ViewWrap>
-          )}
-        </AnimatePresence>
+      <motion.div
+        initial={false}
+        animate={{ height: bodyHeight }}
+        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+        style={{ position: "relative", zIndex: 2, overflow: "hidden" }}
+      >
+        <div ref={bodyInnerRef}>
+          <AnimatePresence mode="popLayout" custom={dir} initial={false}>
+            {view === "sign-in" && (
+              <ViewWrap key="sign-in" dir={dir}>
+                <SignInView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+              </ViewWrap>
+            )}
+            {view === "sign-up" && (
+              <ViewWrap key="sign-up" dir={dir}>
+                <SignUpView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+              </ViewWrap>
+            )}
+            {view === "verify" && (
+              <ViewWrap key="verify" dir={dir}>
+                <VerifyView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+              </ViewWrap>
+            )}
+            {view === "forgot" && (
+              <ViewWrap key="forgot" dir={dir}>
+                <ForgotView onSwitch={(v, d) => go(v, d)} />
+              </ViewWrap>
+            )}
+            {view === "reset" && (
+              <ViewWrap key="reset" dir={dir}>
+                <ResetView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+              </ViewWrap>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
 
       {/* Footer legal (sign-up) */}
@@ -218,7 +242,7 @@ export default function AuthCard({
           <Link href="/privacy" style={{ color: AUTH_COLORS.secondary, textDecoration: "none" }} onClick={onClose}>Privacy Policy</Link>.
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
 

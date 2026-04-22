@@ -49,21 +49,22 @@ export default function AuthProvider({ children }) {
     return undefined;
   }, [isSignedIn, state.open, state.redirectTo, closeAuth]);
 
-  // Lock body scroll when open without moving the page.
+  // Lock body scroll when open without moving the page. We use overflow:hidden
+  // (rather than position:fixed) so the real scroll position is preserved —
+  // nothing has to be restored on close, and the page never visually moves.
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
     if (!state.open) return undefined;
-    const scrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const prevOverflow = document.body.style.overflow;
+    const prevPaddingRight = document.body.style.paddingRight;
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
     return () => {
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.left = "";
-      document.body.style.right = "";
-      window.scrollTo(0, scrollY);
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPaddingRight;
     };
   }, [state.open]);
 
@@ -107,9 +108,9 @@ export default function AuthProvider({ children }) {
               style={{
                 display: "flex",
                 minHeight: "100%",
-                alignItems: "flex-start",
+                alignItems: "center",
                 justifyContent: "center",
-                padding: "clamp(48px, 8vh, 80px) 16px 24px",
+                padding: "24px 16px",
               }}
               onMouseDown={(e) => {
                 if (e.target === e.currentTarget) closeAuth();
