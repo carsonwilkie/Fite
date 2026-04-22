@@ -52,14 +52,17 @@ export default function SubmissionPage({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(null);
 
+  // Auth gate — all submission pages require sign-in
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!user) router.replace("/");
+  }, [isLoaded, user, router]);
+
   // Paid-gate enforcement
   useEffect(() => {
     if (!paidOnly) return;
     if (!isLoaded || paidLoading) return;
-    if (!user) {
-      router.replace("/");
-      return;
-    }
+    if (!user) return; // auth gate above handles this
     if (!isPaid) router.replace("/features");
   }, [paidOnly, isLoaded, paidLoading, user, isPaid, router]);
 
