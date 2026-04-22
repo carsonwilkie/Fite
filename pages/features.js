@@ -776,10 +776,10 @@ export default function FeaturesPage() {
                 <ComparisonRow label="Anti-repeat filter (24hr)"        free={true}      premium={true}                delay={480} highlight />
                 <ComparisonRow label="Priority support + feature votes" free={false}    premium={true}                delay={540} />
 
-                <div style={{ display: "grid", gridTemplateColumns: "1.4fr 0.8fr 0.8fr", padding: "22px 24px", alignItems: "center" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1.4fr 0.8fr 0.8fr", padding: "22px 24px", alignItems: "center", gap: "12px" }}>
                   <div />
                   <div style={{ textAlign: "center" }}>
-                    <button className="lp-btn-outline-block" onClick={() => openSignUp()} style={{ padding: "10px 18px", fontSize: 12 }}>Start Free</button>
+                    <button className="lp-btn-outline-block" onClick={() => isSignedIn ? router.push("/dashboard") : openSignUp()} style={{ padding: "10px 18px", fontSize: 12 }}>Start Free</button>
                   </div>
                   <div style={{ textAlign: "center" }}>
                     <button
@@ -841,7 +841,7 @@ export default function FeaturesPage() {
                   </li>
                 ))}
               </ul>
-              <button className="lp-btn-outline-block" onClick={() => openSignUp()}>Get Started Free</button>
+              <button className="lp-btn-outline-block" onClick={() => isSignedIn ? router.push("/dashboard") : openSignUp()}>Get Started Free</button>
             </ScrollReveal>
             </PricingCardWrapper>
 
