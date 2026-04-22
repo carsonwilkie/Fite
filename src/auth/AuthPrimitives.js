@@ -47,11 +47,24 @@ export function FloatingInput({
   maxLength,
 }) {
   const [focused, setFocused] = useState(false);
+  const [autofilled, setAutofilled] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const inputRef = useRef(null);
   const isPassword = type === "password";
   const effectiveType = isPassword && showPw ? "text" : type;
   const filled = value !== undefined && value !== null && String(value).length > 0;
-  const floating = focused || filled;
+  const floating = focused || filled || autofilled;
+
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    const onAnimStart = (e) => {
+      if (e.animationName === "authAutofillStart") setAutofilled(true);
+      if (e.animationName === "authAutofillCancel") setAutofilled(false);
+    };
+    el.addEventListener("animationstart", onAnimStart);
+    return () => el.removeEventListener("animationstart", onAnimStart);
+  }, []);
 
   return (
     <div style={{ position: "relative", width: "100%", padding: 4, margin: -4 }}>
@@ -110,6 +123,7 @@ export function FloatingInput({
           {label}
         </label>
         <input
+          ref={inputRef}
           className="auth-floating-input"
           id={id}
           type={effectiveType}

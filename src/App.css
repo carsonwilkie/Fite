@@ -53,6 +53,18 @@ textarea:focus {
    The transition trick is what actually hides the native yellow/white paint
    in Chrome — webkit animates the autofill bg away over ~ infinity so it is
    never visually applied. Keep the inset shadow override for Safari fallback. */
+@keyframes authAutofillStart { from {} to {} }
+@keyframes authAutofillCancel { from {} to {} }
+
+.auth-floating-input:-webkit-autofill {
+  animation-name: authAutofillStart;
+  animation-duration: 0.001s;
+}
+.auth-floating-input:not(:-webkit-autofill) {
+  animation-name: authAutofillCancel;
+  animation-duration: 0.001s;
+}
+
 .auth-floating-input:-webkit-autofill,
 .auth-floating-input:-webkit-autofill:hover,
 .auth-floating-input:-webkit-autofill:focus,

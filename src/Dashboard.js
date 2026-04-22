@@ -1459,7 +1459,7 @@ export default function Dashboard() {
             </motion.button>
           ) : (
             <motion.button
-              onClick={() => router.push("/account")}
+              onClick={() => { if (isSignedIn) router.push("/account"); }}
               whileTap={{ scale: 0.88 }}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 10 }}
             >
