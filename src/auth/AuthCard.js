@@ -178,8 +178,8 @@ export default function AuthCard({
       )}
 
       {/* Body views */}
-      <motion.div layout style={{ position: "relative", zIndex: 2 }}>
-        <AnimatePresence mode="popLayout" custom={dir}>
+      <div style={{ position: "relative", zIndex: 2 }}>
+        <AnimatePresence mode="wait" custom={dir} initial={false}>
           {view === "sign-in" && (
             <ViewWrap key="sign-in" dir={dir}>
               <SignInView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
@@ -206,7 +206,7 @@ export default function AuthCard({
             </ViewWrap>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {/* Footer legal (sign-up) */}
       {view === "sign-up" && (

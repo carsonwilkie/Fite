@@ -324,7 +324,7 @@ function SessionIntel({ count, avgScore, readiness, compact = false }) {
 }
 
 // ─── Question Canvas (right panel, question mode) ─────────────────────────────
-function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback, score, graded, answerRevealed, loadingQuestion, loadingAnswer, loadingFeedback, streamProgress, wordCount, isPaid, category, difficulty, math, onGetAnswer, onGrade, onNewQuestion, onUpgrade, price, questionsUsed, getScoreColor, getScoreBg, timeLeft, timerDuration, timerPaused, onPauseTimer, onResumeTimer, onStartTimer, timerOn, snapshotCategory, snapshotDifficulty, snapshotMath }) {
+function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback, score, graded, answerRevealed, loadingQuestion, loadingAnswer, loadingFeedback, streamProgress, wordCount, isPaid, category, difficulty, math, onGetAnswer, onGrade, onNewQuestion, onUpgrade, price, questionsUsed, getScoreColor, getScoreBg, timeLeft, timerDuration, timerPaused, onPauseTimer, onResumeTimer, onStartTimer, timerOn, snapshotCategory, snapshotDifficulty, snapshotMath, snapshotCustomPrompt }) {
   const isLimitMsg = question?.includes("you've reached") || question?.includes("You've reached") || question?.includes("seen all recent");
 
   // Empty / loading state
@@ -385,6 +385,15 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
           <span style={{ padding: "4px 12px", background: "rgba(21,101,192,0.08)", color: C.textMuted, fontSize: 10, fontWeight: 900, fontFamily: "Manrope, sans-serif", borderRadius: 6, letterSpacing: "0.15em", textTransform: "uppercase", border: `1px solid ${C.border}` }}>
             {snapshotMath || math}
           </span>
+          {snapshotCustomPrompt && (
+            <span
+              title={snapshotCustomPrompt}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", background: "rgba(201,168,76,0.1)", color: C.gold, fontSize: 10, fontWeight: 900, fontFamily: "Manrope, sans-serif", borderRadius: 6, letterSpacing: "0.15em", textTransform: "uppercase", border: "1px solid rgba(201,168,76,0.3)", maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+            >
+              <Icon name="bolt" size={12} />
+              {snapshotCustomPrompt}
+            </span>
+          )}
         </div>
 
         {/* Question text */}
@@ -861,9 +870,10 @@ export default function Dashboard() {
   const [interviewAnswersRevealed, setInterviewAnswersRevealed] = useState(false);
 
   // Snapshot of settings at question generation time (so toggling controls doesn't affect displayed badges)
-  const [snapshotCategory,   setSnapshotCategory]   = useState(null);
-  const [snapshotDifficulty, setSnapshotDifficulty] = useState(null);
-  const [snapshotMath,       setSnapshotMath]       = useState(null);
+  const [snapshotCategory,     setSnapshotCategory]     = useState(null);
+  const [snapshotDifficulty,   setSnapshotDifficulty]   = useState(null);
+  const [snapshotMath,         setSnapshotMath]         = useState(null);
+  const [snapshotCustomPrompt, setSnapshotCustomPrompt] = useState(null);
 
   // Timer state
   const [timerOn,       setTimerOn]       = useState(false);
@@ -924,6 +934,7 @@ export default function Dashboard() {
     setSnapshotCategory(category);
     setSnapshotDifficulty(difficulty);
     setSnapshotMath(mathOn ? "With Math" : "No Math");
+    setSnapshotCustomPrompt(customPrompt.trim() || null);
     setLoadingQuestion(true);
     const EST = difficulty === "Easy" ? 150 : difficulty === "Hard" ? 350 : 250;
     try {
@@ -1016,6 +1027,7 @@ export default function Dashboard() {
               ? <NavItem icon="credit_card" label="Manage Plan" onClick={handleManageSub} />
               : <NavItem icon="workspace_premium" label="Upgrade" onClick={handleUpgrade} gold />
             }
+            <NavItem icon="forum" label="Submit Feedback" onClick={() => router.push("/feedback")} />
           </div>
         </nav>
 
@@ -1181,6 +1193,15 @@ export default function Dashboard() {
                               </motion.button>
                             </>
                           )}
+                          <div style={{ height: 1, background: C.border, margin: "4px 6px" }} />
+                          <motion.button
+                            onClick={() => { setNavOpen(false); router.push("/feedback"); }}
+                            whileTap={{ scale: 0.96 }}
+                            style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "none", border: "none", cursor: "pointer", color: C.text, fontSize: 13, fontWeight: 700, fontFamily: "Inter, sans-serif", textAlign: "left" }}
+                          >
+                            <Icon name="forum" size={16} style={{ color: C.secondary }} />
+                            Submit Feedback
+                          </motion.button>
                         </motion.div>
                       </>
                     )}
@@ -1329,6 +1350,7 @@ export default function Dashboard() {
                   onPauseTimer={pauseTimer} onResumeTimer={resumeTimer}
                   onStartTimer={startTimer} timerOn={timerOn}
                   snapshotCategory={snapshotCategory} snapshotDifficulty={snapshotDifficulty} snapshotMath={snapshotMath}
+                  snapshotCustomPrompt={snapshotCustomPrompt}
                 />
               ) : (
                 <InterviewCanvas

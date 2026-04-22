@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useClerk, useUser } from "@clerk/clerk-react";
 import { useRouter } from "next/router";
@@ -119,7 +119,7 @@ export default function AccountPanel() {
           <motion.button
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.97 }}
-            onClick={async () => { await signOut(); window.location.href = "/"; }}
+            onClick={async () => { await signOut({ redirectUrl: "/" }); }}
             style={{
               padding: "10px 18px", borderRadius: 12,
               border: `1px solid ${AUTH_COLORS.border}`,
@@ -217,6 +217,33 @@ export default function AccountPanel() {
 /* ─── Avatar ──────────────────────────────────────────────────────────────── */
 function AvatarRing({ user }) {
   const initials = (user.firstName?.[0] || user.primaryEmailAddress?.emailAddress?.[0] || "?").toUpperCase();
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [hover, setHover] = useState(false);
+  const [err, setErr] = useState(null);
+
+  const pickFile = () => {
+    if (uploading) return;
+    fileRef.current?.click();
+  };
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setErr("Please choose an image file."); return; }
+    if (file.size > 10 * 1024 * 1024) { setErr("Image must be under 10 MB."); return; }
+    setErr(null);
+    setUploading(true);
+    try {
+      await user.setProfileImage({ file });
+    } catch (ex) {
+      setErr(friendlyError(ex));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div style={{ position: "relative", width: 72, height: 72 }}>
       <motion.div
@@ -231,18 +258,28 @@ function AvatarRing({ user }) {
           opacity: 0.7,
         }}
       />
-      <div style={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-        borderRadius: "50%",
-        overflow: "hidden",
-        background: AUTH_COLORS.surface,
-        border: `2px solid ${AUTH_COLORS.bg}`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}>
+      <button
+        type="button"
+        onClick={pickFile}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        aria-label="Change profile picture"
+        disabled={uploading}
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          borderRadius: "50%",
+          overflow: "hidden",
+          background: AUTH_COLORS.surface,
+          border: `2px solid ${AUTH_COLORS.bg}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: uploading ? "wait" : "pointer",
+          padding: 0,
+        }}
+      >
         {user.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={user.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -251,7 +288,40 @@ function AvatarRing({ user }) {
             {initials}
           </span>
         )}
-      </div>
+        <motion.div
+          initial={false}
+          animate={{ opacity: uploading || hover ? 1 : 0 }}
+          transition={{ duration: 0.2 }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(2,8,23,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#fff",
+            pointerEvents: "none",
+          }}
+        >
+          {uploading ? (
+            <Spinner />
+          ) : (
+            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>photo_camera</span>
+          )}
+        </motion.div>
+      </button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        onChange={onFile}
+        style={{ display: "none" }}
+      />
+      {err && (
+        <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 6, fontSize: 10, color: "#fca5a5", fontFamily: "Manrope, sans-serif", whiteSpace: "nowrap" }}>
+          {err}
+        </div>
+      )}
     </div>
   );
 }

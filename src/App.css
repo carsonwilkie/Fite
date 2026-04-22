@@ -20,6 +20,15 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2), 0 0 12px rgba(74, 111, 165, 0.5), 0 0 19px rgba(10, 36, 99, 0.2) !important;
 }
 
+/* Dashboard answer terminals already have their own styled container/glow; the
+   generic focus glow above hugs the text too tightly on the sides, so disable
+   it for those textareas. */
+.qc-textarea:focus,
+.ic-textarea:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
 .auth-floating-input:focus {
   border-color: transparent !important;
   box-shadow: none !important;
@@ -40,21 +49,42 @@ textarea:focus {
   border-color: #4FC3F7 !important;
 }
 
-/* Prevent browser autofill from overriding auth input backgrounds */
+/* Prevent browser autofill from overriding auth input backgrounds.
+   The transition trick is what actually hides the native yellow/white paint
+   in Chrome — webkit animates the autofill bg away over ~ infinity so it is
+   never visually applied. Keep the inset shadow override for Safari fallback. */
 .auth-floating-input:-webkit-autofill,
 .auth-floating-input:-webkit-autofill:hover,
 .auth-floating-input:-webkit-autofill:focus,
 .auth-floating-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #0d1b2a inset !important;
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
   -webkit-text-fill-color: #f1f5f9 !important;
   caret-color: #f1f5f9;
+  transition: background-color 600000s 0s, color 600000s 0s !important;
+  border-radius: 12px;
 }
 
 .auth-code-input:-webkit-autofill,
 .auth-code-input:-webkit-autofill:hover,
 .auth-code-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #0d1b2a inset !important;
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
   -webkit-text-fill-color: #f1f5f9 !important;
+  transition: background-color 600000s 0s, color 600000s 0s !important;
+  border-radius: 11px;
+}
+
+/* Account page (profile/password) floating inputs */
+.account-page input:-webkit-autofill,
+.account-page input:-webkit-autofill:hover,
+.account-page input:-webkit-autofill:focus,
+.account-page input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: #f1f5f9 !important;
+  transition: background-color 600000s 0s, color 600000s 0s !important;
+  border-radius: 12px;
 }
 
 .markdown h1, .markdown h2, .markdown h3 {
@@ -952,6 +982,40 @@ img, span, button {
   align-items: center;
   width: 100%;
   height: 48px;
+  position: relative;
+}
+
+/* Red blade aura — sits behind both the blade and hilt.
+   Width is driven by inline style (percentage of container), length tracks
+   the filled portion of the blade. The hilt is given a higher z-index so it
+   overlaps on top of the glow, matching canonical lightsaber composition. */
+.ls-aura {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  height: 44px;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 8px 22px 22px 8px;
+  background:
+    radial-gradient(ellipse at left, rgba(204, 0, 0, 0.55) 0%, rgba(204, 0, 0, 0.32) 35%, rgba(204, 0, 0, 0) 75%);
+  filter: blur(6px);
+  opacity: 0;
+  transition: width 0.04s linear, opacity 0.25s ease;
+}
+
+.ls-aura.ls-aura-active {
+  opacity: 1;
+}
+
+.ls-aura.ls-aura-complete {
+  animation: ls-aura-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ls-aura-pulse {
+  0%, 100% { filter: blur(6px); opacity: 0.95; }
+  50%      { filter: blur(8px); opacity: 1; }
 }
 
 /* --- Hilt --- */
@@ -962,7 +1026,7 @@ img, span, button {
   position: relative;
   background: linear-gradient(to bottom, #d4d4d4 0%, #bababa 50%, #a0a0a0 100%);
   border-radius: 7px;
-  z-index: 2;
+  z-index: 3;
   overflow: visible;
 }
 

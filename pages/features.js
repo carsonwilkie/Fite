@@ -943,12 +943,52 @@ export default function FeaturesPage() {
             </div>
 
             <ScrollReveal style={{ marginTop: 120, marginBottom: -30, textAlign: "center" }}>
-              <div style={{ padding: "24px 32px", borderRadius: 16, border: "1px dashed rgba(79,195,247,0.3)", background: "rgba(79,195,247,0.04)", display: "inline-flex", flexDirection: "column", gap: 10, maxWidth: 620 }}>
+              <div style={{ padding: "28px 32px", borderRadius: 16, border: "1px dashed rgba(79,195,247,0.3)", background: "rgba(79,195,247,0.04)", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 14, maxWidth: 620 }}>
                 <div style={{ fontFamily: "Manrope, sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: C.secondary }}>Feature Requests</div>
                 <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: C.onSurface, lineHeight: 1.55 }}>
-                  Have a feature in mind? Premium users can vote on what ships next. Shoot a note to{" "}
-                  <a href="mailto:support@fitefinance.com" style={{ color: C.secondary, textDecoration: "underline", textUnderlineOffset: 3 }}>support@fitefinance.com</a>.
+                  Have a feature in mind? Premium users can vote on what ships next.
                 </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isPaid) router.push("/feature-vote");
+                    else handleUpgrade();
+                  }}
+                  disabled={!isPaid}
+                  title={isPaid ? "" : "Upgrade to Premium to vote"}
+                  style={{
+                    marginTop: 4,
+                    padding: "12px 22px",
+                    borderRadius: 999,
+                    border: "none",
+                    cursor: isPaid ? "pointer" : "not-allowed",
+                    background: isPaid ? cyberGrad : "rgba(79,195,247,0.14)",
+                    color: isPaid ? "#fff" : "rgba(226,232,240,0.55)",
+                    fontFamily: "Manrope, sans-serif",
+                    fontSize: 11,
+                    fontWeight: 900,
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 10,
+                    boxShadow: isPaid ? "0 10px 26px rgba(21,101,192,0.4)" : "none",
+                    opacity: isPaid ? 1 : 0.7,
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                  }}
+                  onMouseEnter={(e) => { if (isPaid) e.currentTarget.style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+                    {isPaid ? "how_to_vote" : "lock"}
+                  </span>
+                  {isPaid ? "Vote on next feature" : "Premium required"}
+                </button>
+                {!isPaid && (
+                  <div style={{ fontFamily: "Manrope, sans-serif", fontSize: 11, color: C.muted, letterSpacing: "0.04em" }}>
+                    Upgrade to unlock voting.
+                  </div>
+                )}
               </div>
             </ScrollReveal>
           </div>
