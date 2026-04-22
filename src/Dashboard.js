@@ -1055,9 +1055,25 @@ export default function Dashboard() {
             whileHover={{ background: "rgba(21,101,192,0.14)", borderColor: `rgba(79,195,247,0.3)` }}
             style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(21,101,192,0.06)", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10, transition: "background 0.15s, border-color 0.15s", cursor: "pointer", userSelect: "none" }}
           >
-            <div onClick={(e) => e.stopPropagation()}>
-              <UserMenu size={32} />
-            </div>
+            {isSignedIn ? (
+              <div
+                aria-hidden
+                style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", background: cyberGrad, boxShadow: "0 2px 10px rgba(21,101,192,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+              >
+                {user?.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={user.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <span style={{ color: "#fff", fontSize: 13, fontWeight: 800, fontFamily: "Inter, sans-serif" }}>
+                    {(user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0] || "?").toUpperCase()}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div onClick={(e) => e.stopPropagation()}>
+                <UserMenu size={32} />
+              </div>
+            )}
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: C.text }}>
                 {user?.firstName || "User"}
