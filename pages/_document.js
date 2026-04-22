@@ -6,7 +6,7 @@ export default function Document() {
       <Head>
         <link rel="icon" href="/favicon-v2.ico" sizes="any" />
         <link rel="icon" type="image/png" href="/favicon-v2.png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon-v2.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#020817" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
