@@ -1,3 +1,10 @@
+// Execution Command (run in terminal):
+
+// curl http://localhost:3000/api/admin-users \
+//   -H "x-admin-secret: YOUR_ADMIN_SECRET"
+
+//  * make sure npm run dev is running *
+
 export default async function handler(req, res) {
   if (req.headers["x-admin-secret"] !== process.env.ADMIN_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
