@@ -206,7 +206,7 @@ export default function AuthCard({
         }}
       >
         <div ref={bodyInnerRef}>
-          <AnimatePresence mode="popLayout" initial={false}>
+          <AnimatePresence mode="wait" initial={false}>
             {view === "sign-in" && (
               <ViewWrap key="sign-in">
                 <SignInView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
@@ -233,18 +233,27 @@ export default function AuthCard({
               </ViewWrap>
             )}
           </AnimatePresence>
+
+          {/* Footer legal (sign-up) */}
+          <AnimatePresence initial={false}>
+            {view === "sign-up" && (
+              <motion.div
+                key="sign-up-legal"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                style={{ marginTop: 14, textAlign: "center", fontSize: 11, color: AUTH_COLORS.textMuted, fontFamily: "Manrope, sans-serif", lineHeight: 1.55 }}
+              >
+                By creating an account, you agree to our{" "}
+                <Link href="/terms" style={{ color: AUTH_COLORS.secondary, textDecoration: "none" }} onClick={onClose}>Terms</Link>{" "}
+                &{" "}
+                <Link href="/privacy" style={{ color: AUTH_COLORS.secondary, textDecoration: "none" }} onClick={onClose}>Privacy Policy</Link>.
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-
-      {/* Footer legal (sign-up) */}
-      {view === "sign-up" && (
-        <div style={{ position: "relative", zIndex: 2, marginTop: 14, textAlign: "center", fontSize: 11, color: AUTH_COLORS.textMuted, fontFamily: "Manrope, sans-serif", lineHeight: 1.55 }}>
-          By creating an account, you agree to our{" "}
-          <Link href="/terms" style={{ color: AUTH_COLORS.secondary, textDecoration: "none" }} onClick={onClose}>Terms</Link>{" "}
-          &{" "}
-          <Link href="/privacy" style={{ color: AUTH_COLORS.secondary, textDecoration: "none" }} onClick={onClose}>Privacy Policy</Link>.
-        </div>
-      )}
     </div>
   );
 }
@@ -284,6 +293,7 @@ function ViewWrap({ children }) {
       animate="center"
       exit="exit"
       transition={{ duration: 0.22, ease: "easeOut" }}
+      style={{ width: "100%" }}
     >
       {children}
     </motion.div>
