@@ -1032,6 +1032,7 @@ export default function Dashboard() {
               : <NavItem icon="workspace_premium" label="Upgrade" onClick={handleUpgrade} gold />
             }
             <NavItem icon="forum" label="Submit Feedback" onClick={() => isSignedIn ? router.push("/feedback") : null} muted={!isSignedIn} />
+            <NavItem icon="how_to_vote" label="Vote" onClick={() => isPaid ? router.push("/feature-vote") : null} muted={!isPaid} />
           </div>
         </nav>
 
@@ -1205,6 +1206,14 @@ export default function Dashboard() {
                           >
                             <Icon name="forum" size={16} style={{ color: isSignedIn ? C.secondary : `${C.textMuted}55` }} />
                             Submit Feedback
+                          </motion.button>
+                          <motion.button
+                            onClick={() => { if (!isPaid) return; setNavOpen(false); router.push("/feature-vote"); }}
+                            whileTap={isPaid ? { scale: 0.96 } : undefined}
+                            style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "none", border: "none", cursor: isPaid ? "pointer" : "default", color: isPaid ? C.text : `${C.textMuted}55`, fontSize: 13, fontWeight: 700, fontFamily: "Inter, sans-serif", textAlign: "left" }}
+                          >
+                            <Icon name="how_to_vote" size={16} style={{ color: isPaid ? C.secondary : `${C.textMuted}55` }} />
+                            Vote
                           </motion.button>
                         </motion.div>
                       </>
