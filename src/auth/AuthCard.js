@@ -215,6 +215,7 @@ export default function AuthCard({
             {view === "sign-up" && (
               <ViewWrap key="sign-up">
                 <SignUpView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+                <SignUpLegal onClose={onClose} />
               </ViewWrap>
             )}
             {view === "verify" && (
@@ -234,24 +235,6 @@ export default function AuthCard({
             )}
           </AnimatePresence>
 
-          {/* Footer legal (sign-up) */}
-          <AnimatePresence initial={false}>
-            {view === "sign-up" && (
-              <motion.div
-                key="sign-up-legal"
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
-                style={{ marginTop: 14, textAlign: "center", fontSize: 11, color: AUTH_COLORS.textMuted, fontFamily: "Manrope, sans-serif", lineHeight: 1.55 }}
-              >
-                By creating an account, you agree to our{" "}
-                <Link href="/terms" style={{ color: AUTH_COLORS.secondary, textDecoration: "none" }} onClick={onClose}>Terms</Link>{" "}
-                &{" "}
-                <Link href="/privacy" style={{ color: AUTH_COLORS.secondary, textDecoration: "none" }} onClick={onClose}>Privacy Policy</Link>.
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
     </div>
@@ -279,24 +262,60 @@ function CardTitle({ view }) {
   );
 }
 
-const fadeVariants = {
-  enter: { opacity: 0 },
-  center: { opacity: 1 },
-  exit:  { opacity: 0 },
+const rollVariants = {
+  enter: {
+    opacity: 0,
+    y: 8,
+    scaleY: 0.985,
+    clipPath: "inset(0% 0% 100% 0%)",
+  },
+  center: {
+    opacity: 1,
+    y: 0,
+    scaleY: 1,
+    clipPath: "inset(0% 0% 0% 0%)",
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    scaleY: 0.985,
+    clipPath: "inset(0% 0% 100% 0%)",
+  },
 };
 
 function ViewWrap({ children }) {
   return (
     <motion.div
-      variants={fadeVariants}
+      variants={rollVariants}
       initial="enter"
       animate="center"
       exit="exit"
-      transition={{ duration: 0.22, ease: "easeOut" }}
-      style={{ width: "100%" }}
+      transition={{
+        opacity: { duration: 0.2, ease: "easeOut" },
+        y: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
+        scaleY: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
+        clipPath: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+      }}
+      style={{
+        width: "100%",
+        overflow: "hidden",
+        transformOrigin: "top center",
+        willChange: "clip-path, transform, opacity",
+      }}
     >
       {children}
     </motion.div>
+  );
+}
+
+function SignUpLegal({ onClose }) {
+  return (
+    <div style={{ marginTop: 14, textAlign: "center", fontSize: 11, color: AUTH_COLORS.textMuted, fontFamily: "Manrope, sans-serif", lineHeight: 1.55 }}>
+      By creating an account, you agree to our{" "}
+      <Link href="/terms" style={{ color: AUTH_COLORS.secondary, textDecoration: "none" }} onClick={onClose}>Terms</Link>{" "}
+      &{" "}
+      <Link href="/privacy" style={{ color: AUTH_COLORS.secondary, textDecoration: "none" }} onClick={onClose}>Privacy Policy</Link>.
+    </div>
   );
 }
 

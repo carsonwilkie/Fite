@@ -122,9 +122,9 @@ export default function AuthProvider({ children }) {
               style={{
                 display: "flex",
                 minHeight: "100%",
-                alignItems: "center",
+                alignItems: "flex-start",
                 justifyContent: "center",
-                padding: "24px 16px",
+                padding: "clamp(24px, calc((100vh - 640px) / 2), 96px) 16px 24px",
               }}
               onMouseDown={(e) => {
                 if (e.target === e.currentTarget) closeAuth();
