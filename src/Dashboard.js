@@ -398,7 +398,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
 
         {/* Question text */}
         {isLimitMsg ? (
-          <div style={{ padding: "24px 28px", borderRadius: 16, background: "rgba(21,101,192,0.07)", border: `1px solid ${C.border}` }}>
+          <div style={{ padding: "24px 28px", borderRadius: 16, background: "rgba(21,101,192,0.07)", border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
             <p style={{ fontSize: 16, color: C.textMuted, lineHeight: 1.7, margin: 0 }}>{question}</p>
             <motion.button
               onClick={onUpgrade}
