@@ -1,7 +1,12 @@
 // Execution Command (run in terminal):
 
+// LOCAL:
 // curl http://localhost:3000/api/admin-users \
 //   -H "x-admin-secret: YOUR_ADMIN_SECRET"
+
+// WEB:
+// curl https://fitefinance.com/api/admin-users \
+//  -H "x-admin-secret: YOUR_ADMIN_SECRET"
 
 //  * make sure npm run dev is running *
 
