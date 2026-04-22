@@ -983,7 +983,7 @@ export default function LandingPage() {
                   color: C.onSurface,
                   lineHeight: 1.2,
                   letterSpacing: "-0.015em",
-                  marginBottom: isMobileHeroLayout ? 14 : 0,
+                  marginBottom: isMobileHeroLayout ? 14 : "clamp(10px, 1vw, 16px)",
                   textShadow: "0 1px 4px rgba(0,0,0,0.95), 0 2px 14px rgba(0,0,0,0.8)",
                 }}>
                   of the cost.
