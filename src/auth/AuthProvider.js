@@ -49,22 +49,36 @@ export default function AuthProvider({ children }) {
     return undefined;
   }, [isSignedIn, state.open, state.redirectTo, closeAuth]);
 
-  // Lock body scroll when open without moving the page. We use overflow:hidden
-  // (rather than position:fixed) so the real scroll position is preserved —
-  // nothing has to be restored on close, and the page never visually moves.
+  // Lock scroll without moving the page. We target the <html> element (where
+  // the real viewport scroll lives) and reserve the scrollbar gutter with
+  // padding-right so the background content doesn't shift when the scrollbar
+  // disappears. Scroll position is preserved automatically; the fallback
+  // scrollTo only fires if some browser still clamps it.
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
     if (!state.open) return undefined;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    const prevOverflow = document.body.style.overflow;
-    const prevPaddingRight = document.body.style.paddingRight;
-    document.body.style.overflow = "hidden";
+    const html = document.documentElement;
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const scrollbarWidth = window.innerWidth - html.clientWidth;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevHtmlPaddingRight = html.style.paddingRight;
+    const prevBodyOverflow = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
     if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      html.style.paddingRight = `${scrollbarWidth}px`;
     }
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPaddingRight;
+      html.style.overflow = prevHtmlOverflow;
+      html.style.paddingRight = prevHtmlPaddingRight;
+      body.style.overflow = prevBodyOverflow;
+      if (window.scrollY !== scrollY) {
+        const prevScrollBehavior = html.style.scrollBehavior;
+        html.style.scrollBehavior = "auto";
+        window.scrollTo(0, scrollY);
+        html.style.scrollBehavior = prevScrollBehavior;
+      }
     };
   }, [state.open]);
 
