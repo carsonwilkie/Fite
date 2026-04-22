@@ -234,6 +234,7 @@ export default function App({ Component, pageProps }) {
       signUpUrl="/sign-up"
       signInFallbackRedirectUrl="/dashboard"
       signUpFallbackRedirectUrl="/dashboard"
+      afterSignOutUrl="/"
       {...pageProps}
     >
       <PaidStatusProvider>

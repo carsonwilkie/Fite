@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useUser } from "@clerk/clerk-react";
+import { useRouter } from "next/router";
 import AuthCard from "./AuthCard";
 
 const AuthModalContext = createContext(null);
@@ -14,6 +15,8 @@ export function useAuthModal() {
 export default function AuthProvider({ children }) {
   const [state, setState] = useState({ open: false, view: "sign-in", redirectTo: null });
   const { isSignedIn } = useUser();
+  const router = useRouter();
+  const wasSignedInRef = useRef(null);
 
   const openAuth = useCallback((view = "sign-in", opts = {}) => {
     setState({ open: true, view, redirectTo: opts.redirectTo || null });
@@ -22,6 +25,15 @@ export default function AuthProvider({ children }) {
   const closeAuth = useCallback(() => {
     setState((s) => ({ ...s, open: false }));
   }, []);
+
+  // When user signs out, use Next.js router to avoid a hard-redirect white flash.
+  useEffect(() => {
+    if (isSignedIn === undefined) return;
+    if (wasSignedInRef.current === true && isSignedIn === false) {
+      router.push("/");
+    }
+    wasSignedInRef.current = isSignedIn;
+  }, [isSignedIn, router]);
 
   // Auto-close if user becomes signed in while modal is open.
   useEffect(() => {
