@@ -29,6 +29,19 @@ textarea:focus {
   box-shadow: none !important;
 }
 
+.qc-terminal,
+.ic-terminal {
+  transition: box-shadow 0.25s ease;
+}
+
+.qc-terminal:focus-within,
+.ic-terminal:focus-within {
+  box-shadow:
+    0 0 0 1px rgba(79, 195, 247, 0.35),
+    0 0 24px 4px rgba(79, 195, 247, 0.28),
+    0 0 48px 8px rgba(21, 101, 192, 0.22);
+}
+
 .auth-floating-input:focus {
   border-color: transparent !important;
   box-shadow: none !important;
