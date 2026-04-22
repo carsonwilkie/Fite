@@ -782,13 +782,23 @@ export default function FeaturesPage() {
                     <button className="lp-btn-outline-block" onClick={() => isSignedIn ? router.push("/dashboard") : openSignUp()} style={{ padding: "10px 18px", fontSize: 12 }}>Start Free</button>
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <button
-                      className="lp-btn-premium"
-                      onClick={handleUpgrade}
-                      style={{ padding: "10px 18px", fontSize: 12 }}
-                    >
-                      Go Premium →
-                    </button>
+                    {isSignedIn && isPaid ? (
+                      <button
+                        className="lp-btn-premium"
+                        onClick={() => router.push("/dashboard")}
+                        style={{ padding: "10px 18px", fontSize: 12 }}
+                      >
+                        Go to Dashboard →
+                      </button>
+                    ) : (
+                      <button
+                        className="lp-btn-premium"
+                        onClick={handleUpgrade}
+                        style={{ padding: "10px 18px", fontSize: 12 }}
+                      >
+                        Go Premium →
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

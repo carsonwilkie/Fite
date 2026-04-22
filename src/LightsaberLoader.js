@@ -7,9 +7,10 @@ function LightsaberLoader({ percent }) {
   // mirrors the blade's horizontal extent so the red glow only spans the
   // lit portion of the blade, not the full track.
   const hiltWidth = 120;
-  // The glow starts slightly behind the hilt so it wraps around the emitter.
-  const auraLeft = hiltWidth - 12;
-  const auraWidthCss = `calc((100% - ${hiltWidth}px) * ${pct} + 18px)`;
+  // Glow starts exactly at the hilt's emitter edge and terminates at the
+  // blade tip, so there's no red bleed onto the hilt or past the lit portion.
+  const auraLeft = hiltWidth;
+  const auraWidthCss = `calc((100% - ${hiltWidth}px) * ${pct})`;
 
   return (
     <div className="ls-container">
