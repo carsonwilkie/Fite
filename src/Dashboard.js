@@ -1027,7 +1027,7 @@ export default function Dashboard() {
               ? <NavItem icon="credit_card" label="Manage Plan" onClick={handleManageSub} />
               : <NavItem icon="workspace_premium" label="Upgrade" onClick={handleUpgrade} gold />
             }
-            <NavItem icon="forum" label="Submit Feedback" onClick={() => router.push("/feedback")} />
+            <NavItem icon="forum" label="Submit Feedback" onClick={() => isSignedIn ? router.push("/feedback") : null} muted={!isSignedIn} />
           </div>
         </nav>
 
@@ -1195,11 +1195,11 @@ export default function Dashboard() {
                           )}
                           <div style={{ height: 1, background: C.border, margin: "4px 6px" }} />
                           <motion.button
-                            onClick={() => { setNavOpen(false); router.push("/feedback"); }}
-                            whileTap={{ scale: 0.96 }}
-                            style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "none", border: "none", cursor: "pointer", color: C.text, fontSize: 13, fontWeight: 700, fontFamily: "Inter, sans-serif", textAlign: "left" }}
+                            onClick={() => { if (!isSignedIn) return; setNavOpen(false); router.push("/feedback"); }}
+                            whileTap={isSignedIn ? { scale: 0.96 } : undefined}
+                            style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "none", border: "none", cursor: isSignedIn ? "pointer" : "default", color: isSignedIn ? C.text : `${C.textMuted}55`, fontSize: 13, fontWeight: 700, fontFamily: "Inter, sans-serif", textAlign: "left" }}
                           >
-                            <Icon name="forum" size={16} style={{ color: C.secondary }} />
+                            <Icon name="forum" size={16} style={{ color: isSignedIn ? C.secondary : `${C.textMuted}55` }} />
                             Submit Feedback
                           </motion.button>
                         </motion.div>

@@ -49,19 +49,13 @@ export default function AuthProvider({ children }) {
     return undefined;
   }, [isSignedIn, state.open, state.redirectTo, closeAuth]);
 
-  // Lock body scroll when open without resetting scroll position.
+  // Lock body scroll when open without moving the page.
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
     if (!state.open) return undefined;
-    const scrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      window.scrollTo(0, scrollY);
+      document.body.style.overflow = "";
     };
   }, [state.open]);
 
