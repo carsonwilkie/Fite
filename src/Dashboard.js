@@ -1013,7 +1013,7 @@ export default function Dashboard() {
             <NavItem icon="history" label="History" onClick={() => isPaid ? router.push("/history") : null} muted={!isPaid} />
             <NavItem icon="bar_chart" label="Stats" onClick={() => isPaid ? router.push("/stats") : null} muted={!isPaid} />
             {isPaid
-              ? <NavItem icon="credit_card" label="Manage Sub" onClick={handleManageSub} />
+              ? <NavItem icon="credit_card" label="Manage Plan" onClick={handleManageSub} />
               : <NavItem icon="workspace_premium" label="Upgrade" onClick={handleUpgrade} gold />
             }
           </div>
