@@ -49,11 +49,13 @@ export default function AuthProvider({ children }) {
     return undefined;
   }, [isSignedIn, state.open, state.redirectTo, closeAuth]);
 
-  // Lock scroll without moving the page. We target the <html> element (where
-  // the real viewport scroll lives) and reserve the scrollbar gutter with
-  // padding-right so the background content doesn't shift when the scrollbar
-  // disappears. Scroll position is preserved automatically; the fallback
-  // scrollTo only fires if some browser still clamps it.
+  // Lock scroll without moving the page. We pin <body> in place with
+  // position:fixed + a negative top offset equal to the current scrollY, which
+  // visually anchors the page content (including the blurred background behind
+  // the modal) exactly where it was. The scrollbar gutter is reserved on <html>
+  // via padding-right so the content never shifts horizontally when the
+  // scrollbar disappears. On close we restore styles and instantly scrollTo
+  // the saved position (scroll-behavior forced to auto to avoid smooth-scroll).
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
     if (!state.open) return undefined;
@@ -61,24 +63,38 @@ export default function AuthProvider({ children }) {
     const body = document.body;
     const scrollY = window.scrollY;
     const scrollbarWidth = window.innerWidth - html.clientWidth;
-    const prevHtmlOverflow = html.style.overflow;
-    const prevHtmlPaddingRight = html.style.paddingRight;
-    const prevBodyOverflow = body.style.overflow;
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      htmlPaddingRight: html.style.paddingRight,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyLeft: body.style.left,
+      bodyRight: body.style.right,
+      bodyWidth: body.style.width,
+    };
     html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
     if (scrollbarWidth > 0) {
       html.style.paddingRight = `${scrollbarWidth}px`;
     }
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = scrollbarWidth > 0
+      ? `calc(100% - ${scrollbarWidth}px)`
+      : "100%";
     return () => {
-      html.style.overflow = prevHtmlOverflow;
-      html.style.paddingRight = prevHtmlPaddingRight;
-      body.style.overflow = prevBodyOverflow;
-      if (window.scrollY !== scrollY) {
-        const prevScrollBehavior = html.style.scrollBehavior;
-        html.style.scrollBehavior = "auto";
-        window.scrollTo(0, scrollY);
-        html.style.scrollBehavior = prevScrollBehavior;
-      }
+      html.style.overflow = prev.htmlOverflow;
+      html.style.paddingRight = prev.htmlPaddingRight;
+      body.style.position = prev.bodyPosition;
+      body.style.top = prev.bodyTop;
+      body.style.left = prev.bodyLeft;
+      body.style.right = prev.bodyRight;
+      body.style.width = prev.bodyWidth;
+      const prevScrollBehavior = html.style.scrollBehavior;
+      html.style.scrollBehavior = "auto";
+      window.scrollTo(0, scrollY);
+      html.style.scrollBehavior = prevScrollBehavior;
     };
   }, [state.open]);
 
