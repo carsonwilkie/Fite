@@ -76,11 +76,15 @@ export default function App({ Component, pageProps }) {
 
     clearTimeout(revealPauseTimerRef.current);
     revealPauseTimerRef.current = setTimeout(() => {
-      setTransitionMs(isHeroRoute(nextView.route) ? HERO_REVEAL_MS : ENTRY_MS);
-      setAnim(true);
-      setY("-100%");
-      phaseRef.current = "idle";
-      revealPauseTimerRef.current = null;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTransitionMs(isHeroRoute(nextView.route) ? HERO_REVEAL_MS : ENTRY_MS);
+          setAnim(true);
+          setY("-100%");
+          phaseRef.current = "idle";
+          revealPauseTimerRef.current = null;
+        });
+      });
     }, getCoverPauseMs(nextView.route));
   };
 

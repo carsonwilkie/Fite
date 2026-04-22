@@ -493,7 +493,7 @@ export default function LandingPage() {
   return (
     <>
       <Head>
-        <title>Fite Finance | Precise Preparation</title>
+        <title>Fite Finance</title>
         <meta name="description" content="Free, AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview." />
         <link rel="canonical" href="https://fitefinance.com/" />
 

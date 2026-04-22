@@ -1614,7 +1614,7 @@ export default function Dashboard() {
                 {!isPaid && (
                   <motion.button onClick={handleUpgrade} whileTap={{ scale: 0.97 }}
                     style={{ width: "100%", padding: "14px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #f5d06a, #c9a84c)", color: "#fff", fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "Manrope, sans-serif", boxShadow: "0 6px 20px rgba(201,168,76,0.4)" }}>
-                    ⭐ Upgrade to Premium
+                    Upgrade to Premium
                   </motion.button>
                 )}
 
