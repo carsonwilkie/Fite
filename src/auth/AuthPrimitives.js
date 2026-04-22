@@ -321,6 +321,7 @@ export function CodeInput({ length = 6, value, onChange, onComplete, autoFocus }
             style={{ position: "relative", flex: "0 0 auto" }}
           >
             <input
+              className="auth-code-input"
               ref={(el) => { refs.current[i] = el; }}
               type="text"
               inputMode="numeric"

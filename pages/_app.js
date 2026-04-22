@@ -97,11 +97,27 @@ export default function App({ Component, pageProps }) {
   useEffect(() => {
     let coverTimer;
     let revealTimer;
+    let stuckCheckTimer;
+
+    const resetStuckTransition = () => {
+      clearTimeout(coverTimer);
+      clearTimeout(revealTimer);
+      clearTimeout(revealPauseTimerRef.current);
+      clearTimeout(stuckCheckTimer);
+      routeReadyRef.current = false;
+      coverDoneRef.current = false;
+      pendingViewRef.current = null;
+      phaseRef.current = "idle";
+      setIsCovering(false);
+      setAnim(true);
+      setY("-100%");
+    };
 
     const handleStart = () => {
       clearTimeout(coverTimer);
       clearTimeout(revealTimer);
       clearTimeout(revealPauseTimerRef.current);
+      clearTimeout(stuckCheckTimer);
       coverStartedAtRef.current = Date.now();
       routeReadyRef.current = false;
       coverDoneRef.current = false;
@@ -116,9 +132,16 @@ export default function App({ Component, pageProps }) {
         coverDoneRef.current = true;
         revealPendingView();
       }, ENTRY_MS);
+      // Safety: if transition doesn't complete in 3 seconds, force reset
+      stuckCheckTimer = setTimeout(() => {
+        if (phaseRef.current === "covering" || phaseRef.current === "revealing") {
+          resetStuckTransition();
+        }
+      }, 3000);
     };
 
     const handleComplete = () => {
+      clearTimeout(stuckCheckTimer);
       routeReadyRef.current = true;
       const elapsed = Date.now() - coverStartedAtRef.current;
       if (elapsed >= ENTRY_MS) {
@@ -131,16 +154,7 @@ export default function App({ Component, pageProps }) {
 
     const handleError = () => {
       // Navigation cancelled — remove cover
-      clearTimeout(coverTimer);
-      clearTimeout(revealTimer);
-      clearTimeout(revealPauseTimerRef.current);
-      routeReadyRef.current = false;
-      coverDoneRef.current = false;
-      pendingViewRef.current = null;
-      phaseRef.current = "idle";
-      setIsCovering(false);
-      setAnim(true);
-      setY("-100%");
+      resetStuckTransition();
     };
 
     router.events.on("routeChangeStart",    handleStart);
@@ -152,6 +166,7 @@ export default function App({ Component, pageProps }) {
       router.events.off("routeChangeError",    handleError);
       clearTimeout(coverTimer);
       clearTimeout(revealTimer);
+      clearTimeout(stuckCheckTimer);
       clearTimeout(revealPauseTimerRef.current);
     };
   }, [router.events]);

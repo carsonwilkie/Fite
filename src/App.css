@@ -31,6 +31,15 @@ textarea:focus {
   box-shadow: none !important;
 }
 
+.auth-card input:not([type="range"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):focus,
+.auth-card textarea:focus {
+  box-shadow: none !important;
+}
+
+.auth-card .auth-code-input:focus {
+  border-color: #4FC3F7 !important;
+}
+
 .markdown h1, .markdown h2, .markdown h3 {
   font-size: 15px;
   font-weight: 700;

@@ -58,6 +58,7 @@ export default function AuthCard({
 
   return (
     <div
+      className="auth-card"
       ref={cardRef}
       onMouseMove={handleMouseMove}
       style={{

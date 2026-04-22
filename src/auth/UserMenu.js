@@ -136,7 +136,10 @@ export default function UserMenu({ size = 32, align = "right" }) {
             <MenuItem
               icon="logout"
               label="Sign out"
-              onClick={() => { setOpen(false); signOut(() => router.push("/")); }}
+              onClick={async () => {
+                setOpen(false);
+                await signOut({ redirectUrl: "/" });
+              }}
               danger
             />
           </motion.div>
