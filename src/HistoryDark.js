@@ -64,7 +64,7 @@ function EntryCard({ entry, index, expanded, onToggle }) {
       >
         <ScoreChip score={entry.score ?? null} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.5, marginBottom: 7 }}>{shortTitle}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.5, marginBottom: 7 }}>{expanded ? title : shortTitle}</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {isInterview && <Badge text="Interview" accent={C.gold} />}
             {entry.category && <Badge text={entry.category} />}
