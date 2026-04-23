@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/router";
 import Head from "next/head";
@@ -55,6 +55,15 @@ export default function SubmissionPage({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(null);
+  const textareaRef = useRef(null);
+
+  // Auto-grow the textarea to fit content (top-anchored, no page shift from manual resize).
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [message, submitted]);
 
   // Auth gate — all submission pages require sign-in
   useEffect(() => {
@@ -551,6 +560,7 @@ export default function SubmissionPage({
                 }}>
                   <textarea
                     id="submission-message"
+                    ref={textareaRef}
                     value={message}
                     onChange={(e) => setMessage(e.target.value.slice(0, MAX_LEN))}
                     placeholder={placeholder}
@@ -558,7 +568,9 @@ export default function SubmissionPage({
                     style={{
                       width: "100%",
                       minHeight: 180,
-                      resize: "vertical",
+                      maxHeight: "60vh",
+                      resize: "none",
+                      overflow: "auto",
                       background: C.surface,
                       border: "none",
                       outline: "none",
@@ -569,6 +581,7 @@ export default function SubmissionPage({
                       color: C.text,
                       fontFamily: "Inter, sans-serif",
                       boxSizing: "border-box",
+                      display: "block",
                     }}
                   />
                 </div>
