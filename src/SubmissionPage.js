@@ -56,14 +56,37 @@ export default function SubmissionPage({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(null);
   const textareaRef = useRef(null);
+  const manualHeightRef = useRef(null);
 
-  // Auto-grow the textarea to fit content (top-anchored, no page shift from manual resize).
+  // Auto-grow to fit content, but never shrink below a user-dragged manual height.
   useLayoutEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
+    const contentH = el.scrollHeight;
+    const target = manualHeightRef.current
+      ? Math.max(contentH, manualHeightRef.current)
+      : contentH;
+    el.style.height = `${target}px`;
   }, [message, submitted]);
+
+  // Track manual drag-resize so auto-grow doesn't shrink it on next keystroke.
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const h = entry.contentRect.height;
+        // If current height exceeds content scrollHeight by a meaningful margin,
+        // the user dragged the handle. Remember that floor.
+        if (h > el.scrollHeight + 4) {
+          manualHeightRef.current = h;
+        }
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Auth gate — all submission pages require sign-in
   useEffect(() => {
@@ -536,6 +559,7 @@ export default function SubmissionPage({
                   padding: "24px 24px 22px",
                   backdropFilter: "blur(14px)",
                   boxShadow: "0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(79,195,247,0.08)",
+                  overflowAnchor: "none",
                 }}
               >
                 <label
@@ -568,9 +592,10 @@ export default function SubmissionPage({
                     style={{
                       width: "100%",
                       minHeight: 180,
-                      maxHeight: "60vh",
-                      resize: "none",
+                      maxHeight: "70vh",
+                      resize: "vertical",
                       overflow: "auto",
+                      overflowAnchor: "none",
                       background: C.surface,
                       border: "none",
                       outline: "none",
