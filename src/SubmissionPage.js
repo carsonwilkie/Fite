@@ -356,7 +356,18 @@ export default function SubmissionPage({
                           initial={{ opacity: 0, y: 6 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: 0.2 + gi * 0.06 + i * 0.03 }}
-                          whileHover={{ y: -2, borderColor: `${group.accent}66` }}
+                          whileHover="hover"
+                          whileTap={{ scale: 0.985, y: -2, transition: { type: "spring", stiffness: 600, damping: 28 } }}
+                          variants={{
+                            hover: {
+                              y: -5,
+                              scale: 1.015,
+                              borderColor: `${group.accent}99`,
+                              boxShadow: `0 14px 34px ${group.accent}33, 0 4px 12px rgba(0,0,0,0.35), 0 0 0 1px ${group.accent}22 inset`,
+                              background: `linear-gradient(180deg, ${group.accent}14 0%, rgba(8,18,32,0.55) 100%)`,
+                              transition: { type: "spring", stiffness: 520, damping: 26, mass: 0.6 },
+                            },
+                          }}
                           style={{
                             display: "flex",
                             alignItems: "flex-start",
@@ -365,23 +376,37 @@ export default function SubmissionPage({
                             borderRadius: 12,
                             background: `linear-gradient(180deg, rgba(8,18,32,0.6) 0%, rgba(8,18,32,0.35) 100%)`,
                             border: `1px solid ${C.borderSoft}`,
-                            transition: "border-color 0.2s",
+                            boxShadow: "0 0 0 rgba(0,0,0,0)",
+                            willChange: "transform",
+                            cursor: "default",
                           }}
                         >
-                          <div style={{
-                            width: 34,
-                            height: 34,
-                            borderRadius: 9,
-                            background: `linear-gradient(135deg, ${group.accent}26, ${group.accent}0d)`,
-                            border: `1px solid ${group.accent}33`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: group.accent,
-                            flexShrink: 0,
-                          }}>
+                          <motion.div
+                            variants={{
+                              hover: {
+                                scale: 1.08,
+                                rotate: -4,
+                                background: `linear-gradient(135deg, ${group.accent}4d, ${group.accent}1a)`,
+                                borderColor: `${group.accent}80`,
+                                boxShadow: `0 0 16px ${group.accent}66, 0 0 0 1px ${group.accent}33 inset`,
+                                transition: { type: "spring", stiffness: 560, damping: 22 },
+                              },
+                            }}
+                            style={{
+                              width: 34,
+                              height: 34,
+                              borderRadius: 9,
+                              background: `linear-gradient(135deg, ${group.accent}26, ${group.accent}0d)`,
+                              border: `1px solid ${group.accent}33`,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: group.accent,
+                              flexShrink: 0,
+                            }}
+                          >
                             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
-                          </div>
+                          </motion.div>
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <div style={{
                               fontSize: 13.5,
