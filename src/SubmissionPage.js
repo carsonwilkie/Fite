@@ -118,7 +118,7 @@ export default function SubmissionPage({
         background: C.bg,
         color: C.text,
         padding: "96px 20px 64px",
-        overflowX: "hidden",
+        overflowX: "clip",
       }}>
         {/* Ambient background glows */}
         <motion.div

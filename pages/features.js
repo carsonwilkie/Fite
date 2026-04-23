@@ -500,7 +500,7 @@ export default function FeaturesPage() {
         </button>
       </div>
 
-      <div style={{ color: C.onSurface, overflowX: "hidden" }}>
+      <div style={{ color: C.onSurface, overflowX: "clip" }}>
 
         {/* ── HERO ─────────────────────────────────────────────────────────────── */}
         <section id="features-section" style={{ position: "relative", zIndex: 2, background: C.bg }}>
