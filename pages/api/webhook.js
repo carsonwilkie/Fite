@@ -1,5 +1,11 @@
-const Stripe = require("stripe");
-const { Redis } = require("@upstash/redis");
+import Stripe from "stripe";
+import { Redis } from "@upstash/redis";
+
+// Stripe webhook signature verification requires the raw request body.
+// Next.js pages/api parses bodies by default — disable it for this route.
+export const config = {
+  api: { bodyParser: false },
+};
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const redis = Redis.fromEnv();
@@ -12,7 +18,7 @@ async function buffer(readable) {
   return Buffer.concat(chunks);
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -56,4 +62,4 @@ module.exports = async function handler(req, res) {
   }
 
   res.status(200).json({ received: true });
-};
+}
