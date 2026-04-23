@@ -40,8 +40,12 @@ export default function SubmissionPage({
   successHeading,
   successBody,
   roadmap,            // optional array of { icon, title, description }
+  roadmapGroups,      // optional array of { label, accent, items: [{ icon, title, description }] }
   paidOnly = false,
 }) {
+  const hasGroups = Array.isArray(roadmapGroups) && roadmapGroups.length > 0;
+  const hasFlat = Array.isArray(roadmap) && roadmap.length > 0;
+  const outerMax = hasGroups ? 1040 : 720;
   const router = useRouter();
   const viewport = useStableViewport();
   const { user, isLoaded } = useUser();
@@ -183,13 +187,13 @@ export default function SubmissionPage({
           Back
         </motion.button>
 
-        <div style={{ maxWidth: 720, margin: "0 auto", position: "relative", zIndex: 2 }}>
+        <div style={{ maxWidth: outerMax, margin: "0 auto", position: "relative", zIndex: 2 }}>
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{ textAlign: "center", marginBottom: 36 }}
+            style={{ textAlign: "center", marginBottom: 36, maxWidth: 720, marginLeft: "auto", marginRight: "auto" }}
           >
             <div style={{
               display: "inline-flex",
@@ -233,8 +237,182 @@ export default function SubmissionPage({
             </p>
           </motion.div>
 
-          {/* Roadmap list (vote page) */}
-          {roadmap && roadmap.length > 0 && (
+          {/* Roadmap groups (vote page — grouped, grid layout) */}
+          {hasGroups && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              style={{ marginBottom: 28 }}
+            >
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 14,
+                paddingLeft: 2,
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 16, color: C.secondary }}>dashboard_customize</span>
+                <span style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  color: C.secondary,
+                  fontFamily: "Manrope, sans-serif",
+                }}>
+                  Ideas on the board
+                </span>
+                <span style={{
+                  flex: 1,
+                  height: 1,
+                  background: `linear-gradient(90deg, ${C.border}, transparent)`,
+                }} />
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                {roadmapGroups.map((group, gi) => (
+                  <motion.section
+                    key={group.label}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.15 + gi * 0.06 }}
+                    style={{
+                      background: "rgba(13,27,42,0.5)",
+                      border: `1px solid ${C.borderSoft}`,
+                      borderRadius: 18,
+                      padding: "16px 16px 18px",
+                      backdropFilter: "blur(10px)",
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {/* Left accent bar */}
+                    <div aria-hidden style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      bottom: 0,
+                      width: 3,
+                      background: `linear-gradient(180deg, ${group.accent}, ${group.accent}33)`,
+                    }} />
+
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      marginBottom: 12,
+                      paddingLeft: 10,
+                    }}>
+                      <span style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "5px 10px",
+                        borderRadius: 999,
+                        background: `${group.accent}1a`,
+                        border: `1px solid ${group.accent}33`,
+                      }}>
+                        <span style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: group.accent,
+                          boxShadow: `0 0 8px ${group.accent}`,
+                        }} />
+                        <span style={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          letterSpacing: "0.2em",
+                          textTransform: "uppercase",
+                          color: group.accent,
+                          fontFamily: "Manrope, sans-serif",
+                        }}>
+                          {group.label}
+                        </span>
+                      </span>
+                      <span style={{
+                        fontSize: 11,
+                        color: C.textDim,
+                        fontFamily: "Manrope, sans-serif",
+                        fontWeight: 600,
+                      }}>
+                        {group.items.length} {group.items.length === 1 ? "idea" : "ideas"}
+                      </span>
+                    </div>
+
+                    <div
+                      className="roadmap-grid"
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                        gap: 10,
+                        paddingLeft: 10,
+                      }}
+                    >
+                      {group.items.map((item, i) => (
+                        <motion.div
+                          key={item.title}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.2 + gi * 0.06 + i * 0.03 }}
+                          whileHover={{ y: -2, borderColor: `${group.accent}66` }}
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: 12,
+                            padding: "13px 14px",
+                            borderRadius: 12,
+                            background: `linear-gradient(180deg, rgba(8,18,32,0.6) 0%, rgba(8,18,32,0.35) 100%)`,
+                            border: `1px solid ${C.borderSoft}`,
+                            transition: "border-color 0.2s",
+                          }}
+                        >
+                          <div style={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: 9,
+                            background: `linear-gradient(135deg, ${group.accent}26, ${group.accent}0d)`,
+                            border: `1px solid ${group.accent}33`,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: group.accent,
+                            flexShrink: 0,
+                          }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
+                          </div>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{
+                              fontSize: 13.5,
+                              fontWeight: 700,
+                              color: C.text,
+                              fontFamily: "Inter, sans-serif",
+                              marginBottom: 3,
+                              letterSpacing: "-0.005em",
+                            }}>
+                              {item.title}
+                            </div>
+                            <div style={{
+                              fontSize: 12,
+                              lineHeight: 1.55,
+                              color: C.textMuted,
+                              fontFamily: "Manrope, sans-serif",
+                            }}>
+                              {item.description}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.section>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Roadmap list (legacy flat array) */}
+          {!hasGroups && hasFlat && (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -246,6 +424,9 @@ export default function SubmissionPage({
                 padding: "20px 22px",
                 marginBottom: 24,
                 backdropFilter: "blur(10px)",
+                maxWidth: 720,
+                marginLeft: "auto",
+                marginRight: "auto",
               }}
             >
               <div style={{
@@ -304,6 +485,7 @@ export default function SubmissionPage({
           )}
 
           {/* Form card / success card */}
+          <div style={{ maxWidth: 720, marginLeft: "auto", marginRight: "auto" }}>
           <AnimatePresence mode="wait" initial={false}>
             {!submitted ? (
               <motion.form
@@ -517,6 +699,7 @@ export default function SubmissionPage({
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
         </div>
       </div>
     </>
