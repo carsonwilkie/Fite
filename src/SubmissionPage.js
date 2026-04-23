@@ -88,6 +88,23 @@ export default function SubmissionPage({
     return () => ro.disconnect();
   }, []);
 
+  // Disable browser scroll anchoring on the page while this component is
+  // mounted. Without this, dragging the textarea resize handle causes the
+  // browser to anchor to content below the textarea and scroll the page up,
+  // making the drag handle appear to stay fixed while everything above shifts.
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflowAnchor;
+    const prevBody = body.style.overflowAnchor;
+    html.style.overflowAnchor = "none";
+    body.style.overflowAnchor = "none";
+    return () => {
+      html.style.overflowAnchor = prevHtml;
+      body.style.overflowAnchor = prevBody;
+    };
+  }, []);
+
   // Auth gate — all submission pages require sign-in
   useEffect(() => {
     if (!isLoaded) return;
