@@ -5,6 +5,34 @@ const { sampleQuestions } = require("./_questionBank");
 
 const redis = Redis.fromEnv();
 
+// ─── Question format definitions ────────────────────────────────────────────
+// Each format describes a distinct structural style for a finance interview question.
+// One is selected randomly per request and injected into the prompt to maximize variety.
+const QUESTION_FORMATS = {
+  "scenario":      "Open with a specific financial situation, deal structure, or company — give the candidate something concrete to react to (e.g., 'A company has $100M EBITDA and…', 'You're advising a client who…', 'A portfolio company is approaching a covenant breach…')",
+  "pitch":         "Ask the candidate to recommend, argue for, or defend a position — they must have and express a view (e.g., 'Pitch me a stock', 'Would you rather own X or Y?', 'Make the case for entering this market')",
+  "walk-through":  "Ask the candidate to walk through a process, methodology, or analytical framework step by step, explaining each stage and the reasoning behind it",
+  "comparison":    "Frame the question around comparing two alternatives — instruments, strategies, companies, capital structures, or approaches — and explaining the trade-offs and when you'd choose each",
+  "pressure-test": "Present a constraint, an edge case, or conflicting data and ask the candidate what they would do or how they'd think through it (e.g., 'The model needs 20% IRR but the auction is at 13x — what do you do?')",
+};
+
+// ─── Negative examples (too generic — never generate questions like these) ──
+const NEGATIVE_EXAMPLES = [
+  "What is EBITDA?",
+  "What does DCF stand for?",
+  "Why do you want to work in finance?",
+  "Can you explain what a P/E ratio is?",
+  "What is the difference between stocks and bonds?",
+  "What is working capital?",
+  "Define depreciation.",
+];
+
+// ─── Market context — update each quarter ────────────────────────────────────
+// Injected into the system prompt to make Hard questions feel timely and grounded.
+const MARKET_CONTEXT = `Current market context (Q2 2026): The Fed is in a gradual easing cycle after several years of elevated rates; the federal funds rate has come off its highs and markets are pricing in continued cuts. Credit spreads have tightened significantly from their 2023 wides. Private equity deal flow is recovering after a muted 2023–2024, with LBO financing becoming more accessible. M&A activity is accelerating, particularly in technology, healthcare, and financial services. Public equity valuations remain elevated relative to historical averages, with AI-related names commanding substantial premiums. The dollar has been range-bound and emerging market assets are attracting renewed interest as the rate cycle turns.`;
+
+const FORMAT_KEYS = Object.keys(QUESTION_FORMATS);
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -58,21 +86,30 @@ module.exports = async function handler(req, res) {
 
   const difficultyInstruction = difficultyGuide[difficulty] || difficultyGuide["Medium"];
 
-  // Sample calibration examples from the question bank
-  const examples = type === "question"
-    ? sampleQuestions(category, difficulty, math, 3)
-    : [];
+  // Randomly select a question format to enforce variety across requests
+  const targetFormat = FORMAT_KEYS[Math.floor(Math.random() * FORMAT_KEYS.length)];
+
+  // Sample calibration examples from the question bank (5 instead of 3, biased toward target format)
+  const { questions: examples, selectedFormat } = type === "question"
+    ? sampleQuestions(category, difficulty, math, 5, targetFormat)
+    : { questions: [], selectedFormat: null };
 
   const examplesBlock = examples.length > 0
     ? `\nHere are ${examples.length} real example questions at this exact difficulty level — use them to calibrate tone, depth, and specificity. Generate a DIFFERENT question; do not repeat these:\n${examples.map((q, i) => `${i + 1}. ${q}`).join("\n")}\n`
     : "";
 
-  const systemPrompt = `You are a senior interviewer at a top-tier Wall Street firm conducting a real finance interview. You ask sharp, specific, scenario-based questions that test genuine understanding — not memorized definitions. Your questions reference real deal structures, specific metrics, market conditions, and edge cases. You vary your question formats: sometimes you open with a scenario ("A company has $100M EBITDA and..."), sometimes a comparison ("How would you differentiate..."), sometimes a pressure test ("What would you do if..."), sometimes a walk-through ("Take me through how you'd..."). You never ask vague or generic questions.`;
+  const formatInstruction = selectedFormat && QUESTION_FORMATS[selectedFormat]
+    ? `\nQuestion format — structure your question in this style:\n${QUESTION_FORMATS[selectedFormat]}\n`
+    : "";
+
+  const negativeBlock = `\nDo NOT generate questions like these — they are too generic or definitional:\n${NEGATIVE_EXAMPLES.map((q, i) => `${i + 1}. ${q}`).join("\n")}\n`;
+
+  const systemPrompt = `You are a senior interviewer at a top-tier Wall Street firm conducting a real finance interview. You ask sharp, specific, scenario-based questions that test genuine understanding — not memorized definitions. Your questions reference real deal structures, specific metrics, market conditions, and edge cases. You vary your question formats: sometimes you open with a scenario ("A company has $100M EBITDA and..."), sometimes a comparison ("How would you differentiate..."), sometimes a pressure test ("What would you do if..."), sometimes a walk-through ("Take me through how you'd..."), sometimes a pitch ("Make the case for..."). You never ask vague or generic questions.\n\n${MARKET_CONTEXT}`;
 
   const prompt =
     type === "answer"
       ? `Provide a thorough, interview-quality answer to this finance question: ${question}\n\nFormat your response using markdown with bold headers and bullet points where appropriate. Write all formulas and equations in plain text — no LaTeX. Lead with the core answer, then add depth and nuance. Do not include any introductory or closing remarks — just the answer itself.`
-      : `Generate a single ${difficulty}-level finance interview question ${categoryText}.\n\nDifficulty standard: ${difficultyInstruction}\n\n${mathText}\n${customText}${examplesBlock}\nAdditional requirements:\n- Be specific: include real metrics, deal sizes, named instruments, or market conditions where they add realism\n- Do not start every question with "Walk me through" — vary the opening\n- Do not ask simple definition questions (e.g., not "What is EBITDA?" — instead ask something that requires applying the concept)\n- The question should feel like it came from a real interviewer, not a textbook\n\nReturn only the question itself, nothing else.`;
+      : `Generate a single ${difficulty}-level finance interview question ${categoryText}.\n\nDifficulty standard: ${difficultyInstruction}\n\n${mathText}\n${customText}${formatInstruction}${examplesBlock}${negativeBlock}\nAdditional requirements:\n- Be specific: include real metrics, deal sizes, named instruments, or market conditions where they add realism\n- Do not start every question with "Walk me through" — vary the opening\n- The question should feel like it came from a real interviewer at a top firm, not a textbook\n\nReturn only the question itself, nothing else.`;
 
   try {
     if (type === "question" && req.body.stream) {

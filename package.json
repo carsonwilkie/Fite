@@ -27,7 +27,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "qcount": "node -e \"const { QUESTION_BANK } = require('./pages/api/_questionBank'); const formats = ['scenario','pitch','walk-through','comparison','pressure-test']; let total = 0; const summary = {}; Object.entries(QUESTION_BANK).forEach(([cat, tiers]) => { Object.entries(tiers).forEach(([diff, qs]) => { total += qs.length; if (!summary[cat]) summary[cat] = {}; const counts = {}; formats.forEach(f => counts[f] = 0); qs.forEach(q => counts[q.format]++); summary[cat][diff] = { total: qs.length, ...counts }; }); }); console.log('\\n=== Fite Question Bank ==='); Object.entries(summary).forEach(([cat, tiers]) => { console.log('\\n' + cat); Object.entries(tiers).forEach(([diff, s]) => { console.log('  ' + diff + ' (' + s.total + '):', formats.map(f => f + ':' + s[f]).join('  ')); }); }); console.log('\\nTotal:', total, 'questions');\""
   },
   "eslintConfig": {
     "extends": [
