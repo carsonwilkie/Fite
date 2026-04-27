@@ -4,7 +4,7 @@ import { useUser } from "@clerk/clerk-react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import usePaidStatus from "./usePaidStatus";
-import { CATEGORIES, DIFFICULTIES } from "./constants";
+import { CATEGORIES, QUESTION_DIFFICULTIES } from "./constants";
 import useStableViewport, { toViewportCssValue } from "./useStableViewport";
 
 const C = {
@@ -314,7 +314,7 @@ export default function HistoryDark() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", width: 64, flexShrink: 0 }}>Difficulty</span>
             <div style={{ display: "flex", gap: 6 }}>
-              {DIFFICULTIES.map(d => (
+              {QUESTION_DIFFICULTIES.map(d => (
                 <FilterChip key={d} label={d} active={selectedDifficulty === d} onClick={() => startTransition(() => setSelectedDifficulty(selectedDifficulty === d ? "" : d))} />
               ))}
             </div>

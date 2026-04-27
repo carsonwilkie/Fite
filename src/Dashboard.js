@@ -10,7 +10,7 @@ import usePaidStatus from "./usePaidStatus";
 import usePrice from "./usePrice";
 import useUpgrade from "./useUpgrade";
 import LightsaberLoader from "./LightsaberLoader";
-import { CATEGORIES, DIFFICULTIES } from "./constants";
+import { CATEGORIES, DIFFICULTIES, QUESTION_DIFFICULTIES } from "./constants";
 import useStableViewport, { toViewportCssValue } from "./useStableViewport";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -55,6 +55,83 @@ function Icon({ name, size = 20, style: s = {} }) {
       style={{ fontSize: size, lineHeight: 1, verticalAlign: "middle", display: "inline-block", ...s }}
     >
       {name}
+    </span>
+  );
+}
+
+// ─── OTG info badge ───────────────────────────────────────────────────────────
+// Small "?" icon shown in the corner of the OTG difficulty button. On hover it
+// reveals a short tooltip explaining what OTG means. Click is swallowed so the
+// icon never accidentally selects the OTG button itself.
+function OtgInfoBadge({ active }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+      onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }}
+      role="button"
+      tabIndex={0}
+      aria-label="What is OTG?"
+      style={{
+        position: "absolute",
+        top: 2,
+        right: 3,
+        width: 13,
+        height: 13,
+        borderRadius: "50%",
+        background: active ? "rgba(255,255,255,0.22)" : "rgba(79,195,247,0.18)",
+        color: active ? "#fff" : C.secondary,
+        fontSize: 9,
+        fontWeight: 900,
+        lineHeight: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "help",
+        fontFamily: "Inter, sans-serif",
+        userSelect: "none",
+      }}
+    >
+      ?
+      <AnimatePresence>
+        {open && (
+          <motion.span
+            initial={{ opacity: 0, y: -4, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.96 }}
+            transition={{ duration: 0.14, ease: "easeOut" }}
+            style={{
+              position: "absolute",
+              top: "calc(100% + 8px)",
+              right: -6,
+              width: 220,
+              padding: "10px 12px",
+              background: C.surfaceHighest,
+              border: `1px solid ${C.borderActive}`,
+              borderRadius: 10,
+              boxShadow: "0 12px 28px rgba(0,0,0,0.45)",
+              color: C.text,
+              fontSize: 11,
+              fontWeight: 500,
+              fontFamily: "Inter, sans-serif",
+              lineHeight: 1.5,
+              letterSpacing: "0.01em",
+              textTransform: "none",
+              textAlign: "left",
+              zIndex: 50,
+              pointerEvents: "none",
+            }}
+          >
+            <span style={{ display: "block", fontSize: 9, fontWeight: 900, letterSpacing: "0.18em", color: C.secondary, fontFamily: "Manrope, sans-serif", textTransform: "uppercase", marginBottom: 4 }}>
+              OTG · On The Go
+            </span>
+            Quick one-line questions — short definitions, term comparisons, or finance brain-teasers. Built for fast reps, not deep dives.
+          </motion.span>
+        )}
+      </AnimatePresence>
     </span>
   );
 }
@@ -838,6 +915,15 @@ export default function Dashboard() {
   const [mathOn,       setMathOn]       = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
 
+  // OTG is question-mode-only — don't surface it for interview mode.
+  const availableDifficulties = mode === "question" ? QUESTION_DIFFICULTIES : DIFFICULTIES;
+  // Switching into interview mode while OTG is selected would send an invalid
+  // difficulty to the interview API, so silently bump it back to Medium.
+  const handleModeChange = (next) => {
+    setMode(next);
+    if (next === "interview" && difficulty === "OTG") setDifficulty("Medium");
+  };
+
   // Question state
   const [question,        setQuestion]        = useState("");
   const [answer,          setAnswer]          = useState("");
@@ -938,7 +1024,7 @@ export default function Dashboard() {
     setSnapshotMath(mathOn ? "With Math" : "No Math");
     setSnapshotCustomPrompt(customPrompt.trim() || null);
     setLoadingQuestion(true);
-    const EST = difficulty === "Easy" ? 150 : difficulty === "Hard" ? 350 : 250;
+    const EST = difficulty === "OTG" ? 80 : difficulty === "Easy" ? 150 : difficulty === "Hard" ? 350 : 250;
     try {
       const res = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "question", category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, userId: user?.id, stream: true }) });
       if (res.status === 403) { const d = await res.json(); if (d.limitReached) { setQuestion("You've reached your 5 free questions for today. Upgrade to Premium for unlimited questions."); setLoadingQuestion(false); return; } }
@@ -1261,7 +1347,7 @@ export default function Dashboard() {
                 <ControlLabel>Simulation Mode</ControlLabel>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3, padding: 4, background: C.surface, borderRadius: 12, border: `1px solid ${C.border}` }}>
                   {[["question","Question"],["interview","Interview"]].map(([m, lbl]) => (
-                    <motion.button key={m} onClick={() => setMode(m)} whileTap={{ scale: 0.96 }}
+                    <motion.button key={m} onClick={() => handleModeChange(m)} whileTap={{ scale: 0.96 }}
                       style={{ padding: "10px 0", fontSize: 11, fontWeight: 900, borderRadius: 9, border: "none", cursor: "pointer", fontFamily: "Manrope, sans-serif", letterSpacing: "0.04em", transition: "all 0.2s", backgroundColor: mode === m ? C.primary : "transparent", color: mode === m ? "#fff" : C.textMuted, boxShadow: mode === m ? "0 4px 12px rgba(21,101,192,0.35)" : "none" }}>
                       {lbl}
                     </motion.button>
@@ -1273,12 +1359,17 @@ export default function Dashboard() {
               <div>
                 <ControlLabel>Difficulty Level</ControlLabel>
                 <div style={{ display: "flex", gap: 7 }}>
-                  {DIFFICULTIES.map(d => (
-                    <motion.button key={d} onClick={() => setDifficulty(d)} whileTap={{ scale: 0.92 }}
-                      style={{ flex: 1, padding: "9px 0", fontSize: 10, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: 8, cursor: "pointer", fontFamily: "Manrope, sans-serif", transition: "all 0.2s", background: difficulty === d ? cyberGrad : "transparent", color: difficulty === d ? "#fff" : C.textMuted, border: difficulty === d ? "none" : `1px solid ${C.border}`, boxShadow: difficulty === d ? "0 4px 14px rgba(21,101,192,0.35)" : "none" }}>
-                      {d}
-                    </motion.button>
-                  ))}
+                  {availableDifficulties.map(d => {
+                    const isOTG = d === "OTG";
+                    const active = difficulty === d;
+                    return (
+                      <motion.button key={d} onClick={() => setDifficulty(d)} whileTap={{ scale: 0.92 }}
+                        style={{ position: "relative", flex: 1, padding: "9px 0", fontSize: 10, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: 8, cursor: "pointer", fontFamily: "Manrope, sans-serif", transition: "all 0.2s", background: active ? cyberGrad : "transparent", color: active ? "#fff" : C.textMuted, border: active ? "none" : `1px solid ${C.border}`, boxShadow: active ? "0 4px 14px rgba(21,101,192,0.35)" : "none" }}>
+                        {d}
+                        {isOTG && <OtgInfoBadge active={active} />}
+                      </motion.button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1545,7 +1636,7 @@ export default function Dashboard() {
                   <ControlLabel>Simulation Mode</ControlLabel>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3, padding: 4, background: C.surfaceLow, borderRadius: 12, border: `1px solid ${C.border}` }}>
                     {[["question","Question"],["interview","Interview"]].map(([m, lbl]) => (
-                      <motion.button key={m} onClick={() => setMode(m)} whileTap={{ scale: 0.96 }}
+                      <motion.button key={m} onClick={() => handleModeChange(m)} whileTap={{ scale: 0.96 }}
                         style={{ padding: "12px 0", fontSize: 12, fontWeight: 900, borderRadius: 9, border: "none", cursor: "pointer", fontFamily: "Manrope, sans-serif", letterSpacing: "0.04em", transition: "all 0.2s", backgroundColor: mode === m ? C.primary : "transparent", color: mode === m ? "#fff" : C.textMuted, boxShadow: mode === m ? "0 4px 12px rgba(21,101,192,0.35)" : "none" }}>
                         {lbl}
                       </motion.button>
@@ -1557,12 +1648,17 @@ export default function Dashboard() {
                 <div>
                   <ControlLabel>Difficulty Level</ControlLabel>
                   <div style={{ display: "flex", gap: 8 }}>
-                    {DIFFICULTIES.map(d => (
-                      <motion.button key={d} onClick={() => setDifficulty(d)} whileTap={{ scale: 0.92 }}
-                        style={{ flex: 1, padding: "11px 0", fontSize: 11, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: 8, cursor: "pointer", fontFamily: "Manrope, sans-serif", transition: "all 0.2s", background: difficulty === d ? cyberGrad : "transparent", color: difficulty === d ? "#fff" : C.textMuted, border: difficulty === d ? "none" : `1px solid ${C.border}`, boxShadow: difficulty === d ? "0 4px 14px rgba(21,101,192,0.35)" : "none" }}>
-                        {d}
-                      </motion.button>
-                    ))}
+                    {availableDifficulties.map(d => {
+                      const isOTG = d === "OTG";
+                      const active = difficulty === d;
+                      return (
+                        <motion.button key={d} onClick={() => setDifficulty(d)} whileTap={{ scale: 0.92 }}
+                          style={{ position: "relative", flex: 1, padding: "11px 0", fontSize: 11, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: 8, cursor: "pointer", fontFamily: "Manrope, sans-serif", transition: "all 0.2s", background: active ? cyberGrad : "transparent", color: active ? "#fff" : C.textMuted, border: active ? "none" : `1px solid ${C.border}`, boxShadow: active ? "0 4px 14px rgba(21,101,192,0.35)" : "none" }}>
+                          {d}
+                          {isOTG && <OtgInfoBadge active={active} />}
+                        </motion.button>
+                      );
+                    })}
                   </div>
                 </div>
 

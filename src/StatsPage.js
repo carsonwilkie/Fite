@@ -178,7 +178,7 @@ export default function StatsPage() {
     }));
 
   // Difficulty breakdown
-  const diffCounts = { Easy: 0, Medium: 0, Hard: 0 };
+  const diffCounts = { Easy: 0, Medium: 0, Hard: 0, OTG: 0 };
   entries.forEach(e => { if (e.difficulty && diffCounts[e.difficulty] !== undefined) diffCounts[e.difficulty]++; });
   const maxDiff = Math.max(...Object.values(diffCounts), 1);
 
@@ -531,8 +531,8 @@ export default function StatsPage() {
             {/* ── Difficulty breakdown ── */}
             {label("By Difficulty")}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-              style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 32 }}>
-              {["Easy", "Medium", "Hard"].map((d, i) => {
+              style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 32 }}>
+              {["Easy", "Medium", "Hard", "OTG"].map((d, i) => {
                 const scoreRows = scoredEntries.filter(e => e.difficulty === d);
                 const avg = scoreRows.length > 0 ? (scoreRows.reduce((s, e) => s + e.score, 0) / scoreRows.length).toFixed(1) : null;
                 return (

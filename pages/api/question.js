@@ -78,6 +78,8 @@ module.exports = async function handler(req, res) {
     ? `The question must specifically relate to: ${decodeURIComponent(customPrompt)}.`
     : "";
 
+  const isOTG = difficulty === "OTG";
+
   const difficultyGuide = {
     Easy: "Foundational and conceptual — suitable for undergrads or first-round screens. Tests core definitions and frameworks. No multi-step reasoning required. Example style: 'What makes a good LBO candidate?'",
     Medium: "Applied and analytical — suitable for experienced analysts. Requires the candidate to walk through a process, apply a framework to a real scenario, or explain trade-offs with some specificity. May involve straightforward calculations. Example style: 'Walk me through a basic LBO model from entry to exit.'",
@@ -89,8 +91,8 @@ module.exports = async function handler(req, res) {
   // Randomly select a question format to enforce variety across requests
   const targetFormat = FORMAT_KEYS[Math.floor(Math.random() * FORMAT_KEYS.length)];
 
-  // Sample calibration examples from the question bank (5 instead of 3, biased toward target format)
-  const { questions: examples, selectedFormat } = type === "question"
+  // OTG questions don't use the question bank, formats, or negative examples.
+  const { questions: examples, selectedFormat } = type === "question" && !isOTG
     ? sampleQuestions(category, difficulty, math, 5, targetFormat)
     : { questions: [], selectedFormat: null };
 
@@ -98,18 +100,28 @@ module.exports = async function handler(req, res) {
     ? `\nHere are ${examples.length} real example questions at this exact difficulty level — use them to calibrate tone, depth, and specificity. Generate a DIFFERENT question; do not repeat these:\n${examples.map((q, i) => `${i + 1}. ${q}`).join("\n")}\n`
     : "";
 
-  const formatInstruction = selectedFormat && QUESTION_FORMATS[selectedFormat]
+  const formatInstruction = !isOTG && selectedFormat && QUESTION_FORMATS[selectedFormat]
     ? `\nQuestion format — structure your question in this style:\n${QUESTION_FORMATS[selectedFormat]}\n`
     : "";
 
-  const negativeBlock = `\nDo NOT generate questions like these — they are too generic or definitional:\n${NEGATIVE_EXAMPLES.map((q, i) => `${i + 1}. ${q}`).join("\n")}\n`;
+  const negativeBlock = isOTG
+    ? ""
+    : `\nDo NOT generate questions like these — they are too generic or definitional:\n${NEGATIVE_EXAMPLES.map((q, i) => `${i + 1}. ${q}`).join("\n")}\n`;
 
-  const systemPrompt = `You are a senior interviewer at a top-tier Wall Street firm conducting a real finance interview. You ask sharp, specific, scenario-based questions that test genuine understanding — not memorized definitions. Your questions reference real deal structures, specific metrics, market conditions, and edge cases. You vary your question formats: sometimes you open with a scenario ("A company has $100M EBITDA and..."), sometimes a comparison ("How would you differentiate..."), sometimes a pressure test ("What would you do if..."), sometimes a walk-through ("Take me through how you'd..."), sometimes a pitch ("Make the case for..."). You never ask vague or generic questions.\n\n${MARKET_CONTEXT}`;
+  const otgSystemPrompt = `You are a friendly finance coach asking quick on-the-go questions to keep someone's brain sharp between real prep sessions. Each question is a single short line, conversational and punchy — no scenarios, no setups, no preamble. You mix three styles: (1) bite-size definitions ("Define beta in one sentence."), (2) quick term comparisons ("LIFO vs FIFO — what's the difference?"), and (3) finance or logic brain-teasers in the spirit of "How would you find a needle in a haystack if you got to use any one tool?". Keep every question under 25 words. Vary the opening word.`;
+
+  const systemPrompt = isOTG
+    ? otgSystemPrompt
+    : `You are a senior interviewer at a top-tier Wall Street firm conducting a real finance interview. You ask sharp, specific, scenario-based questions that test genuine understanding — not memorized definitions. Your questions reference real deal structures, specific metrics, market conditions, and edge cases. You vary your question formats: sometimes you open with a scenario ("A company has $100M EBITDA and..."), sometimes a comparison ("How would you differentiate..."), sometimes a pressure test ("What would you do if..."), sometimes a walk-through ("Take me through how you'd..."), sometimes a pitch ("Make the case for..."). You never ask vague or generic questions.\n\n${MARKET_CONTEXT}`;
+
+  const otgPrompt = `Generate a single short on-the-go finance question ${categoryText}.\n\nHard rules:\n- Maximum 25 words. Aim for under 15.\n- Single sentence. Conversational. No scenario setup, no numbers heavy enough to need pen and paper.\n- Pick one style at random: a quick definition, a one-line term comparison, or a finance/logic brain-teaser.\n- Brain-teaser examples for tone:\n  • "How would you find a needle in a haystack if you got to use any one tool?"\n  • "If every public company suddenly went private overnight, what breaks first?"\n  • "Why might a company with rising revenue still be a worse business than last year?"\n- Definition / comparison examples for tone:\n  • "Define beta in one sentence."\n  • "LIFO vs FIFO — what's the difference in one line?"\n  • "What does it mean for a bond to trade at a discount?"\n${customText}\nReturn only the question itself, nothing else.`;
 
   const prompt =
     type === "answer"
       ? `Provide a thorough, interview-quality answer to this finance question: ${question}\n\nFormat your response using markdown with bold headers and bullet points where appropriate. Write all formulas and equations in plain text — no LaTeX. Lead with the core answer, then add depth and nuance. Do not include any introductory or closing remarks — just the answer itself.`
-      : `Generate a single ${difficulty}-level finance interview question ${categoryText}.\n\nDifficulty standard: ${difficultyInstruction}\n\n${mathText}\n${customText}${formatInstruction}${examplesBlock}${negativeBlock}\nAdditional requirements:\n- Be specific: include real metrics, deal sizes, named instruments, or market conditions where they add realism\n- Do not start every question with "Walk me through" — vary the opening\n- The question should feel like it came from a real interviewer at a top firm, not a textbook\n\nReturn only the question itself, nothing else.`;
+      : isOTG
+        ? otgPrompt
+        : `Generate a single ${difficulty}-level finance interview question ${categoryText}.\n\nDifficulty standard: ${difficultyInstruction}\n\n${mathText}\n${customText}${formatInstruction}${examplesBlock}${negativeBlock}\nAdditional requirements:\n- Be specific: include real metrics, deal sizes, named instruments, or market conditions where they add realism\n- Do not start every question with "Walk me through" — vary the opening\n- The question should feel like it came from a real interviewer at a top firm, not a textbook\n\nReturn only the question itself, nothing else.`;
 
   try {
     if (type === "question" && req.body.stream) {
