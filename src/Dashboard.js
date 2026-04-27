@@ -125,15 +125,15 @@ function OtgInfoBadge({ active }) {
       style={{
         position: "absolute",
         // Larger transparent hit area (~26x26) for reliable mobile tap, while
-        // the visible "?" pill stays tiny in the corner.
-        top: -6,
-        right: -6,
+        // the visible "?" pill stays tiny just inside the button's top-right.
+        top: 0,
+        right: 0,
         width: 26,
         height: 26,
         display: "flex",
         alignItems: "flex-start",
         justifyContent: "flex-end",
-        padding: 5,
+        padding: 3,
         cursor: "help",
         userSelect: "none",
         WebkitTapHighlightColor: "transparent",
