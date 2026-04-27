@@ -128,13 +128,12 @@ function OtgInfoBadge({ active }) {
         // the visible "?" pill stays tiny just inside the button's top-right.
         top: 0,
         right: 0,
-        width: 26,
-        height: 26,
+        width: 12,
+        height: 12,
         display: "flex",
         alignItems: "flex-start",
         justifyContent: "flex-end",
         padding: 3,
-        cursor: "help",
         userSelect: "none",
         WebkitTapHighlightColor: "transparent",
         zIndex: 2,
@@ -143,18 +142,19 @@ function OtgInfoBadge({ active }) {
       <span
         aria-hidden
         style={{
-          width: 14,
-          height: 14,
+          width: 10,
+          height: 10,
           borderRadius: "50%",
           background: active ? "rgba(255,255,255,0.22)" : "rgba(79,195,247,0.18)",
           color: active ? "#fff" : C.secondary,
-          fontSize: 9,
+          fontSize: 7,
           fontWeight: 900,
-          lineHeight: 1,
+          lineHeight: 1.1,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontFamily: "Inter, sans-serif",
+          letterSpacing: "-0.5px",
         }}
       >
         ?
