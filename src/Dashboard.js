@@ -1085,7 +1085,7 @@ export default function Dashboard() {
     setSnapshotCategory(category);
     setSnapshotDifficulty(difficulty);
     setSnapshotMath(mathOn ? "With Math" : "No Math");
-    setSnapshotCustomPrompt(customPrompt.trim() || null);
+    setSnapshotCustomPrompt(difficulty === "OTG" ? null : (customPrompt.trim() || null));
     setLoadingQuestion(true);
     const EST = difficulty === "OTG" ? 80 : difficulty === "Easy" ? 150 : difficulty === "Hard" ? 350 : 250;
     try {
@@ -1486,14 +1486,15 @@ export default function Dashboard() {
                 <ControlLabel>
                   Custom Descriptor
                   {!isPaid && <span style={{ marginLeft: 6, color: C.gold }}> — Premium</span>}
+                  {isPaid && difficulty === "OTG" && <span style={{ marginLeft: 6, color: C.textMuted }}> — N/A for OTG</span>}
                 </ControlLabel>
                 <input
                   type="text"
-                  placeholder="e.g. focus on LBO Modeling..."
-                  value={customPrompt}
-                  onChange={e => isPaid && setCustomPrompt(e.target.value)}
-                  disabled={!isPaid}
-                  style={{ width: "100%", padding: "13px 16px", backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 13, color: isPaid ? C.text : `${C.textMuted}50`, fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box", cursor: isPaid ? "text" : "not-allowed", transition: "border-color 0.2s" }}
+                  placeholder={difficulty === "OTG" ? "Not available in OTG mode" : "e.g. focus on LBO Modeling..."}
+                  value={difficulty === "OTG" ? "" : customPrompt}
+                  onChange={e => isPaid && difficulty !== "OTG" && setCustomPrompt(e.target.value)}
+                  disabled={!isPaid || difficulty === "OTG"}
+                  style={{ width: "100%", padding: "13px 16px", backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 13, color: (isPaid && difficulty !== "OTG") ? C.text : `${C.textMuted}50`, fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box", cursor: (isPaid && difficulty !== "OTG") ? "text" : "not-allowed", transition: "border-color 0.2s" }}
                 />
               </div>
 
@@ -1789,14 +1790,15 @@ export default function Dashboard() {
                   <ControlLabel>
                     Custom Descriptor
                     {!isPaid && <span style={{ marginLeft: 6, color: C.gold }}> — Premium</span>}
+                    {isPaid && difficulty === "OTG" && <span style={{ marginLeft: 6, color: C.textMuted }}> — N/A for OTG</span>}
                   </ControlLabel>
                   <input
                     type="text"
-                    placeholder={isPaid ? "e.g. LBO Modeling focus..." : "Upgrade to unlock"}
-                    value={customPrompt}
-                    onChange={e => isPaid && setCustomPrompt(e.target.value)}
-                    disabled={!isPaid}
-                    style={{ width: "100%", padding: "14px 16px", backgroundColor: C.surfaceLow, border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, color: isPaid ? C.text : `${C.textMuted}50`, fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box", cursor: isPaid ? "text" : "not-allowed" }}
+                    placeholder={difficulty === "OTG" ? "Not available in OTG mode" : isPaid ? "e.g. LBO Modeling focus..." : "Upgrade to unlock"}
+                    value={difficulty === "OTG" ? "" : customPrompt}
+                    onChange={e => isPaid && difficulty !== "OTG" && setCustomPrompt(e.target.value)}
+                    disabled={!isPaid || difficulty === "OTG"}
+                    style={{ width: "100%", padding: "14px 16px", backgroundColor: C.surfaceLow, border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, color: (isPaid && difficulty !== "OTG") ? C.text : `${C.textMuted}50`, fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box", cursor: (isPaid && difficulty !== "OTG") ? "text" : "not-allowed" }}
                   />
                 </div>
 
