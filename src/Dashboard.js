@@ -645,6 +645,40 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
           )}
         </AnimatePresence>
 
+        {/* Answer loading skeleton */}
+        <AnimatePresence>
+          {loadingAnswer && (
+            <motion.div
+              key="answer-skeleton"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              style={{ padding: 24, borderRadius: 16, backgroundColor: C.surface, border: `1px solid ${C.border}`, overflow: "hidden" }}
+            >
+              <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.15em", textTransform: "uppercase", color: C.secondary, fontFamily: "Manrope, sans-serif", marginBottom: 14, opacity: 0.5 }}>Model Answer</div>
+              <style>{`
+                @keyframes fite-shimmer {
+                  0% { background-position: -400px 0; }
+                  100% { background-position: 400px 0; }
+                }
+                .fite-skel {
+                  background: linear-gradient(90deg, ${C.border}55 25%, ${C.border}cc 50%, ${C.border}55 75%);
+                  background-size: 800px 100%;
+                  animation: fite-shimmer 1.4s infinite linear;
+                  border-radius: 6px;
+                }
+              `}</style>
+              <div className="fite-skel" style={{ height: 13, width: "92%", marginBottom: 10 }} />
+              <div className="fite-skel" style={{ height: 13, width: "78%", marginBottom: 10 }} />
+              <div className="fite-skel" style={{ height: 13, width: "85%", marginBottom: 10 }} />
+              <div className="fite-skel" style={{ height: 13, width: "60%", marginBottom: 18 }} />
+              <div className="fite-skel" style={{ height: 13, width: "88%", marginBottom: 10 }} />
+              <div className="fite-skel" style={{ height: 13, width: "70%" }} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Answer reveal */}
         <AnimatePresence>
           {answerRevealed && answer && (
@@ -672,8 +706,14 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
                 disabled={loadingAnswer || answerRevealed}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
-                style={{ padding: "14px 28px", borderRadius: 10, border: `2px solid ${C.border}`, background: "transparent", color: C.text, fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", cursor: "pointer", fontFamily: "Manrope, sans-serif", transition: "border-color 0.2s" }}
+                style={{ padding: "14px 28px", borderRadius: 10, border: `2px solid ${loadingAnswer ? C.secondary + "55" : C.border}`, background: "transparent", color: loadingAnswer ? C.secondary : C.text, fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", cursor: loadingAnswer ? "default" : "pointer", fontFamily: "Manrope, sans-serif", transition: "border-color 0.2s, color 0.2s", display: "flex", alignItems: "center", gap: 8 }}
               >
+                {loadingAnswer && (
+                  <svg width="14" height="14" viewBox="0 0 14 14" style={{ animation: "fite-spin 0.8s linear infinite", flexShrink: 0 }}>
+                    <style>{`@keyframes fite-spin { to { transform: rotate(360deg); } }`}</style>
+                    <circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="22 8" />
+                  </svg>
+                )}
                 {loadingAnswer ? "Loading..." : "Show Answer"}
               </motion.button>
             )}
@@ -1490,7 +1530,7 @@ export default function Dashboard() {
                 </ControlLabel>
                 <input
                   type="text"
-                  placeholder={difficulty === "OTG" ? "Not available in OTG mode" : "e.g. focus on LBO Modeling..."}
+                  placeholder={difficulty === "OTG" ? "Not available for OTG" : "e.g. focus on LBO Modeling..."}
                   value={difficulty === "OTG" ? "" : customPrompt}
                   onChange={e => isPaid && difficulty !== "OTG" && setCustomPrompt(e.target.value)}
                   disabled={!isPaid || difficulty === "OTG"}
