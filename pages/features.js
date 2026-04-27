@@ -31,7 +31,7 @@ function ScrollReveal({ children, direction = "up", startOffset = 0, className, 
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) setVisible(true); },
+      ([e]) => { setVisible(e.isIntersecting); },
       { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
     );
     obs.observe(el);
@@ -71,7 +71,7 @@ function SectionScan({ label, align = "left" }) {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) setVisible(true); },
+      ([e]) => { setVisible(e.isIntersecting); },
       { threshold: 0.1 }
     );
     obs.observe(el);
@@ -272,17 +272,174 @@ function AnimatedBar({ pct, color = cyberGrad, delay = 0 }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    let timer;
     const obs = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      obs.disconnect();
-      setTimeout(() => setWidth(pct), delay);
+      if (entry.isIntersecting) {
+        timer = setTimeout(() => setWidth(pct), delay);
+      } else {
+        if (timer) clearTimeout(timer);
+        setWidth(0);
+      }
     }, { threshold: 0.3 });
     obs.observe(el);
-    return () => obs.disconnect();
+    return () => { obs.disconnect(); if (timer) clearTimeout(timer); };
   }, [pct, delay]);
   return (
     <div ref={ref} style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 999, overflow: "hidden" }}>
       <div style={{ height: "100%", width: `${width}%`, background: color, borderRadius: 999, transition: `width 1.2s cubic-bezier(0.22,1,0.36,1) ${delay}ms`, boxShadow: "0 0 10px rgba(79,195,247,0.4)" }} />
+    </div>
+  );
+}
+
+// ─── useScrollY — shared scroll position hook (rAF-throttled) ─────────────────
+function useScrollY() {
+  const [y, setY] = useState(0);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        setY(window.scrollY || window.pageYOffset || 0);
+        raf = 0;
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+  return y;
+}
+
+// ─── ScrollProgressBar — fixed top scroll-linked bar ──────────────────────────
+function ScrollProgressBar() {
+  const [pct, setPct] = useState(0);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    let raf = 0;
+    const update = () => {
+      const scroll = window.scrollY || window.pageYOffset || 0;
+      const docH = (document.documentElement.scrollHeight || 0) - window.innerHeight;
+      setPct(docH > 0 ? Math.max(0, Math.min(1, scroll / docH)) : 0);
+      raf = 0;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+  return (
+    <div aria-hidden style={{ position: "fixed", top: 0, left: 0, right: 0, height: 2, zIndex: 200, pointerEvents: "none", background: "rgba(2,8,23,0.4)" }}>
+      <div style={{ height: "100%", width: `${pct * 100}%`, background: cyberGrad, boxShadow: "0 0 10px rgba(79,195,247,0.6), 0 0 20px rgba(21,101,192,0.4)", transition: "width 0.05s linear" }} />
+    </div>
+  );
+}
+
+// ─── Parallax — scroll-linked Y translate based on element viewport position ──
+function Parallax({ children, speed = 0.2, className, style }) {
+  const ref = useRef(null);
+  const [offset, setOffset] = useState(0);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const el = ref.current;
+    if (!el) return undefined;
+    let raf = 0;
+    const update = () => {
+      const r = el.getBoundingClientRect();
+      const center = r.top + r.height / 2;
+      const vh = window.innerHeight || 1;
+      const rel = center - vh / 2;
+      setOffset(rel * speed * -1);
+      raf = 0;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [speed]);
+  return (
+    <div ref={ref} className={className} style={{ ...style, transform: `translate3d(0, ${offset}px, 0)`, willChange: "transform" }}>
+      {children}
+    </div>
+  );
+}
+
+// ─── SectionDivider — scroll-linked animated separator between sections ───────
+function SectionDivider({ icon = "auto_awesome", flip = false }) {
+  const ref = useRef(null);
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const el = ref.current;
+    if (!el) return undefined;
+    let raf = 0;
+    const update = () => {
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      const center = r.top + r.height / 2;
+      const dist = (vh - center) / vh;
+      setProgress(Math.max(0, Math.min(1, dist)));
+      raf = 0;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+  const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+  const rotate = (flip ? -1 : 1) * (eased * 180 - 90);
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      style={{
+        position: "relative",
+        height: 96,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        pointerEvents: "none",
+        zIndex: 3,
+      }}
+    >
+      <div style={{ position: "absolute", left: 0, right: 0, top: "50%", height: 1, transform: "translateY(-50%)", background: `linear-gradient(${flip ? 270 : 90}deg, transparent, rgba(79,195,247,0.55) 50%, transparent)`, opacity: 0.5 }} />
+      <div style={{ position: "absolute", left: "50%", top: "50%", width: `${eased * 100}%`, maxWidth: 720, height: 2, transform: "translate(-50%, -50%)", background: cyberGrad, borderRadius: 2, boxShadow: "0 0 12px rgba(79,195,247,0.55)", transition: "width 0.08s linear" }} />
+      <div
+        style={{
+          position: "relative",
+          width: 44,
+          height: 44,
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "rgba(2,8,23,0.95)",
+          border: "1px solid rgba(79,195,247,0.4)",
+          boxShadow: `0 0 ${12 + eased * 28}px rgba(79,195,247,${0.25 + eased * 0.45})`,
+          transform: `rotate(${rotate}deg) scale(${0.7 + eased * 0.4})`,
+          transition: "box-shadow 0.15s linear",
+        }}
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: 20, color: C.secondary, transform: `rotate(${-rotate}deg)` }}>{icon}</span>
+      </div>
     </div>
   );
 }
@@ -378,7 +535,7 @@ function ComparisonRow({ label, free, premium, delay = 0, highlight = false }) {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
+      setVisible(e.isIntersecting);
     }, { threshold: 0.2 });
     obs.observe(el);
     return () => obs.disconnect();
@@ -475,6 +632,7 @@ export default function FeaturesPage() {
       </Head>
 
       <LandingNav />
+      <ScrollProgressBar />
 
       <div className="features-home-cta">
         <button
@@ -507,9 +665,13 @@ export default function FeaturesPage() {
           <div className="features-page-intro" style={{ padding: "clamp(152px, 18vw, 176px) 32px 64px", maxWidth: 1280, margin: "0 auto", position: "relative" }}>
             {/* Mobile-only blurred darkened background logo */}
             <img src="/logo-realistic.webp" alt="" aria-hidden className="features-hero-bg-logo" />
-            {/* Ambient hero glow */}
-            <div aria-hidden style={{ position: "absolute", top: -80, right: -120, width: 520, height: 520, background: "radial-gradient(circle, rgba(21,101,192,0.22), transparent 62%)", filter: "blur(40px)", pointerEvents: "none", zIndex: 0 }} />
-            <div aria-hidden style={{ position: "absolute", top: 120, left: -140, width: 420, height: 420, background: "radial-gradient(circle, rgba(79,195,247,0.14), transparent 60%)", filter: "blur(40px)", pointerEvents: "none", zIndex: 0 }} />
+            {/* Ambient hero glow (parallax drift) */}
+            <Parallax speed={0.18} style={{ position: "absolute", top: -80, right: -120, width: 520, height: 520, pointerEvents: "none", zIndex: 0 }}>
+              <div aria-hidden style={{ width: "100%", height: "100%", background: "radial-gradient(circle, rgba(21,101,192,0.22), transparent 62%)", filter: "blur(40px)" }} />
+            </Parallax>
+            <Parallax speed={-0.12} style={{ position: "absolute", top: 120, left: -140, width: 420, height: 420, pointerEvents: "none", zIndex: 0 }}>
+              <div aria-hidden style={{ width: "100%", height: "100%", background: "radial-gradient(circle, rgba(79,195,247,0.14), transparent 60%)", filter: "blur(40px)" }} />
+            </Parallax>
 
             <div style={{ position: "relative", zIndex: 1 }}>
               <SectionScan label="Precise Preparation" />
@@ -557,10 +719,18 @@ export default function FeaturesPage() {
           </div>
         </section>
 
+        <SectionDivider icon="auto_awesome" />
+
         {/* ── ABOUT FITE (Creator story) ───────────────────────────────────────── */}
         <section ref={aboutRef} className="ff-about-section" style={{ position: "relative", zIndex: 2, background: C.bgAlt, overflow: "hidden" }}>
           {/* Decorative constellation */}
           <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 10% 20%, rgba(79,195,247,0.10), transparent 40%), radial-gradient(circle at 90% 80%, rgba(21,101,192,0.12), transparent 45%)", pointerEvents: "none" }} />
+          <Parallax speed={0.22} style={{ position: "absolute", top: -60, right: -80, width: 380, height: 380, pointerEvents: "none", zIndex: 0 }}>
+            <div aria-hidden style={{ width: "100%", height: "100%", background: "radial-gradient(circle, rgba(79,195,247,0.18), transparent 60%)", filter: "blur(50px)" }} />
+          </Parallax>
+          <Parallax speed={-0.16} style={{ position: "absolute", bottom: -60, left: -80, width: 360, height: 360, pointerEvents: "none", zIndex: 0 }}>
+            <div aria-hidden style={{ width: "100%", height: "100%", background: "radial-gradient(circle, rgba(21,101,192,0.18), transparent 60%)", filter: "blur(50px)" }} />
+          </Parallax>
           <div className="features-mobile-section" style={{ padding: "120px 32px", maxWidth: 1280, margin: "0 auto", position: "relative" }}>
             <SectionScan label="About Fite" />
 
@@ -640,9 +810,17 @@ export default function FeaturesPage() {
           </div>
         </section>
 
+        <SectionDivider icon="grid_view" flip />
+
         {/* ── FEATURES SHOWCASE (expanded) ─────────────────────────────────────── */}
-        <section style={{ position: "relative", zIndex: 2, background: C.bg }}>
-          <div className="features-mobile-section" style={{ padding: "112px 32px", maxWidth: 1280, margin: "0 auto" }}>
+        <section style={{ position: "relative", zIndex: 2, background: C.bg, overflow: "hidden" }}>
+          <Parallax speed={0.15} style={{ position: "absolute", top: 80, right: -120, width: 460, height: 460, pointerEvents: "none", zIndex: 0 }}>
+            <div aria-hidden style={{ width: "100%", height: "100%", background: "radial-gradient(circle, rgba(79,195,247,0.10), transparent 60%)", filter: "blur(50px)" }} />
+          </Parallax>
+          <Parallax speed={-0.18} style={{ position: "absolute", bottom: 120, left: -100, width: 420, height: 420, pointerEvents: "none", zIndex: 0 }}>
+            <div aria-hidden style={{ width: "100%", height: "100%", background: "radial-gradient(circle, rgba(21,101,192,0.12), transparent 60%)", filter: "blur(50px)" }} />
+          </Parallax>
+          <div className="features-mobile-section" style={{ padding: "112px 32px", maxWidth: 1280, margin: "0 auto", position: "relative", zIndex: 1 }}>
             <SectionScan label="What's Inside" />
             <ScrollReveal direction="left" style={{ marginBottom: 16 }}>
               <h2 style={{ fontSize: "clamp(28px, 3.6vw, 46px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 16px 0", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
@@ -738,9 +916,14 @@ export default function FeaturesPage() {
           </div>
         </section>
 
+        <SectionDivider icon="compare_arrows" />
+
         {/* ── FREE VS PREMIUM COMPARISON ───────────────────────────────────────── */}
-        <section style={{ position: "relative", zIndex: 2, background: C.bgAlt }}>
-          <div className="features-mobile-section" style={{ padding: "112px 32px", maxWidth: 1040, margin: "0 auto" }}>
+        <section style={{ position: "relative", zIndex: 2, background: C.bgAlt, overflow: "hidden" }}>
+          <Parallax speed={0.16} style={{ position: "absolute", top: -40, left: "50%", marginLeft: -300, width: 600, height: 360, pointerEvents: "none", zIndex: 0 }}>
+            <div aria-hidden style={{ width: "100%", height: "100%", background: "radial-gradient(ellipse, rgba(79,195,247,0.10), transparent 60%)", filter: "blur(60px)" }} />
+          </Parallax>
+          <div className="features-mobile-section" style={{ padding: "112px 32px", maxWidth: 1040, margin: "0 auto", position: "relative", zIndex: 1 }}>
             <SectionScan label="Free vs Premium" align="center" />
             <ScrollReveal style={{ textAlign: "center", marginBottom: 48 }}>
               <h2 style={{ fontSize: "clamp(28px, 3.6vw, 46px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 12px 0", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
@@ -806,8 +989,16 @@ export default function FeaturesPage() {
           </div>
         </section>
 
+        <SectionDivider icon="payments" flip />
+
         {/* ── PRICING (detailed) ───────────────────────────────────────────────── */}
-        <section className="features-mobile-section" style={{ padding: "112px 32px", position: "relative", zIndex: 2, background: C.bg }}>
+        <section className="features-mobile-section" style={{ padding: "112px 32px", position: "relative", zIndex: 2, background: C.bg, overflow: "hidden" }}>
+          <Parallax speed={0.2} style={{ position: "absolute", top: 100, left: -120, width: 420, height: 420, pointerEvents: "none", zIndex: 0 }}>
+            <div aria-hidden style={{ width: "100%", height: "100%", background: "radial-gradient(circle, rgba(21,101,192,0.16), transparent 60%)", filter: "blur(50px)" }} />
+          </Parallax>
+          <Parallax speed={-0.14} style={{ position: "absolute", bottom: -60, right: -120, width: 420, height: 420, pointerEvents: "none", zIndex: 0 }}>
+            <div aria-hidden style={{ width: "100%", height: "100%", background: "radial-gradient(circle, rgba(79,195,247,0.14), transparent 60%)", filter: "blur(50px)" }} />
+          </Parallax>
           <div style={{ maxWidth: 1280, margin: "0 auto" }}>
             <SectionScan label="Pricing" />
           </div>
@@ -909,9 +1100,15 @@ export default function FeaturesPage() {
           </div>
         </section>
 
+        <SectionDivider icon="rocket_launch" />
+
         {/* ── ROADMAP / COMING SOON ────────────────────────────────────────────── */}
         <section style={{ position: "relative", zIndex: 2, background: C.bgAlt, overflow: "hidden" }}>
-          <div aria-hidden style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 700, height: 300, background: "radial-gradient(ellipse, rgba(201,168,76,0.12), transparent 60%)", filter: "blur(60px)", pointerEvents: "none" }} />
+          <div aria-hidden style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 700, height: 300, pointerEvents: "none" }}>
+            <Parallax speed={0.18} style={{ width: "100%", height: "100%" }}>
+              <div style={{ width: "100%", height: "100%", background: "radial-gradient(ellipse, rgba(201,168,76,0.12), transparent 60%)", filter: "blur(60px)" }} />
+            </Parallax>
+          </div>
           <div className="features-mobile-section" style={{ padding: "120px 32px", maxWidth: 1280, margin: "0 auto", position: "relative" }}>
             <SectionScan label="The Roadmap" />
 
@@ -1003,6 +1200,8 @@ export default function FeaturesPage() {
             </ScrollReveal>
           </div>
         </section>
+
+        <SectionDivider icon="bolt" flip />
 
         {/* ── CTA ───────────────────────────────────────────────────────────────── */}
         <section className="features-cta-section" style={{ padding: "128px 32px", textAlign: "center", position: "relative", overflow: "hidden", zIndex: 2, background: C.bg }}>
