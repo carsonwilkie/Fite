@@ -60,42 +60,105 @@ function Icon({ name, size = 20, style: s = {} }) {
 }
 
 // ─── OTG info badge ───────────────────────────────────────────────────────────
-// Small "?" icon shown in the corner of the OTG difficulty button. On hover it
-// reveals a short tooltip explaining what OTG means. Click is swallowed so the
-// icon never accidentally selects the OTG button itself.
+// Small "?" icon shown in the corner of the OTG difficulty button. The tooltip
+// only appears after a short hover delay (so brushing past it with the cursor
+// doesn't trigger a flash) or on tap/click. Click on the badge is swallowed so
+// it never accidentally selects the OTG button itself.
+const OTG_HOVER_DELAY_MS = 450;
 function OtgInfoBadge({ active }) {
   const [open, setOpen] = useState(false);
+  const openTimerRef = useRef(null);
+  const wrapperRef = useRef(null);
+
+  const cancelOpenTimer = () => {
+    if (openTimerRef.current) {
+      clearTimeout(openTimerRef.current);
+      openTimerRef.current = null;
+    }
+  };
+
+  const handleMouseEnter = () => {
+    cancelOpenTimer();
+    openTimerRef.current = setTimeout(() => setOpen(true), OTG_HOVER_DELAY_MS);
+  };
+  const handleMouseLeave = () => {
+    cancelOpenTimer();
+    setOpen(false);
+  };
+
+  // Tap/click: open immediately and don't let the parent OTG button activate.
+  const handleActivate = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    cancelOpenTimer();
+    setOpen(v => !v);
+  };
+
+  // Tap-outside dismiss for mobile (no mouseleave on touch).
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDocPointerDown = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", onDocPointerDown, true);
+    return () => document.removeEventListener("pointerdown", onDocPointerDown, true);
+  }, [open]);
+
+  // Tear down any pending open timer on unmount.
+  useEffect(() => () => cancelOpenTimer(), []);
+
   return (
     <span
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      ref={wrapperRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onFocus={() => setOpen(true)}
       onBlur={() => setOpen(false)}
-      onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }}
+      onPointerDown={(e) => { e.stopPropagation(); }}
+      onTouchStart={(e) => { e.stopPropagation(); }}
+      onClick={handleActivate}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleActivate(e); }}
       role="button"
       tabIndex={0}
       aria-label="What is OTG?"
+      aria-expanded={open}
       style={{
         position: "absolute",
-        top: 2,
-        right: 3,
-        width: 13,
-        height: 13,
-        borderRadius: "50%",
-        background: active ? "rgba(255,255,255,0.22)" : "rgba(79,195,247,0.18)",
-        color: active ? "#fff" : C.secondary,
-        fontSize: 9,
-        fontWeight: 900,
-        lineHeight: 1,
+        // Larger transparent hit area (~26x26) for reliable mobile tap, while
+        // the visible "?" pill stays tiny in the corner.
+        top: -6,
+        right: -6,
+        width: 26,
+        height: 26,
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: "flex-start",
+        justifyContent: "flex-end",
+        padding: 5,
         cursor: "help",
-        fontFamily: "Inter, sans-serif",
         userSelect: "none",
+        WebkitTapHighlightColor: "transparent",
+        zIndex: 2,
       }}
     >
-      ?
+      <span
+        aria-hidden
+        style={{
+          width: 14,
+          height: 14,
+          borderRadius: "50%",
+          background: active ? "rgba(255,255,255,0.22)" : "rgba(79,195,247,0.18)",
+          color: active ? "#fff" : C.secondary,
+          fontSize: 9,
+          fontWeight: 900,
+          lineHeight: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "Inter, sans-serif",
+        }}
+      >
+        ?
+      </span>
       <AnimatePresence>
         {open && (
           <motion.span
@@ -105,8 +168,8 @@ function OtgInfoBadge({ active }) {
             transition={{ duration: 0.14, ease: "easeOut" }}
             style={{
               position: "absolute",
-              top: "calc(100% + 8px)",
-              right: -6,
+              top: "calc(100% + 4px)",
+              right: 0,
               width: 220,
               padding: "10px 12px",
               background: C.surfaceHighest,
