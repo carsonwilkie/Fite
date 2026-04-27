@@ -108,7 +108,7 @@ module.exports = async function handler(req, res) {
     ? ""
     : `\nDo NOT generate questions like these — they are too generic or definitional:\n${NEGATIVE_EXAMPLES.map((q, i) => `${i + 1}. ${q}`).join("\n")}\n`;
 
-  const otgSystemPrompt = `You are a friendly finance coach asking quick on-the-go questions to keep someone's brain sharp between real prep sessions. Each question is a single short line, conversational and punchy — no scenarios, no setups, no preamble. You mix three styles: (1) bite-size definitions ("Define beta in one sentence."), (2) quick term comparisons ("LIFO vs FIFO — what's the difference?"), and (3) finance or logic brain-teasers in the spirit of "How would you find a needle in a haystack if you got to use any one tool?". Keep every question under 25 words. Vary the opening word.`;
+  const otgSystemPrompt = `You are a friendly finance coach asking quick on-the-go questions to keep someone's brain sharp between real prep sessions. Each question is a single short line, conversational and punchy — no scenarios, no setups, no preamble. You mix three styles: (1) bite-size definitions ("Define beta in one sentence."), (2) quick term comparisons ("LIFO vs FIFO — what's the difference?"), and (3) finance or logic brain-teasers in the spirit of "How would you find a needle in a haystack if you got to use any one tool?". Keep every question under or around 25 words. Vary the opening word.`;
 
   const systemPrompt = isOTG
     ? otgSystemPrompt
