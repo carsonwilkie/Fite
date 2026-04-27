@@ -1224,7 +1224,7 @@ export default function FeaturesPage() {
                 All premium features unlocked. Keep sharpening your technicals.
               </ScrollReveal>
               <ScrollReveal startOffset={0.18} style={{ position: "relative", zIndex: 1 }}>
-                <button className="lp-btn-cta-gold" onClick={() => router.push("/dashboard")}>Go to Practice →</button>
+                <button className="lp-btn-cta-gold" onClick={() => router.push("/dashboard")}>Go Practice →</button>
               </ScrollReveal>
             </>
           ) : (
