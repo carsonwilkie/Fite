@@ -1961,10 +1961,12 @@ export default function Dashboard() {
 
       {/* Dashboard markdown styles */}
       <style jsx global>{`
-        .dashboard-markdown p  { font-size: 15px; color: ${C.text}; line-height: 1.75; margin: 4px 0; }
-        .dashboard-markdown h1,.dashboard-markdown h2,.dashboard-markdown h3 { font-size: 15px; font-weight: 800; color: ${C.secondary}; margin: 10px 0 4px 0; }
-        .dashboard-markdown ul,.dashboard-markdown ol { padding-left: 18px; margin: 4px 0; }
-        .dashboard-markdown li { font-size: 14px; color: ${C.text}; line-height: 1.6; margin: 3px 0; }
+        .dashboard-markdown p  { font-size: 15px; color: ${C.text}; line-height: 1.75; margin: 4px 0 10px 0; }
+        .dashboard-markdown h2 { font-size: 10px; font-weight: 900; color: ${C.secondary}; margin: 22px 0 10px 0; text-transform: uppercase; letter-spacing: 0.14em; font-family: Manrope, sans-serif; border-bottom: 1px solid ${C.border}; padding-bottom: 7px; }
+        .dashboard-markdown h2:first-child { margin-top: 0; }
+        .dashboard-markdown h1,.dashboard-markdown h3 { font-size: 13px; font-weight: 800; color: ${C.secondary}; margin: 14px 0 6px 0; }
+        .dashboard-markdown ul,.dashboard-markdown ol { padding-left: 20px; margin: 4px 0 10px 0; }
+        .dashboard-markdown li { font-size: 14px; color: ${C.text}; line-height: 1.65; margin: 5px 0; }
         .dashboard-markdown strong { color: ${C.secondary}; font-weight: 700; }
 
         @media (max-width: 339px) {
@@ -1989,7 +1991,8 @@ export default function Dashboard() {
 
           /* Dashboard markdown shrinks slightly on mobile */
           .dashboard-markdown p { font-size: 14px !important; line-height: 1.7 !important; }
-          .dashboard-markdown li { font-size: 13px !important; }
+          .dashboard-markdown li { font-size: 13px !important; line-height: 1.6 !important; }
+          .dashboard-markdown h2 { font-size: 9px !important; margin: 18px 0 8px 0 !important; }
         }
       `}</style>
     </div>

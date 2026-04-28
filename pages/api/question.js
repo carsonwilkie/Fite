@@ -160,17 +160,17 @@ Question: ${question}
 
 Structure your response in exactly two sections, using markdown:
 
-**Model Answer**
-Write the answer the way a strong candidate would actually deliver it in the room — clear, confident, and to the point. Lead with the direct take or the core framework, then walk through the reasoning. If math is involved, compute each step carefully and verify the final number before writing — show the steps in plain text on their own lines (no LaTeX). This section should read as one cohesive answer, not a list of every possible point.
+## Model Answer
+Open with 1–2 sentences stating your direct take or the core framework. Then walk through the reasoning using concise bullet points — structured bullets help the candidate communicate clearly and are easier to scan. If math is involved, compute each step carefully and verify the final number before writing — show steps in plain text on their own lines (no LaTeX). Every bullet should earn its place; don't pad or repeat.
 
-**Other Angles to Mention**
+## Other Angles to Mention
 A short bulleted list of additional points a top candidate might layer in, trade-offs worth acknowledging, common follow-ups an interviewer might press on, or edge cases that show depth. Keep each bullet to one sentence. Do not repeat anything already covered above.
 
 Length guidance: ${answerLengthInstruction}
 
 Hard rules:
 - Plain text for all formulas — no LaTeX, no \\( \\) or $$ syntax.
-- No introduction, no closing remarks, no "Here is the answer" — start directly with the **Model Answer** header.
+- No introduction, no closing remarks, no "Here is the answer" — start directly with the ## Model Answer header.
 - Do not hedge with "it depends" without actually committing to a primary answer first.`;
 
   const prompt =
