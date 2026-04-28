@@ -501,7 +501,7 @@ export default function LandingPage() {
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Fite Finance" />
         <meta property="og:url" content="https://fitefinance.com/" />
-        <meta property="og:title" content="Fite Finance | Precise Preparation" />
+        <meta property="og:title" content="Fite Finance" />
         <meta property="og:description" content="AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview." />
         <meta property="og:image" content="https://fitefinance.com/logo-og.jpg" />
         <meta property="og:image:width" content="1200" />
@@ -509,7 +509,7 @@ export default function LandingPage() {
 
         {/* Twitter / X */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Fite Finance | Precise Preparation" />
+        <meta name="twitter:title" content="Fite Finance" />
         <meta name="twitter:description" content="AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview." />
         <meta name="twitter:image" content="https://fitefinance.com/logo-og.jpg" />
       </Head>
