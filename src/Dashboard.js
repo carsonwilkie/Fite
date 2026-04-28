@@ -220,7 +220,7 @@ function ScoreRing({ score, color, size = 112 }) {
 
 const TIMER_PRESETS = [60, 120, 180, 300];
 
-function TimerDisplay({ timeLeft, timerDuration, paused, onPause, onResume, onStart, timerOn }) {
+function TimerDisplay({ timeLeft, timerDuration, paused, onPause, onResume, onStart, timerOn, locked }) {
   // When timer is enabled but not yet started, show a Start button
   if (timerOn && timeLeft === null) {
     return (
@@ -276,11 +276,11 @@ function TimerDisplay({ timeLeft, timerDuration, paused, onPause, onResume, onSt
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 3 }}>Timer</div>
-        <div style={{ fontSize: 13, fontWeight: 700, color: timeLeft === 0 ? C.danger : C.text, fontFamily: "Inter, sans-serif" }}>
-          {timeLeft === 0 ? "Time's up!" : paused ? "Paused" : `${timeLeft}s remaining`}
+        <div style={{ fontSize: 13, fontWeight: 700, color: timeLeft === 0 ? C.danger : locked ? C.textMuted : C.text, fontFamily: "Inter, sans-serif" }}>
+          {timeLeft === 0 ? "Time's up!" : locked ? `${timeLeft}s left — submitted` : paused ? "Paused" : `${timeLeft}s remaining`}
         </div>
       </div>
-      {timeLeft > 0 && (
+      {timeLeft > 0 && !locked && (
         <motion.button
           onClick={paused ? onResume : onPause}
           whileTap={{ scale: 0.9 }}
@@ -512,7 +512,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
         style={{ display: "flex", flexDirection: "column", gap: 32 }}
       >
         {/* Timer display */}
-        <TimerDisplay timeLeft={timeLeft} timerDuration={timerDuration} paused={timerPaused} onPause={onPauseTimer} onResume={onResumeTimer} onStart={onStartTimer} timerOn={timerOn} />
+        <TimerDisplay timeLeft={timeLeft} timerDuration={timerDuration} paused={timerPaused} onPause={onPauseTimer} onResume={onResumeTimer} onStart={onStartTimer} timerOn={timerOn} locked={graded} />
 
         {/* Question header badges — locked to snapshot values at generation time */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -1161,7 +1161,8 @@ export default function Dashboard() {
     // Snapshot timer values before stopping so they survive the async call
     const snapTimeLeft       = timeLeftRef.current;
     const snapRunningDur     = runningDurationRef.current;
-    const timeTaken = (timerOn && snapTimeLeft !== null && snapRunningDur !== null) ? snapRunningDur - snapTimeLeft : null;
+    const timeTaken  = (timerOn && snapTimeLeft !== null && snapRunningDur !== null) ? snapRunningDur - snapTimeLeft : null;
+    const timeRemaining = (timerOn && snapTimeLeft !== null) ? snapTimeLeft : null;
     pauseTimer();
     setLoadingFeedback(true);
     try {
@@ -1169,7 +1170,7 @@ export default function Dashboard() {
       const d = await r.json();
       setFeedback(d.feedback); setScore(d.score ?? null); setGraded(true);
       if (d.score !== null) setSessionScores(p => [...p, d.score]);
-      if (user?.id) await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { question, answer: answerRef.current, userAnswer: userAnswer.trim() || "No answer submitted.", feedback: d.feedback, score: d.score ?? null, category, difficulty, math: mathParam, customPrompt: customPrompt || null, timeTaken, timestamp: Date.now() } }) });
+      if (user?.id) await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { question, answer: answerRef.current, userAnswer: userAnswer.trim() || "No answer submitted.", feedback: d.feedback, score: d.score ?? null, category, difficulty, math: mathParam, customPrompt: customPrompt || null, timeTaken, timeRemaining, timestamp: Date.now() } }) });
     } catch (e) { console.error(e); }
     setLoadingFeedback(false);
   };

@@ -341,7 +341,7 @@ export default function StatsPage() {
                     const isActive    = hoveredBar !== null;
                     const hcol        = he ? scoreColor(he.score) : C.textMuted;
                     const isInterview = he?.type === "interview";
-                    const fmtTime     = s => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m${s % 60 > 0 ? ` ${s % 60}s` : ""}`;
+                    const fmtTime     = s => s < 60 ? `${s}s left` : `${Math.floor(s / 60)}m${s % 60 > 0 ? ` ${s % 60}s` : ""} left`;
                     const dateStr     = he ? new Date(he.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
                     const tags = he ? [
                       isInterview                         ? { label: "Interview",           color: C.gold      } : null,
@@ -349,7 +349,7 @@ export default function StatsPage() {
                       he.difficulty                       ? { label: he.difficulty,         color: null        } : null,
                       he.math && he.math !== "No Math"    ? { label: "Math",                color: C.secondary } : null,
                       he.customPrompt                     ? { label: he.customPrompt,       color: C.secondary } : null,
-                      he.timeTaken != null                ? { label: fmtTime(he.timeTaken), color: C.textMuted } : null,
+                      he.timeRemaining != null            ? { label: fmtTime(he.timeRemaining), color: C.textMuted } : null,
                       { label: dateStr, color: null },
                     ].filter(Boolean) : [];
                     return (

@@ -71,7 +71,12 @@ function EntryCard({ entry, index, expanded, onToggle }) {
             {entry.difficulty && <Badge text={entry.difficulty} />}
             {entry.math && entry.math !== "No Math" && <Badge text="Math" accent={C.secondary} />}
             {entry.customPrompt && <Badge text={entry.customPrompt} accent={C.secondary} />}
-            {entry.timeTaken != null && <Badge text={entry.timeTaken < 60 ? `${entry.timeTaken}s` : `${Math.floor(entry.timeTaken / 60)}m${entry.timeTaken % 60 > 0 ? ` ${entry.timeTaken % 60}s` : ""}`} />}
+            {(() => {
+              const secs = entry.timeRemaining ?? null;
+              if (secs == null) return null;
+              const label = secs < 60 ? `${secs}s left` : `${Math.floor(secs / 60)}m${secs % 60 > 0 ? ` ${secs % 60}s` : ""} left`;
+              return <Badge text={label} />;
+            })()}
           </div>
         </div>
         <span style={{ fontSize: 12, color: C.textMuted, flexShrink: 0, marginTop: 2, transition: "transform 0.2s", display: "inline-block", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
