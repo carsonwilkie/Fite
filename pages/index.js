@@ -531,7 +531,7 @@ export default function LandingPage() {
                   "width": 1200,
                   "height": 669
                 },
-                "description": "AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview.",
+                "description": "AI-powered finance interview prep. Practice unlimited real questions, get instant AI grading, and ace your finance interview.",
                 "sameAs": [
                   "https://x.com/FiteF92063",
                   "https://www.linkedin.com/company/fite-finance",
