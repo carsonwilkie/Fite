@@ -512,6 +512,46 @@ export default function LandingPage() {
         <meta name="twitter:title" content="Fite Finance" />
         <meta name="twitter:description" content="AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview." />
         <meta name="twitter:image" content="https://fitefinance.com/logo-og.jpg" />
+
+        {/* Structured data — helps Google recognize "Fite Finance" as a brand */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                "@id": "https://fitefinance.com/#organization",
+                "name": "Fite Finance",
+                "alternateName": "Fite",
+                "url": "https://fitefinance.com",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://fitefinance.com/logo-og.jpg",
+                  "width": 1200,
+                  "height": 669
+                },
+                "description": "AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview.",
+                "sameAs": []
+              },
+              {
+                "@type": "WebSite",
+                "@id": "https://fitefinance.com/#website",
+                "url": "https://fitefinance.com",
+                "name": "Fite Finance",
+                "publisher": { "@id": "https://fitefinance.com/#organization" },
+                "potentialAction": {
+                  "@type": "SearchAction",
+                  "target": {
+                    "@type": "EntryPoint",
+                    "urlTemplate": "https://fitefinance.com/dashboard"
+                  },
+                  "query-input": "required name=search_term_string"
+                }
+              }
+            ]
+          })}}
+        />
       </Head>
 
       <LandingNav />
