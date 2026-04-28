@@ -423,7 +423,7 @@ export default function StatsPage() {
                           const color = scoreColor(e.score);
                           const isHov = hoveredBar === i;
                           return (
-                            <div key={i} style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 8 }}>
+                            <div key={i} style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 4 }}>
                               {/* Bar */}
                               <div style={{ height: 80, display: "flex", alignItems: "flex-end" }}>
                                 <motion.div
