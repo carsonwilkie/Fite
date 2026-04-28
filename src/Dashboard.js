@@ -1100,7 +1100,12 @@ export default function Dashboard() {
   const stopTimer   = () => { clearInterval(timerIntervalRef.current); setTimeLeft(null); setRunningDuration(null); setTimerPaused(false); };
   useEffect(() => () => clearInterval(timerIntervalRef.current), []);
 
-  // Refs so the timer-expiry effect always calls the latest handler without stale closures
+  // Always-current refs for timer values and handlers (avoids stale closures in effects/callbacks)
+  const timeLeftRef             = useRef(null);
+  const runningDurationRef      = useRef(null);
+  useEffect(() => { timeLeftRef.current = timeLeft; }, [timeLeft]);
+  useEffect(() => { runningDurationRef.current = runningDuration; }, [runningDuration]);
+
   const handleGradeRef          = useRef(null);
   const handleInterviewSubmitRef = useRef(null);
 
@@ -1152,14 +1157,52 @@ export default function Dashboard() {
 
   const getAnswer = async () => { setAnswerRevealed(true); if (answer) return; setLoadingAnswer(true); try { const r = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "answer", question, category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, userId: user?.id }) }); const d = await r.json(); setAnswer(curr => curr || d.result); } catch (e) { console.error(e); } setLoadingAnswer(false); };
 
-  const handleGrade = async () => { setLoadingFeedback(true); try { const r = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, userAnswer, userId: user?.id, idealAnswer: answerRef.current || null }) }); const d = await r.json(); setFeedback(d.feedback); setScore(d.score ?? null); setGraded(true); if (d.score !== null) setSessionScores(p => [...p, d.score]); if (user?.id) await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { question, answer: answerRef.current, userAnswer: userAnswer.trim() || "No answer submitted.", feedback: d.feedback, score: d.score ?? null, category, difficulty, math: mathParam, customPrompt: customPrompt || null, timeTaken: (timerOn && timeLeft !== null && runningDuration !== null) ? runningDuration - timeLeft : null, timestamp: Date.now() } }) }); } catch (e) { console.error(e); } setLoadingFeedback(false); };
+  const handleGrade = async () => {
+    // Snapshot timer values before stopping so they survive the async call
+    const snapTimeLeft       = timeLeftRef.current;
+    const snapRunningDur     = runningDurationRef.current;
+    const timeTaken = (timerOn && snapTimeLeft !== null && snapRunningDur !== null) ? snapRunningDur - snapTimeLeft : null;
+    pauseTimer();
+    setLoadingFeedback(true);
+    try {
+      const r = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, userAnswer, userId: user?.id, idealAnswer: answerRef.current || null }) });
+      const d = await r.json();
+      setFeedback(d.feedback); setScore(d.score ?? null); setGraded(true);
+      if (d.score !== null) setSessionScores(p => [...p, d.score]);
+      if (user?.id) await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { question, answer: answerRef.current, userAnswer: userAnswer.trim() || "No answer submitted.", feedback: d.feedback, score: d.score ?? null, category, difficulty, math: mathParam, customPrompt: customPrompt || null, timeTaken, timestamp: Date.now() } }) });
+    } catch (e) { console.error(e); }
+    setLoadingFeedback(false);
+  };
 
   // ─── Interview handlers ──────────────────────────────────────────────────
   const resetInterview = () => { setInterviewSession(null); setInterviewStep(0); setInterviewUserAnswers([]); setInterviewResponses([]); setInterviewCurrentAnswer(""); setInterviewComplete(false); setInterviewDebrief(null); setInterviewAnswersRevealed(false); setInterviewProgress(0); };
 
   const generateInterview = async () => { if (!isPaid) { handleUpgrade(); return; } resetInterview(); resetQuestion(); setLoadingInterviewGenerate(true); const t0 = Date.now(); const pi = setInterval(() => setInterviewProgress(Math.min((Date.now()-t0)/8000, 0.9)), 50); try { const r = await fetch("/api/interview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "generate", category, difficulty, math: mathParam, customPrompt: customPrompt || null }) }); const d = await r.json(); clearInterval(pi); setInterviewProgress(1); await new Promise(r => setTimeout(r, 600)); setInterviewSession(d); } catch (e) { console.error(e); clearInterval(pi); } setLoadingInterviewGenerate(false); setSessionCount(c => c + 1); };
 
-  const handleInterviewSubmit = async () => { if (!interviewSession) return; setLoadingInterviewRespond(true); const si = interviewStep; const q = interviewSession.questions[si]; const isLast = si === INTERVIEW_QUESTIONS - 1; const submitted = interviewCurrentAnswer; try { const r = await fetch("/api/interview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "respond", scenario: interviewSession.scenario, questionIndex: si, question: q.question, idealAnswer: q.idealAnswer, userAnswer: submitted, isLast }) }); const d = await r.json(); const newA = [...interviewUserAnswers, submitted.trim() || "No answer submitted."]; const newR = [...interviewResponses, d]; setInterviewUserAnswers(newA); setInterviewResponses(newR); setInterviewCurrentAnswer(""); if (d.score !== null) setSessionScores(p => [...p, d.score]); if (isLast) { setInterviewComplete(true); if (user?.id) { const qh = interviewSession.questions.map((q,i) => ({ question: q.question, idealAnswer: q.idealAnswer, userAnswer: newA[i] || "No answer submitted.", score: newR[i]?.score ?? null, feedback: newR[i]?.response || "" })); const scores = qh.map(q => q.score).filter(s => s !== null); const overall = scores.length > 0 ? Math.round((scores.reduce((a,b)=>a+b,0)/scores.length)*10)/10 : null; await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { type: "interview", scenario: interviewSession.scenario, questions: qh, score: overall, category: interviewSession.resolvedCategory || category, difficulty, math: mathParam, customPrompt: customPrompt || null, timestamp: Date.now() } }) }); } } else { setInterviewStep(si + 1); } } catch (e) { console.error(e); } setLoadingInterviewRespond(false); };
+  const handleInterviewSubmit = async () => {
+    if (!interviewSession) return;
+    pauseTimer();
+    setLoadingInterviewRespond(true);
+    const si = interviewStep; const q = interviewSession.questions[si]; const isLast = si === INTERVIEW_QUESTIONS - 1; const submitted = interviewCurrentAnswer;
+    try {
+      const r = await fetch("/api/interview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "respond", scenario: interviewSession.scenario, questionIndex: si, question: q.question, idealAnswer: q.idealAnswer, userAnswer: submitted, isLast }) });
+      const d = await r.json();
+      const newA = [...interviewUserAnswers, submitted.trim() || "No answer submitted."];
+      const newR = [...interviewResponses, d];
+      setInterviewUserAnswers(newA); setInterviewResponses(newR); setInterviewCurrentAnswer("");
+      if (d.score !== null) setSessionScores(p => [...p, d.score]);
+      if (isLast) {
+        stopTimer();
+        setInterviewComplete(true);
+        if (user?.id) { const qh = interviewSession.questions.map((q,i) => ({ question: q.question, idealAnswer: q.idealAnswer, userAnswer: newA[i] || "No answer submitted.", score: newR[i]?.score ?? null, feedback: newR[i]?.response || "" })); const scores = qh.map(q => q.score).filter(s => s !== null); const overall = scores.length > 0 ? Math.round((scores.reduce((a,b)=>a+b,0)/scores.length)*10)/10 : null; await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { type: "interview", scenario: interviewSession.scenario, questions: qh, score: overall, category: interviewSession.resolvedCategory || category, difficulty, math: mathParam, customPrompt: customPrompt || null, timestamp: Date.now() } }) }); }
+      } else {
+        // Resume timer for next interview question
+        startTimer();
+        setInterviewStep(si + 1);
+      }
+    } catch (e) { console.error(e); }
+    setLoadingInterviewRespond(false);
+  };
 
   // Keep refs current so the timer-expiry effect always sees the latest handlers
   handleGradeRef.current           = handleGrade;
