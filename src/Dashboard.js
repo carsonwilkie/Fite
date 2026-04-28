@@ -569,7 +569,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
 
               <textarea
                 className="qc-textarea"
-                placeholder={isPaid ? "Type your detailed response here... Consider the mechanics, the math, and the strategic implications." : "Upgrade to Premium to type your answer and get AI feedback."}
+                placeholder={isPaid ? "Type your detailed response here..." : "Upgrade to Premium to type your answer and get AI feedback."}
                 value={userAnswer}
                 onChange={(e) => isPaid && !graded && timeLeft !== 0 && setUserAnswer(e.target.value)}
                 disabled={!isPaid || graded || timeLeft === 0}
