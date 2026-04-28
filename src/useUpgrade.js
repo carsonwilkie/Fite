@@ -13,7 +13,7 @@ export default function useUpgrade() {
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user.id, email: user.primaryEmailAddress?.emailAddress }),
+      body: JSON.stringify({}),
     });
     const data = await res.json();
     if (data.url) window.location.href = data.url;

@@ -1139,14 +1139,14 @@ export default function Dashboard() {
     setLoadingQuestion(true);
     const EST = difficulty === "OTG" ? 80 : difficulty === "Easy" ? 150 : difficulty === "Hard" ? 350 : 250;
     try {
-      const res = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "question", category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, userId: user?.id, stream: true }) });
+      const res = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "question", category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, stream: true }) });
       if (res.status === 403) { const d = await res.json(); if (d.limitReached) { setQuestion("You've reached your 5 free questions for today. Upgrade to Premium for unlimited questions."); setLoadingQuestion(false); return; } }
       const reader = res.body.getReader(); const dec = new TextDecoder(); let txt = ""; let used = null;
       while (true) { const { done, value } = await reader.read(); if (done) break; for (const line of dec.decode(value, { stream: true }).split("\n")) { if (!line.startsWith("data:")) continue; try { const d = JSON.parse(line.slice(5)); if (d.questionsUsed !== undefined) used = d.questionsUsed; if (d.text) { txt = d.text; setStreamProgress(Math.min(txt.length / EST, 0.95)); } } catch {} } }
       if (used !== null) setQuestionsUsed(used);
       let newQ = wasRecentlyAsked(txt) ? null : txt; let attempts = 1;
-      while (!newQ && attempts < 5) { const r = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "question", category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, userId: user?.id }) }); const d = await r.json(); if (d.limitReached) { setQuestion("You've reached your 5 free questions for today. Upgrade to Premium for unlimited questions."); setLoadingQuestion(false); return; } if (d.questionsUsed !== undefined) setQuestionsUsed(d.questionsUsed); if (!wasRecentlyAsked(d.result)) newQ = d.result; attempts++; }
-      if (newQ) { saveQuestion(newQ); fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "answer", question: newQ, category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, userId: user?.id }) }).then(r => r.json()).then(d => setAnswer(d.result)); }
+      while (!newQ && attempts < 5) { const r = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "question", category, difficulty, math: mathParam, customPrompt: customPrompt || undefined }) }); const d = await r.json(); if (d.limitReached) { setQuestion("You've reached your 5 free questions for today. Upgrade to Premium for unlimited questions."); setLoadingQuestion(false); return; } if (d.questionsUsed !== undefined) setQuestionsUsed(d.questionsUsed); if (!wasRecentlyAsked(d.result)) newQ = d.result; attempts++; }
+      if (newQ) { saveQuestion(newQ); fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "answer", question: newQ, category, difficulty, math: mathParam, customPrompt: customPrompt || undefined }) }).then(r => r.json()).then(d => setAnswer(d.result)); }
       await new Promise(r => setTimeout(r, 600));
       setQuestion(newQ || "You've seen all recent questions in this category! Try a different one.");
     } catch (e) { console.error(e); }
@@ -1155,7 +1155,7 @@ export default function Dashboard() {
     if (timerOn && timerAutoStart) startTimer();
   };
 
-  const getAnswer = async () => { setAnswerRevealed(true); if (answer) return; setLoadingAnswer(true); try { const r = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "answer", question, category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, userId: user?.id }) }); const d = await r.json(); setAnswer(curr => curr || d.result); } catch (e) { console.error(e); } setLoadingAnswer(false); };
+  const getAnswer = async () => { setAnswerRevealed(true); if (answer) return; setLoadingAnswer(true); try { const r = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "answer", question, category, difficulty, math: mathParam, customPrompt: customPrompt || undefined }) }); const d = await r.json(); setAnswer(curr => curr || d.result); } catch (e) { console.error(e); } setLoadingAnswer(false); };
 
   const handleGrade = async () => {
     // Snapshot timer values before stopping so they survive the async call
@@ -1166,11 +1166,11 @@ export default function Dashboard() {
     pauseTimer();
     setLoadingFeedback(true);
     try {
-      const r = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, userAnswer, userId: user?.id, idealAnswer: answerRef.current || null }) });
+      const r = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, userAnswer, idealAnswer: answerRef.current || null }) });
       const d = await r.json();
       setFeedback(d.feedback); setScore(d.score ?? null); setGraded(true);
       if (d.score !== null) setSessionScores(p => [...p, d.score]);
-      if (user?.id) await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { question, answer: answerRef.current, userAnswer: userAnswer.trim() || "No answer submitted.", feedback: d.feedback, score: d.score ?? null, category, difficulty, math: mathParam, customPrompt: customPrompt || null, timeTaken, timeRemaining, timestamp: Date.now() } }) });
+      if (user?.id) await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entry: { question, answer: answerRef.current, userAnswer: userAnswer.trim() || "No answer submitted.", feedback: d.feedback, score: d.score ?? null, category, difficulty, math: mathParam, customPrompt: customPrompt || null, timeTaken, timeRemaining, timestamp: Date.now() } }) });
     } catch (e) { console.error(e); }
     setLoadingFeedback(false);
   };
@@ -1195,7 +1195,7 @@ export default function Dashboard() {
       if (isLast) {
         stopTimer();
         setInterviewComplete(true);
-        if (user?.id) { const qh = interviewSession.questions.map((q,i) => ({ question: q.question, idealAnswer: q.idealAnswer, userAnswer: newA[i] || "No answer submitted.", score: newR[i]?.score ?? null, feedback: newR[i]?.response || "" })); const scores = qh.map(q => q.score).filter(s => s !== null); const overall = scores.length > 0 ? Math.round((scores.reduce((a,b)=>a+b,0)/scores.length)*10)/10 : null; await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { type: "interview", scenario: interviewSession.scenario, questions: qh, score: overall, category: interviewSession.resolvedCategory || category, difficulty, math: mathParam, customPrompt: customPrompt || null, timestamp: Date.now() } }) }); }
+        if (user?.id) { const qh = interviewSession.questions.map((q,i) => ({ question: q.question, idealAnswer: q.idealAnswer, userAnswer: newA[i] || "No answer submitted.", score: newR[i]?.score ?? null, feedback: newR[i]?.response || "" })); const scores = qh.map(q => q.score).filter(s => s !== null); const overall = scores.length > 0 ? Math.round((scores.reduce((a,b)=>a+b,0)/scores.length)*10)/10 : null; await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entry: { type: "interview", scenario: interviewSession.scenario, questions: qh, score: overall, category: interviewSession.resolvedCategory || category, difficulty, math: mathParam, customPrompt: customPrompt || null, timestamp: Date.now() } }) }); }
       } else {
         // Resume timer for next interview question
         startTimer();
@@ -1222,7 +1222,7 @@ export default function Dashboard() {
 
   const handleInterviewDebrief = async () => { if (!interviewSession) return; setLoadingDebrief(true); try { const r = await fetch("/api/interview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "debrief", scenario: interviewSession.scenario, questions: interviewSession.questions.map((q,i) => ({ question: q.question, idealAnswer: q.idealAnswer, userAnswer: interviewUserAnswers[i] || "No answer submitted.", score: interviewResponses[i]?.score ?? null })), category, difficulty }) }); const d = await r.json(); setInterviewDebrief(d.feedback); } catch (e) { console.error(e); } setLoadingDebrief(false); };
 
-  const handleManageSub = async () => { if (!user?.id) return; const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, returnPath: router.asPath }) }); const d = await r.json(); if (d.url) window.location.href = d.url; };
+  const handleManageSub = async () => { if (!user?.id) return; const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ returnPath: router.asPath }) }); const d = await r.json(); if (d.url) window.location.href = d.url; };
   const toggleProfilePanel = () => {
     if (isSignedIn) {
       router.push("/account");

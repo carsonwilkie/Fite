@@ -133,9 +133,6 @@ export default function SubmissionPage({
         body: JSON.stringify({
           type,
           message: message.trim(),
-          userId: user?.id || null,
-          email: user?.primaryEmailAddress?.emailAddress || null,
-          name: user?.fullName || user?.firstName || null,
         }),
       });
       const data = await res.json().catch(() => ({}));

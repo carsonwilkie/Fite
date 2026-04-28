@@ -6,11 +6,12 @@ import { motion } from "motion/react";
 import { useUser } from "@clerk/nextjs";
 import AuthCard from "./AuthCard";
 import { AUTH_COLORS, cyberGrad } from "./AuthPrimitives";
+import { sanitizeRedirectPath } from "./redirects";
 
 export default function AuthFullPage({ view = "sign-in", title, description }) {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useUser();
-  const redirectTo = typeof router.query.redirect_url === "string" ? router.query.redirect_url : "/dashboard";
+  const redirectTo = sanitizeRedirectPath(router.query.redirect_url, "/dashboard");
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {

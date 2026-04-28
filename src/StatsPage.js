@@ -116,7 +116,7 @@ export default function StatsPage() {
     if (loading) return;
     if (!isPaid) { router.push("/"); return; }
     if (!user?.id) return;
-    fetch(`/api/history?userId=${user.id}`)
+    fetch("/api/history")
       .then(r => r.json())
       .then(d => { setEntries(d.entries || []); setLoadingData(false); });
   }, [user, isPaid, loading, router]);

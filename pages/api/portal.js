@@ -1,4 +1,5 @@
 const Stripe = require("stripe");
+const { requireAuthenticatedUserId, sanitizeRedirectPath } = require("../../src/server/auth");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async function handler(req, res) {
@@ -6,7 +7,9 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { userId, returnPath } = req.body;
+  const userId = requireAuthenticatedUserId(req, res);
+  if (!userId) return;
+  const { returnPath } = req.body || {};
 
   try {
     const sessions = await stripe.checkout.sessions.list({ limit: 100 });
@@ -18,7 +21,7 @@ module.exports = async function handler(req, res) {
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: session.customer,
-      return_url: `${process.env.NEXT_PUBLIC_URL}${returnPath || "/"}`,
+      return_url: `${process.env.NEXT_PUBLIC_URL}${sanitizeRedirectPath(returnPath, "/")}`,
     });
 
     res.status(200).json({ url: portalSession.url });

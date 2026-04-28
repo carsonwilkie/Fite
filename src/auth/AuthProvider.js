@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/router";
 import AuthCard from "./AuthCard";
+import { sanitizeRedirectPath } from "./redirects";
 
 const AuthModalContext = createContext(null);
 
@@ -19,7 +20,11 @@ export default function AuthProvider({ children }) {
   const wasSignedInRef = useRef(null);
 
   const openAuth = useCallback((view = "sign-in", opts = {}) => {
-    setState({ open: true, view, redirectTo: opts.redirectTo || null });
+    setState({
+      open: true,
+      view,
+      redirectTo: opts.redirectTo ? sanitizeRedirectPath(opts.redirectTo, "/dashboard") : null,
+    });
   }, []);
 
   const closeAuth = useCallback(() => {
@@ -40,14 +45,14 @@ export default function AuthProvider({ children }) {
     if (state.open && isSignedIn) {
       const t = setTimeout(() => {
         closeAuth();
-        if (state.redirectTo && typeof window !== "undefined") {
-          window.location.href = state.redirectTo;
+        if (state.redirectTo) {
+          router.push(state.redirectTo);
         }
       }, 350);
       return () => clearTimeout(t);
     }
     return undefined;
-  }, [isSignedIn, state.open, state.redirectTo, closeAuth]);
+  }, [isSignedIn, state.open, state.redirectTo, closeAuth, router]);
 
   // Lock scroll without moving the page. Two key ideas:
   // 1. Keep the <html> scrollbar visible (overflow: scroll) if the page

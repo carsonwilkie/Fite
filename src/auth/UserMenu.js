@@ -21,7 +21,7 @@ export default function UserMenu({ size = 32, align = "right" }) {
       const r = await fetch("/api/portal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, returnPath: router.asPath }),
+        body: JSON.stringify({ returnPath: router.asPath }),
       });
       const d = await r.json();
       if (d.url) window.location.href = d.url;

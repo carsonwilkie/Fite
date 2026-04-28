@@ -2,7 +2,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useSignIn, useSignUp, useClerk } from "@clerk/nextjs";
+import { useSignIn, useSignUp } from "@clerk/nextjs";
+import { sanitizeRedirectPath } from "./redirects";
 import {
   AUTH_COLORS,
   CodeInput,
@@ -35,7 +36,8 @@ export default function AuthCard({
   afterAuthRedirect = "/dashboard",
 }) {
   const router = useRouter();
-  const [view, setView] = useState(initialView); // sign-in | sign-up | verify | forgot | reset
+  const safeAfterAuthRedirect = sanitizeRedirectPath(afterAuthRedirect, "/dashboard");
+  const [view, setView] = useState(initialView); // sign-in | sign-up | verify | forgot | reset | second-factor | new-password
   const [dir, setDir] = useState(1);
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
   const [bodyHeight, setBodyHeight] = useState("auto");
@@ -66,8 +68,8 @@ export default function AuthCard({
   }, []);
 
   const onAuthenticated = useCallback(() => {
-    router.replace(afterAuthRedirect);
-  }, [router, afterAuthRedirect]);
+    router.replace(safeAfterAuthRedirect);
+  }, [router, safeAfterAuthRedirect]);
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -215,12 +217,12 @@ export default function AuthCard({
           <AnimatePresence mode="wait" initial={false}>
             {view === "sign-in" && (
               <ViewWrap key="sign-in">
-                <SignInView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} />
+                <SignInView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} afterAuthRedirect={safeAfterAuthRedirect} />
               </ViewWrap>
             )}
             {view === "sign-up" && (
               <ViewWrap key="sign-up">
-                <SignUpView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} />
+                <SignUpView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} afterAuthRedirect={safeAfterAuthRedirect} />
                 <SignUpLegal onClose={onClose} />
               </ViewWrap>
             )}
@@ -244,6 +246,16 @@ export default function AuthCard({
                 <ClientTrustView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} />
               </ViewWrap>
             )}
+            {view === "second-factor" && (
+              <ViewWrap key="second-factor">
+                <SecondFactorView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} />
+              </ViewWrap>
+            )}
+            {view === "new-password" && (
+              <ViewWrap key="new-password">
+                <NewPasswordView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} />
+              </ViewWrap>
+            )}
           </AnimatePresence>
 
         </div>
@@ -260,6 +272,8 @@ function CardTitle({ view }) {
     "forgot":       { t: "Reset your password", s: "Enter your email and we'll send a code." },
     "reset":        { t: "Choose a new password", s: "Enter the code we sent, then set a new password." },
     "client-trust": { t: "Verify your identity", s: "We sent a 6-digit code to confirm this new sign-in." },
+    "second-factor": { t: "Two-step verification", s: "Enter your verification code to finish signing in." },
+    "new-password": { t: "Update your password", s: "Choose a new password to continue." },
   };
   const { t, s } = titles[view] || titles["sign-in"];
   return (
@@ -332,7 +346,7 @@ function SignUpLegal({ onClose }) {
 }
 
 /* ─── SIGN IN VIEW ────────────────────────────────────────────────────────── */
-function SignInView({ onSwitch, onAuthenticated }) {
+function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   const { signIn, setActive, isLoaded } = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -347,7 +361,7 @@ function SignInView({ onSwitch, onAuthenticated }) {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/dashboard",
+        redirectUrlComplete: afterAuthRedirect,
       });
     } catch (e) {
       setErr(friendlyError(e));
@@ -378,7 +392,13 @@ function SignInView({ onSwitch, onAuthenticated }) {
           setErr("New device detected. Please sign in from a trusted device or contact support.");
         }
       } else {
-        setErr("Additional verification required. Please use the Clerk hosted page.");
+        if (result.status === "needs_second_factor") {
+          onSwitch("second-factor", 1);
+        } else if (result.status === "needs_new_password") {
+          onSwitch("new-password", 1);
+        } else {
+          setErr("Additional verification is required to continue.");
+        }
       }
     } catch (e) {
       setErr(friendlyError(e));
@@ -451,7 +471,7 @@ function SignInView({ onSwitch, onAuthenticated }) {
 }
 
 /* ─── SIGN UP VIEW ────────────────────────────────────────────────────────── */
-function SignUpView({ onSwitch, onAuthenticated }) {
+function SignUpView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   const { signUp, setActive, isLoaded } = useSignUp();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -468,7 +488,7 @@ function SignUpView({ onSwitch, onAuthenticated }) {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/dashboard",
+        redirectUrlComplete: afterAuthRedirect,
       });
     } catch (e) {
       setErr(friendlyError(e));
@@ -743,7 +763,11 @@ function ResetView({ onSwitch, onAuthenticated }) {
         await setActive({ session: res.createdSessionId });
         onAuthenticated();
       } else if (res.status === "needs_second_factor") {
-        setErr("Two-factor authentication is required for this account.");
+        onSwitch("second-factor", 1);
+      } else if (res.status === "needs_new_password") {
+        onSwitch("new-password", 1);
+      } else {
+        setErr("Additional verification is required to continue.");
       }
     } catch (e) {
       setErr(friendlyError(e));
@@ -871,6 +895,179 @@ function ClientTrustView({ onSwitch, onAuthenticated }) {
         Back to sign in
       </GhostButton>
     </div>
+  );
+}
+
+/* ─── SECOND FACTOR ───────────────────────────────────────────────────────── */
+function SecondFactorView({ onSwitch, onAuthenticated }) {
+  const { signIn, setActive, isLoaded } = useSignIn();
+  const [code, setCode] = useState("");
+  const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(0);
+  const [prepared, setPrepared] = useState(false);
+
+  const factor = useMemo(() => {
+    const factors = signIn?.supportedSecondFactors || [];
+    return (
+      factors.find((f) => f.strategy === "email_code") ||
+      factors.find((f) => f.strategy === "phone_code") ||
+      factors.find((f) => f.strategy === "totp") ||
+      factors.find((f) => f.strategy === "backup_code") ||
+      null
+    );
+  }, [signIn?.supportedSecondFactors]);
+
+  useEffect(() => {
+    if (!isLoaded || !factor || prepared) return;
+    if (factor.strategy !== "email_code" && factor.strategy !== "phone_code") {
+      setPrepared(true);
+      return;
+    }
+
+    let cancelled = false;
+    const prepare = async () => {
+      try {
+        await signIn.prepareSecondFactor({
+          strategy: factor.strategy,
+          emailAddressId: factor.emailAddressId,
+          phoneNumberId: factor.phoneNumberId,
+        });
+        if (!cancelled) setPrepared(true);
+      } catch (e) {
+        if (!cancelled) setErr(friendlyError(e));
+      }
+    };
+    prepare();
+    return () => { cancelled = true; };
+  }, [factor, isLoaded, prepared, signIn]);
+
+  const submit = useCallback(async (value) => {
+    if (!isLoaded || loading || !factor) return;
+    const codeStr = (value ?? code).trim();
+    if (!codeStr) return;
+    setLoading(true);
+    setErr(null);
+    try {
+      const res = await signIn.attemptSecondFactor({
+        strategy: factor.strategy,
+        code: codeStr,
+      });
+      if (res.status === "complete") {
+        await setActive({ session: res.createdSessionId });
+        onAuthenticated();
+      } else if (res.status === "needs_new_password") {
+        onSwitch("new-password", 1);
+      } else {
+        setErr("Verification failed. Please try again.");
+      }
+    } catch (e) {
+      setErr(friendlyError(e));
+      setShake((s) => s + 1);
+    } finally {
+      setLoading(false);
+    }
+  }, [code, factor, isLoaded, loading, onAuthenticated, onSwitch, setActive, signIn]);
+
+  if (!factor) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <ErrorBanner error="This account requires a second factor that is not available in this sign-in form." />
+        <GhostButton onClick={() => onSwitch("sign-in", -1)}>Back to sign in</GhostButton>
+      </div>
+    );
+  }
+
+  const isBackup = factor.strategy === "backup_code";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <ShakeWrapper trigger={shake}>
+        {isBackup ? (
+          <FloatingInput
+            id="second-factor-backup"
+            label="Backup code"
+            icon="password"
+            value={code}
+            onChange={setCode}
+            autoComplete="one-time-code"
+            autoFocus
+          />
+        ) : (
+          <CodeInput value={code} onChange={setCode} onComplete={(v) => submit(v)} autoFocus />
+        )}
+      </ShakeWrapper>
+
+      <ErrorBanner error={err} />
+
+      <PrimaryButton onClick={() => submit()} loading={loading} disabled={!code.trim() || !prepared}>
+        Verify
+      </PrimaryButton>
+
+      <GhostButton onClick={() => onSwitch("sign-in", -1)}>
+        Back to sign in
+      </GhostButton>
+    </div>
+  );
+}
+
+/* ─── REQUIRED PASSWORD RESET ─────────────────────────────────────────────── */
+function NewPasswordView({ onSwitch, onAuthenticated }) {
+  const { signIn, setActive, isLoaded } = useSignIn();
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(0);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!isLoaded || loading) return;
+    if (password.length < 8) { setErr("Password must be at least 8 characters."); return; }
+    setErr(null);
+    setLoading(true);
+    try {
+      const res = await signIn.resetPassword({ password });
+      if (res.status === "complete") {
+        await setActive({ session: res.createdSessionId });
+        onAuthenticated();
+      } else if (res.status === "needs_second_factor") {
+        onSwitch("second-factor", 1);
+      } else {
+        setErr("Additional verification is required to continue.");
+      }
+    } catch (e) {
+      setErr(friendlyError(e));
+      setShake((s) => s + 1);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <ShakeWrapper trigger={shake}>
+        <div>
+          <FloatingInput
+            id="required-new-password"
+            type="password"
+            label="New password"
+            icon="lock"
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+            autoFocus
+          />
+          <PasswordStrength password={password} />
+        </div>
+      </ShakeWrapper>
+      <ErrorBanner error={err} />
+      <PrimaryButton type="submit" loading={loading} disabled={password.length < 8}>
+        Update password
+      </PrimaryButton>
+      <GhostButton onClick={() => onSwitch("sign-in", -1)}>
+        Back to sign in
+      </GhostButton>
+    </form>
   );
 }
 

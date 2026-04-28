@@ -2,6 +2,7 @@ const openai = require("./_openai");
 const { Redis } = require("@upstash/redis");
 const { CATEGORIES: ALL_CATEGORIES } = require("./_constants");
 const { sampleQuestions } = require("./_questionBank");
+const { requireAuthenticatedUserId } = require("../../src/server/auth");
 
 const redis = Redis.fromEnv();
 
@@ -127,8 +128,15 @@ module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { action } = req.body || {};
+  const userId = requireAuthenticatedUserId(req, res);
+  if (!userId) return;
 
   try {
+    const isPaid = await redis.get(`paid:${userId}`);
+    if (!isPaid) {
+      return res.status(403).json({ error: "Premium subscription required" });
+    }
+
     if (action === "generate") return await handleGenerate(req, res);
     if (action === "respond")  return await handleRespond(req, res);
     if (action === "debrief")  return await handleDebrief(req, res);

@@ -1,4 +1,5 @@
 const { Redis } = require("@upstash/redis");
+const { getAuthenticatedUserId, getAuthenticatedUserProfile } = require("../../src/server/auth");
 
 const redis = Redis.fromEnv();
 
@@ -42,7 +43,7 @@ function escapeHtml(str) {
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { type, message, userId, email, name } = req.body || {};
+  const { type, message } = req.body || {};
   const kind = type === "vote" ? "vote" : "feedback";
   const text = typeof message === "string" ? message.trim() : "";
 
@@ -50,6 +51,10 @@ module.exports = async function handler(req, res) {
   if (text.length > 4000) return res.status(400).json({ error: "Message is too long." });
 
   const timestamp = Date.now();
+  const userId = getAuthenticatedUserId(req);
+  const profile = await getAuthenticatedUserProfile(userId);
+  const email = profile.email;
+  const name = profile.name;
   const record = { type: kind, message: text, userId: userId || null, email: email || null, name: name || null, timestamp };
 
   try {

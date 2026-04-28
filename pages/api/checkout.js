@@ -1,4 +1,5 @@
 const Stripe = require("stripe");
+const { getAuthenticatedUserEmail, requireAuthenticatedUserId } = require("../../src/server/auth");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -7,9 +8,11 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { userId, email } = req.body;
+  const userId = requireAuthenticatedUserId(req, res);
+  if (!userId) return;
 
   try {
+    const email = await getAuthenticatedUserEmail(userId);
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "subscription",
@@ -20,7 +23,7 @@ module.exports = async function handler(req, res) {
           quantity: 1,
         },
       ],
-      customer_email: email,
+      ...(email ? { customer_email: email } : {}),
       metadata: { userId },
       subscription_data: {
         metadata: { userId },

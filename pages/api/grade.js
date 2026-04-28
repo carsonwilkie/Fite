@@ -1,5 +1,6 @@
 const OpenAI = require("openai");
 const { Redis } = require("@upstash/redis");
+const { requireAuthenticatedUserId } = require("../../src/server/auth");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -12,11 +13,9 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { question, userAnswer, userId, idealAnswer } = req.body;
-
-  if (!userId) {
-    return res.status(401).json({ error: "Authentication required" });
-  }
+  const userId = requireAuthenticatedUserId(req, res);
+  if (!userId) return;
+  const { question, userAnswer, idealAnswer } = req.body;
 
   const isPaid = await redis.get(`paid:${userId}`);
   if (!isPaid) {

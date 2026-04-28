@@ -2,6 +2,7 @@ const openai = require("./_openai");
 const { Redis } = require("@upstash/redis");
 const { CATEGORIES } = require("./_constants");
 const { sampleQuestions } = require("./_questionBank");
+const { getAuthenticatedUserId } = require("../../src/server/auth");
 
 const redis = Redis.fromEnv();
 
@@ -38,7 +39,8 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { type, question, category, difficulty, math, customPrompt, userId } = req.body;
+  const { type, question, category, difficulty, math, customPrompt } = req.body;
+  const userId = getAuthenticatedUserId(req);
 
   let questionsUsed = null;
 
