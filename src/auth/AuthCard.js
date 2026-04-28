@@ -18,6 +18,37 @@ import {
 } from "./AuthPrimitives";
 
 const RESEND_SECONDS = 30;
+const CLERK_LOAD_TIMEOUT_MS = 7000;
+
+function useClerkLoadIssue(isLoaded) {
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (isLoaded) {
+      setTimedOut(false);
+      return undefined;
+    }
+
+    const timer = setTimeout(() => setTimedOut(true), CLERK_LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [isLoaded]);
+
+  return timedOut;
+}
+
+function isLocalLiveKeyMismatch() {
+  if (typeof window === "undefined") return false;
+  const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "";
+  const host = window.location.hostname;
+  return key.startsWith("pk_live_") && (host === "localhost" || host === "127.0.0.1");
+}
+
+function hostedAuthUrl(kind, afterAuthRedirect = "/dashboard") {
+  if (typeof window === "undefined") return kind === "sign-up" ? "/sign-up" : "/sign-in";
+  const path = kind === "sign-up" ? "/sign-up" : "/sign-in";
+  const redirectUrl = new URL(afterAuthRedirect, window.location.origin);
+  return `https://accounts.fitefinance.com${path}?redirect_url=${encodeURIComponent(redirectUrl.href)}`;
+}
 
 // Maps Clerk error codes to friendly messages.
 function friendlyError(err) {
@@ -348,6 +379,7 @@ function SignUpLegal({ onClose }) {
 /* ─── SIGN IN VIEW ────────────────────────────────────────────────────────── */
 function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   const { signIn, setActive, isLoaded } = useSignIn();
+  const loadTimedOut = useClerkLoadIssue(isLoaded);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState(null);
@@ -410,6 +442,7 @@ function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <ClerkLoadBanner visible={loadTimedOut} kind="sign-in" afterAuthRedirect={afterAuthRedirect} />
       <GoogleButton onClick={handleGoogle} disabled={loading || !isLoaded} />
       <Divider label="or" />
       <ShakeWrapper trigger={shake}>
@@ -473,6 +506,7 @@ function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
 /* ─── SIGN UP VIEW ────────────────────────────────────────────────────────── */
 function SignUpView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   const { signUp, setActive, isLoaded } = useSignUp();
+  const loadTimedOut = useClerkLoadIssue(isLoaded);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -524,6 +558,7 @@ function SignUpView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <ClerkLoadBanner visible={loadTimedOut} kind="sign-up" afterAuthRedirect={afterAuthRedirect} />
       <GoogleButton onClick={handleGoogle} disabled={loading || !isLoaded} label="Sign up with Google" />
       <Divider label="or" />
       <ShakeWrapper trigger={shake}>
@@ -1068,6 +1103,55 @@ function NewPasswordView({ onSwitch, onAuthenticated }) {
         Back to sign in
       </GhostButton>
     </form>
+  );
+}
+
+function ClerkLoadBanner({ visible, kind, afterAuthRedirect }) {
+  if (!visible) return null;
+
+  const localLiveKey = isLocalLiveKeyMismatch();
+  const label = kind === "sign-up" ? "Open hosted sign up" : "Open hosted sign in";
+
+  return (
+    <div
+      style={{
+        background: "rgba(234,179,8,0.1)",
+        border: "1px solid rgba(234,179,8,0.35)",
+        borderRadius: 10,
+        padding: "10px 12px",
+        fontSize: 12,
+        color: "#fde68a",
+        fontFamily: "Manrope, sans-serif",
+        fontWeight: 600,
+        lineHeight: 1.45,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
+    >
+      <div>
+        {localLiveKey
+          ? "Clerk is using live keys on localhost. Use Clerk test keys locally, or open the hosted auth page."
+          : "Authentication is still loading. If this stays here, Clerk may be blocked by the browser or misconfigured for this domain."}
+      </div>
+      <a
+        href={hostedAuthUrl(kind, afterAuthRedirect)}
+        style={{
+          alignSelf: "flex-start",
+          color: "#fff",
+          textDecoration: "none",
+          border: "1px solid rgba(253,230,138,0.45)",
+          borderRadius: 8,
+          padding: "7px 10px",
+          fontSize: 11,
+          fontWeight: 800,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </a>
+    </div>
   );
 }
 
