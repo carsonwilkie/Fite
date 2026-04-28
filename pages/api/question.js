@@ -114,7 +114,11 @@ module.exports = async function handler(req, res) {
     ? `You are a finance coach testing quick mental-math instincts. Ask short, punchy questions that require the candidate to work through a calculation or estimate out loud — no pen and paper, just clear thinking. Each question gives them a specific number to work with. Keep every question under 30 words. Vary the opening word.`
     : `You are a friendly finance coach asking quick on-the-go questions to keep someone's brain sharp between real prep sessions. Each question is a single short line, conversational and punchy — no scenarios, no setups, no preamble. You mix three styles: (1) bite-size definitions ("Define beta in one sentence."), (2) quick term comparisons ("LIFO vs FIFO — what's the difference?"), and (3) finance or logic brain-teasers in the spirit of "How would you find a needle in a haystack if you got to use any one tool?". Keep every question under or around 25 words. Vary the opening word.`;
 
-  const systemPrompt = isOTG
+  const answerSystemPrompt = `You are a senior finance interview coach. You write tight, realistic model answers to interview questions — the kind of response a strong candidate would actually give out loud, not a textbook entry. You favor clarity and commitment over exhaustive lists. You never pad, hedge unnecessarily, or recite definitions the question didn't ask for.`;
+
+  const systemPrompt = type === "answer"
+    ? answerSystemPrompt
+    : isOTG
     ? otgSystemPrompt
     : `You are a senior interviewer at a top-tier Wall Street firm conducting a real finance interview. You ask sharp, specific, scenario-based questions that test genuine understanding — not memorized definitions. Your questions reference real deal structures, specific metrics, market conditions, and edge cases. You vary your question formats: sometimes you open with a scenario ("A company has $100M EBITDA and..."), sometimes a comparison ("How would you differentiate..."), sometimes a pressure test ("What would you do if..."), sometimes a walk-through ("Take me through how you'd..."), sometimes a pitch ("Make the case for..."). You never ask vague or generic questions.\n\n${MARKET_CONTEXT}`;
 
@@ -122,11 +126,55 @@ module.exports = async function handler(req, res) {
 
   const otgPrompt = isOTGMath
     ? otgMathPrompt
-    : `Generate a single short on-the-go finance question ${categoryText}.\n\nHard rules:\n- Maximum 25 words. Aim for under 15.\n- Single sentence. Conversational. No scenario setup, no numbers heavy enough to need pen and paper.\n- Pick one style at random: a quick definition, a one-line term comparison, or a finance/logic brain-teaser.\n- Brain-teaser examples for tone:\n  • "How would you find a needle in a haystack if you got to use any one tool?"\n  • "If every public company suddenly went private overnight, what breaks first?"\n  • "Why might a company with rising revenue still be a worse business than last year?"\n- Definition / comparison examples for tone:\n  • "Define beta in one sentence."\n  • "LIFO vs FIFO — what's the difference in one line?"\n  • "What does it mean for a bond to trade at a discount?"\nReturn only the question itself, nothing else.`;
+    : `Generate a single short on-the-go finance question ${categoryText}.\n\nHard rules:\n- Maximum around 25 words. Aim for under 15.\n- Single sentence. Conversational. No scenario setup, no numbers heavy enough to need pen and paper.\n- Pick one style at random: a quick definition, a one-line term comparison, or a finance/logic brain-teaser.\n- Brain-teaser examples for tone:\n  • "How would you find a needle in a haystack if you got to use any one tool?"\n  • "If every public company suddenly went private overnight, what breaks first?"\n  • "Why might a company with rising revenue still be a worse business than last year?"\n- Definition / comparison examples for tone:\n  • "Define beta in one sentence."\n  • "LIFO vs FIFO — what's the difference in one line?"\n  • "What does it mean for a bond to trade at a discount?"\nReturn only the question itself, nothing else.`;
+
+  // ─── Answer generation ────────────────────────────────────────────────────
+  // The "answer" type is intentionally focused: a tight model response first,
+  // followed by a short list of additional angles. We do NOT want a textbook
+  // dump of every possible thing one could mention.
+  const isOTGAnswer = type === "answer" && difficulty === "OTG";
+
+  const otgAnswerPrompt = `Give a concise, conversational answer to this quick on-the-go finance question — the kind of clear, sharp reply you'd actually say out loud.
+
+Question: ${question}
+
+Hard rules:
+- 2 to 4 sentences total. No headers, no bullet lists, no preamble.
+- Lead with the direct answer or the key insight. If a calculation is involved, show the working in plain text in one line.
+- If there's a useful nuance or a common follow-up worth flagging, add it in a single closing sentence — otherwise stop.
+- Plain text only, no LaTeX. Return only the answer.`;
+
+  // Tier the model-answer length to difficulty so Easy questions don't get
+  // 600-word essays and Hard questions still have room to breathe.
+  const answerLengthGuide = {
+    Easy:   "Keep the model answer tight — about 4 to 6 sentences or 3 to 5 short bullets. 'Other angles' should be 2 to 3 brief bullets.",
+    Medium: "Model answer should be 6 to 10 sentences or 4 to 6 bullets — enough to walk through the core reasoning without padding. 'Other angles' should be 3 to 4 brief bullets.",
+    Hard:   "Model answer can run 8 to 14 sentences or 5 to 8 bullets to handle the multi-step reasoning, but stay disciplined — no filler. 'Other angles' should be 3 to 5 brief bullets.",
+  };
+  const answerLengthInstruction = answerLengthGuide[difficulty] || answerLengthGuide["Medium"];
+
+  const standardAnswerPrompt = `You are coaching a candidate on what a strong answer to this finance interview question actually sounds like. Do NOT produce an exhaustive textbook entry — produce a focused, realistic response.
+
+Question: ${question}
+
+Structure your response in exactly two sections, using markdown:
+
+**Model Answer**
+Write the answer the way a strong candidate would actually deliver it in the room — clear, confident, and to the point. Lead with the direct take or the core framework, then walk through the reasoning. If math is involved, show the steps in plain text on their own lines (no LaTeX). This section should read as one cohesive answer, not a list of every possible point.
+
+**Other Angles to Mention**
+A short bulleted list of additional points a top candidate might layer in, trade-offs worth acknowledging, common follow-ups an interviewer might press on, or edge cases that show depth. Keep each bullet to one sentence. Do not repeat anything already covered above.
+
+Length guidance: ${answerLengthInstruction}
+
+Hard rules:
+- Plain text for all formulas — no LaTeX, no \\( \\) or $$ syntax.
+- No introduction, no closing remarks, no "Here is the answer" — start directly with the **Model Answer** header.
+- Do not hedge with "it depends" without actually committing to a primary answer first.`;
 
   const prompt =
     type === "answer"
-      ? `Provide a thorough, interview-quality answer to this finance question: ${question}\n\nFormat your response using markdown with bold headers and bullet points where appropriate. Write all formulas and equations in plain text — no LaTeX. Lead with the core answer, then add depth and nuance. Do not include any introductory or closing remarks — just the answer itself.`
+      ? (isOTGAnswer ? otgAnswerPrompt : standardAnswerPrompt)
       : isOTG
         ? otgPrompt
         : `Generate a single ${difficulty}-level finance interview question ${categoryText}.\n\nDifficulty standard: ${difficultyInstruction}\n\n${mathText}\n${customText}${formatInstruction}${examplesBlock}${negativeBlock}\nAdditional requirements:\n- Be specific: include real metrics, deal sizes, named instruments, or market conditions where they add realism\n- Do not start every question with "Walk me through" — vary the opening\n- The question should feel like it came from a real interviewer at a top firm, not a textbook\n\nReturn only the question itself, nothing else.`;

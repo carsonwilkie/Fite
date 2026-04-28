@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/clerk-react";
 import { motion } from "motion/react";
@@ -107,7 +107,11 @@ export default function StatsPage() {
   const fullHeight = toViewportCssValue(viewport.height);
   const [entries, setEntries]             = useState([]);
   const [loadingData, setLoadingData]     = useState(true);
-  const [windowN, setWindowN]             = useState(20);
+  const [windowN, setWindowN]             = useState(null); // null = "show all"
+  const chartContainerRef                  = useRef(null);
+  const [chartWidth, setChartWidth]        = useState(0);
+  const MIN_BAR_PX                         = 8;
+  const BAR_GAP_PX                         = 3;
   const [hoveredBar, setHoveredBar]       = useState(null);
   const [lastHoveredBar, setLastHoveredBar] = useState(null);
   const [tappedBar, setTappedBar]         = useState(null);
@@ -120,6 +124,17 @@ export default function StatsPage() {
       .then(r => r.json())
       .then(d => { setEntries(d.entries || []); setLoadingData(false); });
   }, [user, isPaid, loading, router]);
+
+  // Measure chart container width for dynamic bar sizing
+  useEffect(() => {
+    const el = chartContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      setChartWidth(entries[0].contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // ── Stat calculations ────────────────────────────────────────────────────────
   const totalQuestions  = entries.length;
@@ -183,10 +198,20 @@ export default function StatsPage() {
   const maxDiff = Math.max(...Object.values(diffCounts), 1);
 
   // ── Chart + trend data ───────────────────────────────────────────────────
-  const chartScored = [...scoredEntries].sort((a, b) => a.timestamp - b.timestamp);
-  const maxN        = chartScored.length;
-  const clampedN    = Math.min(windowN, maxN);
-  const windowBars  = chartScored.slice(-clampedN);
+  const chartScored    = [...scoredEntries].sort((a, b) => a.timestamp - b.timestamp);
+  const maxN           = chartScored.length;
+  const effectiveN     = windowN === null ? maxN : windowN;
+  const clampedN       = Math.min(effectiveN, maxN);
+  const windowBars     = chartScored.slice(-clampedN);
+
+  // Dynamic bar width: fill container, but never go below MIN_BAR_PX (then scroll)
+  const availableWidth  = chartWidth - 26; // subtract y-axis width
+  const idealBarWidth   = clampedN > 0 && availableWidth > 0
+    ? Math.floor((availableWidth - (clampedN - 1) * BAR_GAP_PX) / clampedN)
+    : MIN_BAR_PX;
+  const barWidth        = Math.max(idealBarWidth, MIN_BAR_PX);
+  const barsNeedScroll  = barWidth === MIN_BAR_PX && clampedN > 0 && availableWidth > 0 &&
+    (MIN_BAR_PX * clampedN + BAR_GAP_PX * (clampedN - 1)) > availableWidth;
   const windowAvg   = windowBars.length > 0
     ? (windowBars.reduce((s, e) => s + e.score, 0) / windowBars.length).toFixed(1)
     : null;
@@ -318,7 +343,10 @@ export default function StatsPage() {
                         max={maxN}
                         step={1}
                         value={clampedN}
-                        onChange={e => setWindowN(+e.target.value)}
+                        onChange={e => {
+                          const v = +e.target.value;
+                          setWindowN(v >= maxN ? null : v);
+                        }}
                         style={{ width: 150, accentColor: C.secondary, cursor: "pointer" }}
                       />
                       <div className="stats-slider-ticks" style={{ display: "flex", justifyContent: "space-between", width: 150 }}>
@@ -392,7 +420,7 @@ export default function StatsPage() {
                   })()}
 
                   {/* Y-axis + chart bars */}
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
+                  <div ref={chartContainerRef} style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
                     {/* Y-axis labels — height matches bar area only */}
                     <div style={{ width: 22, height: 80, position: "relative", flexShrink: 0, marginRight: 4 }}>
                       {[10, 8, 6, 4, 2].map(tick => (
@@ -403,23 +431,28 @@ export default function StatsPage() {
                     </div>
 
                     {/* Bars + gridlines + Q-number labels */}
-                    <div style={{ flex: 1, position: "relative" }}>
-                      {/* Gridlines — top-anchored to 80px bar area */}
-                      {[10, 8, 6, 4, 2].map(tick => (
-                        <div key={tick} style={{ position: "absolute", left: 0, right: 0, top: `${(1 - tick / 10) * 80}px`, height: 1, background: C.border, pointerEvents: "none", zIndex: 0 }} />
-                      ))}
-                      {/* Scrollable bars + labels — onMouseLeave on container so moving between bars doesn't flash */}
+                    <div style={{ flex: 1, overflow: "hidden" }}>
+                      {/* Scrollable bars + labels — gridlines live inside so they scroll with bars */}
                       <div
-                        style={{ display: "flex", gap: 3, overflowX: "auto", position: "relative", zIndex: 1 }}
+                        style={{ overflowX: barsNeedScroll ? "auto" : "visible", position: "relative" }}
                         onMouseLeave={() => { setHoveredBar(null); setTappedBar(null); }}
                       >
+                        {/* Gridlines — inside scrollable div, spanning total bar content width */}
+                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 80, pointerEvents: "none", zIndex: 0 }}>
+                          {[10, 8, 6, 4, 2].map(tick => (
+                            <div key={tick} style={{ position: "absolute", left: 0, right: 0, top: `${(1 - tick / 10) * 80}px`, height: 1, background: C.border }} />
+                          ))}
+                        </div>
+                        <div style={{ display: "flex", gap: `${BAR_GAP_PX}px`, position: "relative", zIndex: 1 }}
+                          onMouseLeave={() => { setHoveredBar(null); setTappedBar(null); }}
+                        >
                         {windowBars.map((e, i) => {
                           const qNum  = maxN - clampedN + 1 + i;
                           const pct   = (e.score / 10) * 100;
                           const color = scoreColor(e.score);
                           const isHov = hoveredBar === i;
                           return (
-                            <div key={i} style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 8 }}>
+                            <div key={i} style={{ display: "flex", flexDirection: "column", flexShrink: 0, width: barWidth }}>
                               {/* Bar */}
                               <div style={{ height: 80, display: "flex", alignItems: "flex-end" }}>
                                 <motion.div
@@ -449,6 +482,7 @@ export default function StatsPage() {
                             </div>
                           );
                         })}
+                        </div>
                       </div>
                     </div>
                   </div>
