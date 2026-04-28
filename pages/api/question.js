@@ -141,6 +141,7 @@ Question: ${question}
 Hard rules:
 - 2 to 4 sentences total. No headers, no bullet lists, no preamble.
 - Lead with the direct answer or the key insight. If a calculation is involved, show the working in plain text in one line.
+- If arithmetic is required, compute it carefully step by step before writing your answer — verify the final number is correct. Do not round aggressively; show at least two decimal places of precision when the exact value matters.
 - If there's a useful nuance or a common follow-up worth flagging, add it in a single closing sentence — otherwise stop.
 - Plain text only, no LaTeX. Return only the answer.`;
 
