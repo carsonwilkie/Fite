@@ -56,7 +56,7 @@ function DayBar({ avg, count, dateLabel, index, maxAvg }) {
   const pct   = maxAvg > 0 ? (avg / maxAvg) * 100 : 0;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1, minWidth: 0 }}>
-      <div style={{ width: "100%", height: 80, display: "flex", alignItems: "flex-end" }}>
+      <div style={{ width: "100%", height: 140, display: "flex", alignItems: "flex-end" }}>
         <motion.div
           key={`${dateLabel}-${avg}`}
           initial={{ height: 0 }}
@@ -399,7 +399,7 @@ export default function StatsPage() {
                   {/* Y-axis + chart bars */}
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
                     {/* Y-axis labels — height matches bar area only */}
-                    <div style={{ width: 22, height: 80, position: "relative", flexShrink: 0, marginRight: 4 }}>
+                    <div style={{ width: 22, height: 140, position: "relative", flexShrink: 0, marginRight: 4 }}>
                       {[10, 8, 6, 4, 2].map(tick => (
                         <div key={tick} style={{ position: "absolute", right: 0, bottom: `${(tick / 10) * 100}%`, transform: "translateY(50%)", fontSize: 8, color: C.textMuted, fontFamily: "Manrope, sans-serif", fontWeight: 700, lineHeight: 1, userSelect: "none", textAlign: "right" }}>
                           {tick}
@@ -411,9 +411,9 @@ export default function StatsPage() {
                     <div style={{ flex: 1, minWidth: 0, overflowX: "auto" }}>
                       <div style={{ position: "relative" }} onMouseLeave={() => { setHoveredBar(null); setTappedBar(null); }}>
                         {/* Gridlines — behind bars, span full content width */}
-                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 80, pointerEvents: "none", zIndex: 0 }}>
+                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 140, pointerEvents: "none", zIndex: 0 }}>
                           {[10, 8, 6, 4, 2].map(tick => (
-                            <div key={tick} style={{ position: "absolute", left: 0, right: 0, top: `${(1 - tick / 10) * 80}px`, height: 1, background: C.border }} />
+                            <div key={tick} style={{ position: "absolute", left: 0, right: 0, top: `${(1 - tick / 10) * 140}px`, height: 1, background: C.border }} />
                           ))}
                         </div>
                         <div style={{ display: "flex", gap: 3, position: "relative", zIndex: 1 }}>
@@ -425,7 +425,7 @@ export default function StatsPage() {
                           return (
                             <div key={i} style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 4 }}>
                               {/* Bar */}
-                              <div style={{ height: 80, display: "flex", alignItems: "flex-end" }}>
+                              <div style={{ height: 140, display: "flex", alignItems: "flex-end" }}>
                                 <motion.div
                                   key={`${clampedN}-${i}`}
                                   initial={{ height: 0 }}
