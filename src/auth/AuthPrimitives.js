@@ -59,11 +59,18 @@ export function FloatingInput({
     const el = inputRef.current;
     if (!el) return;
     const onAnimStart = (e) => {
-      if (e.animationName === "authAutofillStart") setAutofilled(true);
+      if (e.animationName === "authAutofillStart") {
+        setAutofilled(true);
+        // Browser autofill doesn't fire React's onChange, so push the DOM value
+        // into the parent's state so controlled inputs reflect the filled value.
+        if (el.value) onChange?.(el.value);
+      }
       if (e.animationName === "authAutofillCancel") setAutofilled(false);
     };
     el.addEventListener("animationstart", onAnimStart);
     return () => el.removeEventListener("animationstart", onAnimStart);
+  // onChange is a stable setState ref — intentionally excluded from deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
