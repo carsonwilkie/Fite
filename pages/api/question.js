@@ -161,7 +161,7 @@ Question: ${question}
 Structure your response in exactly two sections, using markdown:
 
 **Model Answer**
-Write the answer the way a strong candidate would actually deliver it in the room — clear, confident, and to the point. Lead with the direct take or the core framework, then walk through the reasoning. If math is involved, show the steps in plain text on their own lines (no LaTeX). This section should read as one cohesive answer, not a list of every possible point.
+Write the answer the way a strong candidate would actually deliver it in the room — clear, confident, and to the point. Lead with the direct take or the core framework, then walk through the reasoning. If math is involved, compute each step carefully and verify the final number before writing — show the steps in plain text on their own lines (no LaTeX). This section should read as one cohesive answer, not a list of every possible point.
 
 **Other Angles to Mention**
 A short bulleted list of additional points a top candidate might layer in, trade-offs worth acknowledging, common follow-ups an interviewer might press on, or edge cases that show depth. Keep each bullet to one sentence. Do not repeat anything already covered above.
