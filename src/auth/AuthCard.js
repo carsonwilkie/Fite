@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useSignIn, useSignUp, useClerk } from "@clerk/nextjs";
 import {
   AUTH_COLORS,
@@ -33,6 +34,7 @@ export default function AuthCard({
   variant = "modal", // "modal" | "page"
   afterAuthRedirect = "/dashboard",
 }) {
+  const router = useRouter();
   const [view, setView] = useState(initialView); // sign-in | sign-up | verify | forgot | reset
   const [dir, setDir] = useState(1);
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
@@ -62,6 +64,10 @@ export default function AuthCard({
     setDir(direction);
     setView(next);
   }, []);
+
+  const onAuthenticated = useCallback(() => {
+    router.replace(afterAuthRedirect);
+  }, [router, afterAuthRedirect]);
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -209,18 +215,18 @@ export default function AuthCard({
           <AnimatePresence mode="wait" initial={false}>
             {view === "sign-in" && (
               <ViewWrap key="sign-in">
-                <SignInView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+                <SignInView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} />
               </ViewWrap>
             )}
             {view === "sign-up" && (
               <ViewWrap key="sign-up">
-                <SignUpView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+                <SignUpView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} />
                 <SignUpLegal onClose={onClose} />
               </ViewWrap>
             )}
             {view === "verify" && (
               <ViewWrap key="verify">
-                <VerifyView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+                <VerifyView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} />
               </ViewWrap>
             )}
             {view === "forgot" && (
@@ -230,12 +236,12 @@ export default function AuthCard({
             )}
             {view === "reset" && (
               <ViewWrap key="reset">
-                <ResetView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+                <ResetView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} />
               </ViewWrap>
             )}
             {view === "client-trust" && (
               <ViewWrap key="client-trust">
-                <ClientTrustView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+                <ClientTrustView onSwitch={(v, d) => go(v, d)} onAuthenticated={onAuthenticated} />
               </ViewWrap>
             )}
           </AnimatePresence>
@@ -326,7 +332,7 @@ function SignUpLegal({ onClose }) {
 }
 
 /* ─── SIGN IN VIEW ────────────────────────────────────────────────────────── */
-function SignInView({ onSwitch, afterAuthRedirect }) {
+function SignInView({ onSwitch, onAuthenticated }) {
   const { signIn, setActive, isLoaded } = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -341,7 +347,7 @@ function SignInView({ onSwitch, afterAuthRedirect }) {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: afterAuthRedirect,
+        redirectUrlComplete: "/dashboard",
       });
     } catch (e) {
       setErr(friendlyError(e));
@@ -357,6 +363,7 @@ function SignInView({ onSwitch, afterAuthRedirect }) {
       const result = await signIn.create({ identifier: email, password });
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
+        onAuthenticated();
       } else if (result.status === "needs_client_trust") {
         const emailFactor = result.supportedFirstFactors?.find(
           (f) => f.strategy === "email_code"
@@ -444,7 +451,7 @@ function SignInView({ onSwitch, afterAuthRedirect }) {
 }
 
 /* ─── SIGN UP VIEW ────────────────────────────────────────────────────────── */
-function SignUpView({ onSwitch, afterAuthRedirect }) {
+function SignUpView({ onSwitch, onAuthenticated }) {
   const { signUp, setActive, isLoaded } = useSignUp();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -461,7 +468,7 @@ function SignUpView({ onSwitch, afterAuthRedirect }) {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: afterAuthRedirect,
+        redirectUrlComplete: "/dashboard",
       });
     } catch (e) {
       setErr(friendlyError(e));
@@ -482,6 +489,7 @@ function SignUpView({ onSwitch, afterAuthRedirect }) {
       });
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
+        onAuthenticated();
       } else {
         await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
         onSwitch("verify", 1);
@@ -564,7 +572,7 @@ function SignUpView({ onSwitch, afterAuthRedirect }) {
 }
 
 /* ─── VERIFY EMAIL ────────────────────────────────────────────────────────── */
-function VerifyView({ onSwitch, afterAuthRedirect }) {
+function VerifyView({ onSwitch, onAuthenticated }) {
   const { signUp, setActive, isLoaded } = useSignUp();
   const [code, setCode] = useState("");
   const [err, setErr] = useState(null);
@@ -589,6 +597,7 @@ function VerifyView({ onSwitch, afterAuthRedirect }) {
       const res = await signUp.attemptEmailAddressVerification({ code: codeStr });
       if (res.status === "complete") {
         await setActive({ session: res.createdSessionId });
+        onAuthenticated();
       } else {
         setErr("Verification is pending. Please try again.");
       }
@@ -598,7 +607,7 @@ function VerifyView({ onSwitch, afterAuthRedirect }) {
     } finally {
       setLoading(false);
     }
-  }, [code, isLoaded, loading, setActive, signUp]);
+  }, [code, isLoaded, loading, setActive, signUp, onAuthenticated]);
 
   const handleResend = async () => {
     if (!isLoaded || resending || cooldown > 0) return;
@@ -709,7 +718,7 @@ function ForgotView({ onSwitch }) {
 }
 
 /* ─── RESET PASSWORD ──────────────────────────────────────────────────────── */
-function ResetView({ onSwitch, afterAuthRedirect }) {
+function ResetView({ onSwitch, onAuthenticated }) {
   const { signIn, setActive, isLoaded } = useSignIn();
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -732,6 +741,7 @@ function ResetView({ onSwitch, afterAuthRedirect }) {
       });
       if (res.status === "complete") {
         await setActive({ session: res.createdSessionId });
+        onAuthenticated();
       } else if (res.status === "needs_second_factor") {
         setErr("Two-factor authentication is required for this account.");
       }
@@ -774,7 +784,7 @@ function ResetView({ onSwitch, afterAuthRedirect }) {
 }
 
 /* ─── CLIENT TRUST VERIFY ────────────────────────────────────────────────── */
-function ClientTrustView({ onSwitch, afterAuthRedirect }) {
+function ClientTrustView({ onSwitch, onAuthenticated }) {
   const { signIn, setActive, isLoaded } = useSignIn();
   const [code, setCode] = useState("");
   const [err, setErr] = useState(null);
@@ -799,6 +809,7 @@ function ClientTrustView({ onSwitch, afterAuthRedirect }) {
       const res = await signIn.attemptFirstFactor({ strategy: "email_code", code: codeStr });
       if (res.status === "complete") {
         await setActive({ session: res.createdSessionId });
+        onAuthenticated();
       } else {
         setErr("Verification failed. Please try again.");
       }
@@ -808,7 +819,7 @@ function ClientTrustView({ onSwitch, afterAuthRedirect }) {
     } finally {
       setLoading(false);
     }
-  }, [code, isLoaded, loading, setActive, signIn]);
+  }, [code, isLoaded, loading, setActive, signIn, onAuthenticated]);
 
   const handleResend = async () => {
     if (!isLoaded || resending || cooldown > 0) return;
