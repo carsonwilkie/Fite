@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/nextjs";
 import { motion } from "motion/react";
 import usePaidStatus from "./usePaidStatus";
 import useStableViewport, { toViewportCssValue } from "./useStableViewport";

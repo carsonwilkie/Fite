@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ClerkProvider } from "@clerk/clerk-react";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { PaidStatusProvider } from "../src/PaidStatusContext";

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/nextjs";
 import { useAuthModal } from "./auth/AuthProvider";
 import UserMenu from "./auth/UserMenu";
 import { motion, AnimatePresence } from "motion/react";

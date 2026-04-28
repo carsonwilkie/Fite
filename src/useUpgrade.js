@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/nextjs";
 import { useAuthModal } from "./auth/AuthProvider";
 
 export default function useUpgrade() {

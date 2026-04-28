@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { useSignIn, useSignUp, useClerk } from "@clerk/clerk-react";
+import { useSignIn, useSignUp, useClerk } from "@clerk/nextjs";
 import {
   AUTH_COLORS,
   CodeInput,
@@ -233,6 +233,11 @@ export default function AuthCard({
                 <ResetView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
               </ViewWrap>
             )}
+            {view === "client-trust" && (
+              <ViewWrap key="client-trust">
+                <ClientTrustView onSwitch={(v, d) => go(v, d)} afterAuthRedirect={afterAuthRedirect} />
+              </ViewWrap>
+            )}
           </AnimatePresence>
 
         </div>
@@ -243,11 +248,12 @@ export default function AuthCard({
 
 function CardTitle({ view }) {
   const titles = {
-    "sign-in": { t: "Welcome back", s: "Sign in to continue your prep." },
-    "sign-up": { t: "Create your account", s: "Join Fite Finance and start practicing." },
-    "verify":  { t: "Verify your email", s: "We sent a 6-digit code to your inbox." },
-    "forgot":  { t: "Reset your password", s: "Enter your email and we'll send a code." },
-    "reset":   { t: "Choose a new password", s: "Enter the code we sent, then set a new password." },
+    "sign-in":      { t: "Welcome back", s: "Sign in to continue your prep." },
+    "sign-up":      { t: "Create your account", s: "Join Fite Finance and start practicing." },
+    "verify":       { t: "Verify your email", s: "We sent a 6-digit code to your inbox." },
+    "forgot":       { t: "Reset your password", s: "Enter your email and we'll send a code." },
+    "reset":        { t: "Choose a new password", s: "Enter the code we sent, then set a new password." },
+    "client-trust": { t: "Verify your identity", s: "We sent a 6-digit code to confirm this new sign-in." },
   };
   const { t, s } = titles[view] || titles["sign-in"];
   return (
@@ -351,6 +357,19 @@ function SignInView({ onSwitch, afterAuthRedirect }) {
       const result = await signIn.create({ identifier: email, password });
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
+      } else if (result.status === "needs_client_trust") {
+        const emailFactor = result.supportedFirstFactors?.find(
+          (f) => f.strategy === "email_code"
+        );
+        if (emailFactor) {
+          await signIn.prepareFirstFactor({
+            strategy: "email_code",
+            emailAddressId: emailFactor.emailAddressId,
+          });
+          onSwitch("client-trust", 1);
+        } else {
+          setErr("New device detected. Please sign in from a trusted device or contact support.");
+        }
       } else {
         setErr("Additional verification required. Please use the Clerk hosted page.");
       }
@@ -751,6 +770,96 @@ function ResetView({ onSwitch, afterAuthRedirect }) {
         Back to sign in
       </GhostButton>
     </form>
+  );
+}
+
+/* ─── CLIENT TRUST VERIFY ────────────────────────────────────────────────── */
+function ClientTrustView({ onSwitch, afterAuthRedirect }) {
+  const { signIn, setActive, isLoaded } = useSignIn();
+  const [code, setCode] = useState("");
+  const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(0);
+  const [cooldown, setCooldown] = useState(RESEND_SECONDS);
+  const [resending, setResending] = useState(false);
+
+  useEffect(() => {
+    if (cooldown <= 0) return undefined;
+    const t = setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
+    return () => clearInterval(t);
+  }, [cooldown]);
+
+  const submit = useCallback(async (value) => {
+    if (!isLoaded || loading) return;
+    const codeStr = (value ?? code).trim();
+    if (codeStr.length !== 6) return;
+    setLoading(true);
+    setErr(null);
+    try {
+      const res = await signIn.attemptFirstFactor({ strategy: "email_code", code: codeStr });
+      if (res.status === "complete") {
+        await setActive({ session: res.createdSessionId });
+      } else {
+        setErr("Verification failed. Please try again.");
+      }
+    } catch (e) {
+      setErr(friendlyError(e));
+      setShake((s) => s + 1);
+    } finally {
+      setLoading(false);
+    }
+  }, [code, isLoaded, loading, setActive, signIn]);
+
+  const handleResend = async () => {
+    if (!isLoaded || resending || cooldown > 0) return;
+    setResending(true);
+    setErr(null);
+    try {
+      const emailFactor = signIn.supportedFirstFactors?.find((f) => f.strategy === "email_code");
+      if (emailFactor) {
+        await signIn.prepareFirstFactor({ strategy: "email_code", emailAddressId: emailFactor.emailAddressId });
+      }
+      setCooldown(RESEND_SECONDS);
+    } catch (e) {
+      setErr(friendlyError(e));
+    } finally {
+      setResending(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <ShakeWrapper trigger={shake}>
+        <CodeInput value={code} onChange={setCode} onComplete={(v) => submit(v)} autoFocus />
+      </ShakeWrapper>
+
+      <ErrorBanner error={err} />
+
+      <PrimaryButton onClick={() => submit()} loading={loading} disabled={code.length !== 6}>
+        Verify
+      </PrimaryButton>
+
+      <div style={{ textAlign: "center", fontSize: 12, color: AUTH_COLORS.textMuted, fontFamily: "Manrope, sans-serif" }}>
+        Didn&apos;t get the code?{" "}
+        <button
+          type="button"
+          onClick={handleResend}
+          disabled={cooldown > 0 || resending}
+          style={{
+            background: "none", border: "none",
+            cursor: (cooldown > 0 || resending) ? "not-allowed" : "pointer",
+            color: cooldown > 0 ? AUTH_COLORS.textDim : AUTH_COLORS.secondary,
+            fontWeight: 700, fontSize: 12, padding: 0,
+          }}
+        >
+          {cooldown > 0 ? `Resend in ${cooldown}s` : (resending ? "Sending..." : "Resend code")}
+        </button>
+      </div>
+
+      <GhostButton onClick={() => onSwitch("sign-in", -1)}>
+        Back to sign in
+      </GhostButton>
+    </div>
   );
 }
 

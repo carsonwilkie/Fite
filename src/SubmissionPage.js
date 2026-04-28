@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/nextjs";
 import usePaidStatus from "./usePaidStatus";
 import useStableViewport, { toViewportCssValue } from "./useStableViewport";
 

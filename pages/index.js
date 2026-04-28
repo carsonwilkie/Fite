@@ -2,7 +2,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useRef, useEffect, useState, useCallback } from "react";
 import LandingNav from "../src/LandingNav";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/nextjs";
 import { useAuthModal } from "../src/auth/AuthProvider";
 import usePaidStatus from "../src/usePaidStatus";
 import useUpgrade from "../src/useUpgrade";
@@ -532,7 +532,11 @@ export default function LandingPage() {
                   "height": 669
                 },
                 "description": "AI-powered finance interview prep. Practice real questions, get instant AI grading, and ace your finance interview.",
-                "sameAs": []
+                "sameAs": [
+                  "https://x.com/FiteF92063",
+                  "https://www.linkedin.com/company/fite-finance",
+                  "https://www.instagram.com/fite.finance/"
+                ]
               },
               {
                 "@type": "WebSite",

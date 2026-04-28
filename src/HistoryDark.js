@@ -1,6 +1,6 @@
 import { useState, useEffect, useTransition, useRef } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import usePaidStatus from "./usePaidStatus";

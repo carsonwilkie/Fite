@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/router";
-import { useClerk, useUser } from "@clerk/clerk-react";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { AUTH_COLORS, cyberGrad } from "./AuthPrimitives";
 import usePaidStatus from "../usePaidStatus";
 

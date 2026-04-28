@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/router";
 import usePaidStatus from "./usePaidStatus";
 import { useAuthModal } from "./auth/AuthProvider";

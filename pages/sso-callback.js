@@ -1,4 +1,4 @@
-import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react";
+import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
 import Head from "next/head";
 import { motion } from "motion/react";
 

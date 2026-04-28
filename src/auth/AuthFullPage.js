@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/nextjs";
 import AuthCard from "./AuthCard";
 import { AUTH_COLORS, cyberGrad } from "./AuthPrimitives";
 

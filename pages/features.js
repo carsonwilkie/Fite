@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import LandingNav from "../src/LandingNav";
 import { useRef, useEffect, useState } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/nextjs";
 import { useAuthModal } from "../src/auth/AuthProvider";
 import usePaidStatus from "../src/usePaidStatus";
 import useUpgrade from "../src/useUpgrade";
