@@ -571,9 +571,9 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
                 className="qc-textarea"
                 placeholder={isPaid ? "Type your detailed response here... Consider the mechanics, the math, and the strategic implications." : "Upgrade to Premium to type your answer and get AI feedback."}
                 value={userAnswer}
-                onChange={(e) => isPaid && !graded && setUserAnswer(e.target.value)}
-                disabled={!isPaid || graded}
-                style={{ flex: 1, width: "100%", minHeight: 260, backgroundColor: "transparent", border: "none", outline: "none", resize: "none", fontSize: 16, lineHeight: 1.75, color: isPaid ? C.text : `${C.textMuted}60`, fontFamily: "Inter, sans-serif", cursor: isPaid && !graded ? "text" : "not-allowed", padding: "4px 0 0 0" }}
+                onChange={(e) => isPaid && !graded && timeLeft !== 0 && setUserAnswer(e.target.value)}
+                disabled={!isPaid || graded || timeLeft === 0}
+                style={{ flex: 1, width: "100%", minHeight: 260, backgroundColor: "transparent", border: "none", outline: "none", resize: "none", fontSize: 16, lineHeight: 1.75, color: isPaid ? C.text : `${C.textMuted}60`, fontFamily: "Inter, sans-serif", cursor: isPaid && !graded && timeLeft !== 0 ? "text" : "not-allowed", padding: "4px 0 0 0" }}
               />
 
               <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 16, marginTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -755,7 +755,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
 }
 
 // ─── Interview Canvas ─────────────────────────────────────────────────────────
-function InterviewCanvas({ loadingInterviewGenerate, interviewProgress, interviewSession, interviewStep, interviewUserAnswers, interviewResponses, interviewCurrentAnswer, setInterviewCurrentAnswer, interviewComplete, interviewDebrief, loadingDebrief, loadingInterviewRespond, interviewAnswersRevealed, setInterviewAnswersRevealed, interviewOverallScore, interviewWordCount, isPaid, onSubmit, onDebrief, onNewInterview, onUpgrade, getScoreColor, getScoreBg }) {
+function InterviewCanvas({ loadingInterviewGenerate, interviewProgress, interviewSession, interviewStep, interviewUserAnswers, interviewResponses, interviewCurrentAnswer, setInterviewCurrentAnswer, interviewComplete, interviewDebrief, loadingDebrief, loadingInterviewRespond, interviewAnswersRevealed, setInterviewAnswersRevealed, interviewOverallScore, interviewWordCount, isPaid, onSubmit, onDebrief, onNewInterview, onUpgrade, getScoreColor, getScoreBg, timeLeft }) {
 
   if (loadingInterviewGenerate) {
     return (
@@ -887,9 +887,9 @@ function InterviewCanvas({ loadingInterviewGenerate, interviewProgress, intervie
                 className="ic-textarea"
                 placeholder="Type your response here..."
                 value={interviewCurrentAnswer}
-                onChange={(e) => setInterviewCurrentAnswer(e.target.value)}
-                disabled={loadingInterviewRespond}
-                style={{ flex: 1, minHeight: 160, width: "100%", backgroundColor: "transparent", border: "none", outline: "none", resize: "none", fontSize: 16, lineHeight: 1.75, color: C.text, fontFamily: "Inter, sans-serif" }}
+                onChange={(e) => !loadingInterviewRespond && timeLeft !== 0 && setInterviewCurrentAnswer(e.target.value)}
+                disabled={loadingInterviewRespond || timeLeft === 0}
+                style={{ flex: 1, minHeight: 160, width: "100%", backgroundColor: "transparent", border: "none", outline: "none", resize: "none", fontSize: 16, lineHeight: 1.75, color: C.text, fontFamily: "Inter, sans-serif", cursor: (loadingInterviewRespond || timeLeft === 0) ? "not-allowed" : "text" }}
               />
               <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12, marginTop: 12, fontSize: 10, color: `${C.textMuted}60`, fontWeight: 900, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Manrope, sans-serif" }}>
                 Words: {interviewWordCount}
@@ -1065,7 +1065,8 @@ export default function Dashboard() {
   const [snapshotCustomPrompt, setSnapshotCustomPrompt] = useState(null);
 
   // Timer state
-  const [timerOn,       setTimerOn]       = useState(false);
+  const [timerOn,         setTimerOn]         = useState(false);
+  const [timerAutoStart,  setTimerAutoStart]  = useState(false);
   const [timerDuration, setTimerDuration] = useState(120);
   const [runningDuration, setRunningDuration] = useState(null);
   const [timeLeft,      setTimeLeft]      = useState(null);
@@ -1098,6 +1099,10 @@ export default function Dashboard() {
   const resumeTimer = () => { setTimerPaused(false); runInterval(); };
   const stopTimer   = () => { clearInterval(timerIntervalRef.current); setTimeLeft(null); setRunningDuration(null); setTimerPaused(false); };
   useEffect(() => () => clearInterval(timerIntervalRef.current), []);
+
+  // Refs so the timer-expiry effect always calls the latest handler without stale closures
+  const handleGradeRef          = useRef(null);
+  const handleInterviewSubmitRef = useRef(null);
 
   // Session stats
   const [sessionScores, setSessionScores] = useState([]);
@@ -1142,6 +1147,7 @@ export default function Dashboard() {
     } catch (e) { console.error(e); }
     setLoadingQuestion(false);
     setSessionCount(c => c + 1);
+    if (timerOn && timerAutoStart) startTimer();
   };
 
   const getAnswer = async () => { setAnswerRevealed(true); if (answer) return; setLoadingAnswer(true); try { const r = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "answer", question, category, difficulty, math: mathParam, customPrompt: customPrompt || undefined, userId: user?.id }) }); const d = await r.json(); setAnswer(curr => curr || d.result); } catch (e) { console.error(e); } setLoadingAnswer(false); };
@@ -1154,6 +1160,21 @@ export default function Dashboard() {
   const generateInterview = async () => { if (!isPaid) { handleUpgrade(); return; } resetInterview(); resetQuestion(); setLoadingInterviewGenerate(true); const t0 = Date.now(); const pi = setInterval(() => setInterviewProgress(Math.min((Date.now()-t0)/8000, 0.9)), 50); try { const r = await fetch("/api/interview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "generate", category, difficulty, math: mathParam, customPrompt: customPrompt || null }) }); const d = await r.json(); clearInterval(pi); setInterviewProgress(1); await new Promise(r => setTimeout(r, 600)); setInterviewSession(d); } catch (e) { console.error(e); clearInterval(pi); } setLoadingInterviewGenerate(false); setSessionCount(c => c + 1); };
 
   const handleInterviewSubmit = async () => { if (!interviewSession) return; setLoadingInterviewRespond(true); const si = interviewStep; const q = interviewSession.questions[si]; const isLast = si === INTERVIEW_QUESTIONS - 1; const submitted = interviewCurrentAnswer; try { const r = await fetch("/api/interview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "respond", scenario: interviewSession.scenario, questionIndex: si, question: q.question, idealAnswer: q.idealAnswer, userAnswer: submitted, isLast }) }); const d = await r.json(); const newA = [...interviewUserAnswers, submitted.trim() || "No answer submitted."]; const newR = [...interviewResponses, d]; setInterviewUserAnswers(newA); setInterviewResponses(newR); setInterviewCurrentAnswer(""); if (d.score !== null) setSessionScores(p => [...p, d.score]); if (isLast) { setInterviewComplete(true); if (user?.id) { const qh = interviewSession.questions.map((q,i) => ({ question: q.question, idealAnswer: q.idealAnswer, userAnswer: newA[i] || "No answer submitted.", score: newR[i]?.score ?? null, feedback: newR[i]?.response || "" })); const scores = qh.map(q => q.score).filter(s => s !== null); const overall = scores.length > 0 ? Math.round((scores.reduce((a,b)=>a+b,0)/scores.length)*10)/10 : null; await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, entry: { type: "interview", scenario: interviewSession.scenario, questions: qh, score: overall, category: interviewSession.resolvedCategory || category, difficulty, math: mathParam, customPrompt: customPrompt || null, timestamp: Date.now() } }) }); } } else { setInterviewStep(si + 1); } } catch (e) { console.error(e); } setLoadingInterviewRespond(false); };
+
+  // Keep refs current so the timer-expiry effect always sees the latest handlers
+  handleGradeRef.current           = handleGrade;
+  handleInterviewSubmitRef.current = handleInterviewSubmit;
+
+  // Auto-submit when timer hits 0
+  useEffect(() => {
+    if (timeLeft !== 0 || !timerOn) return;
+    if (mode === "question" && question && !graded && !loadingFeedback && isPaid) {
+      handleGradeRef.current();
+    } else if (mode === "interview" && interviewSession && !interviewComplete && !loadingInterviewRespond) {
+      handleInterviewSubmitRef.current();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft]);
 
   const handleInterviewDebrief = async () => { if (!interviewSession) return; setLoadingDebrief(true); try { const r = await fetch("/api/interview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "debrief", scenario: interviewSession.scenario, questions: interviewSession.questions.map((q,i) => ({ question: q.question, idealAnswer: q.idealAnswer, userAnswer: interviewUserAnswers[i] || "No answer submitted.", score: interviewResponses[i]?.score ?? null })), category, difficulty }) }); const d = await r.json(); setInterviewDebrief(d.feedback); } catch (e) { console.error(e); } setLoadingDebrief(false); };
 
@@ -1508,16 +1529,28 @@ export default function Dashboard() {
                   />
                 </div>
                 {isPaid && timerOn && (
-                  <div style={{ padding: "0 12px 12px", display: "flex", gap: 6 }}>
-                    {TIMER_PRESETS.map(sec => (
-                      <motion.button key={sec}
-                        onClick={() => { setTimerDuration(sec); timerDurationRef.current = sec; }}
-                        whileTap={{ scale: 0.93 }}
-                        style={{ flex: 1, padding: "5px 0", borderRadius: 7, border: `1px solid ${timerDuration === sec ? C.secondary : C.border}`, background: timerDuration === sec ? "rgba(79,195,247,0.1)" : "transparent", color: timerDuration === sec ? C.secondary : C.textMuted, fontSize: 10, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
-                        {sec === 60 ? "1m" : sec === 120 ? "2m" : sec === 180 ? "3m" : "5m"}
-                      </motion.button>
-                    ))}
-                  </div>
+                  <>
+                    <div style={{ padding: "0 12px 8px", display: "flex", gap: 6 }}>
+                      {TIMER_PRESETS.map(sec => (
+                        <motion.button key={sec}
+                          onClick={() => { setTimerDuration(sec); timerDurationRef.current = sec; }}
+                          whileTap={{ scale: 0.93 }}
+                          style={{ flex: 1, padding: "5px 0", borderRadius: 7, border: `1px solid ${timerDuration === sec ? C.secondary : C.border}`, background: timerDuration === sec ? "rgba(79,195,247,0.1)" : "transparent", color: timerDuration === sec ? C.secondary : C.textMuted, fontSize: 10, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
+                          {sec === 60 ? "1m" : sec === 120 ? "2m" : sec === 180 ? "3m" : "5m"}
+                        </motion.button>
+                      ))}
+                    </div>
+                    <div style={{ padding: "0 12px 12px", display: "flex", gap: 6 }}>
+                      {["Manual", "Auto"].map(mode => (
+                        <motion.button key={mode}
+                          onClick={() => setTimerAutoStart(mode === "Auto")}
+                          whileTap={{ scale: 0.93 }}
+                          style={{ flex: 1, padding: "5px 0", borderRadius: 7, border: `1px solid ${(mode === "Auto") === timerAutoStart ? C.secondary : C.border}`, background: (mode === "Auto") === timerAutoStart ? "rgba(79,195,247,0.1)" : "transparent", color: (mode === "Auto") === timerAutoStart ? C.secondary : C.textMuted, fontSize: 10, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
+                          {mode}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -1591,6 +1624,7 @@ export default function Dashboard() {
                   isPaid={isPaid} onSubmit={handleInterviewSubmit} onDebrief={handleInterviewDebrief}
                   onNewInterview={generateInterview} onUpgrade={handleUpgrade}
                   getScoreColor={getScoreColor} getScoreBg={getScoreBg}
+                  timeLeft={timerOn ? timeLeft : null}
                 />
               )}
             </div>
@@ -1801,7 +1835,7 @@ export default function Dashboard() {
                           {isPaid ? (timerOn ? "Timer On" : "Timer Off") : "Locked"}
                         </div>
                         <div style={{ fontSize: 10, color: C.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 4 }}>
-                          {isPaid && timerOn ? `Current: ${timerDuration === 60 ? "1 minute" : timerDuration === 120 ? "2 minutes" : timerDuration === 180 ? "3 minutes" : "5 minutes"}` : isPaid ? "" : "Upgrade to enable"}
+                          {isPaid && timerOn ? `${timerDuration === 60 ? "1 minute" : timerDuration === 120 ? "2 minutes" : timerDuration === 180 ? "3 minutes" : "5 minutes"} · ${timerAutoStart ? "Auto" : "Manual"} start` : isPaid ? "" : "Upgrade to enable"}
                         </div>
                       </div>
                       <ToggleSwitch
@@ -1811,16 +1845,28 @@ export default function Dashboard() {
                       />
                     </div>
                   {isPaid && timerOn && (
-                    <div style={{ padding: "0 12px 12px", display: "flex", gap: 6 }}>
-                      {TIMER_PRESETS.map(sec => (
-                        <motion.button key={sec}
-                          onClick={() => { setTimerDuration(sec); timerDurationRef.current = sec; }}
-                          whileTap={{ scale: 0.93 }}
-                          style={{ flex: 1, padding: "6px 0", borderRadius: 7, border: `1px solid ${timerDuration === sec ? C.secondary : C.border}`, background: timerDuration === sec ? "rgba(79,195,247,0.1)" : "transparent", color: timerDuration === sec ? C.secondary : C.textMuted, fontSize: 11, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
-                          {sec === 60 ? "1m" : sec === 120 ? "2m" : sec === 180 ? "3m" : "5m"}
-                        </motion.button>
-                      ))}
-                    </div>
+                    <>
+                      <div style={{ padding: "0 12px 8px", display: "flex", gap: 6 }}>
+                        {TIMER_PRESETS.map(sec => (
+                          <motion.button key={sec}
+                            onClick={() => { setTimerDuration(sec); timerDurationRef.current = sec; }}
+                            whileTap={{ scale: 0.93 }}
+                            style={{ flex: 1, padding: "6px 0", borderRadius: 7, border: `1px solid ${timerDuration === sec ? C.secondary : C.border}`, background: timerDuration === sec ? "rgba(79,195,247,0.1)" : "transparent", color: timerDuration === sec ? C.secondary : C.textMuted, fontSize: 11, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
+                            {sec === 60 ? "1m" : sec === 120 ? "2m" : sec === 180 ? "3m" : "5m"}
+                          </motion.button>
+                        ))}
+                      </div>
+                      <div style={{ padding: "0 12px 12px", display: "flex", gap: 6 }}>
+                        {["Manual", "Auto"].map(mode => (
+                          <motion.button key={mode}
+                            onClick={() => setTimerAutoStart(mode === "Auto")}
+                            whileTap={{ scale: 0.93 }}
+                            style={{ flex: 1, padding: "6px 0", borderRadius: 7, border: `1px solid ${(mode === "Auto") === timerAutoStart ? C.secondary : C.border}`, background: (mode === "Auto") === timerAutoStart ? "rgba(79,195,247,0.1)" : "transparent", color: (mode === "Auto") === timerAutoStart ? C.secondary : C.textMuted, fontSize: 11, fontWeight: 700, fontFamily: "Manrope, sans-serif", cursor: "pointer" }}>
+                            {mode}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </>
                   )}
                   </div>
                 </div>
