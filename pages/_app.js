@@ -308,6 +308,11 @@ export default function App({ Component, pageProps }) {
   // navy panel instead of fading out over the live page. AuthProvider fires
   // window.dispatchEvent(new CustomEvent("fite:cover-flash")) for that case;
   // we run a self-contained transition that swaps no view.
+  //
+  // Critically, cover-flash does NOT toggle isCovering — there is no view
+  // swap to protect, so freezing the underlying page would only force a
+  // layout reflow (expensive on the GSAP+canvas-heavy landing page) and
+  // cause the visible "pause" the user reported.
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
     const onFlash = () => {
@@ -320,8 +325,6 @@ export default function App({ Component, pageProps }) {
       pendingViewRef.current = null;
       phaseRef.current       = "covering";
 
-      setFrozenScrollY(window.scrollY || window.pageYOffset || 0);
-      setIsCovering(true);
       setTransitionMs(COVER_MS);
       setAnim(true);
       setY("0%");
@@ -330,7 +333,6 @@ export default function App({ Component, pageProps }) {
         coverDoneTimerRef.current = null;
         // No view to swap. Go straight from covered → revealing.
         phaseRef.current = "revealing";
-        setIsCovering(false);
 
         requestAnimationFrame(() => {
           const ms = getRevealMs(router.asPath);

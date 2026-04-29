@@ -30,10 +30,17 @@ export function useAuthModal() {
 
 export default function AuthProvider({ children }) {
   const [state, setState] = useState({ open: false, view: "sign-in", redirectTo: null });
+  // stealthClose is true while the modal is being torn down under an active
+  // page-transition cover. AnimatePresence reads this and disables the exit
+  // animation entirely so the modal disappears instantly while it's already
+  // hidden behind the navy panel — preventing the user from seeing a fade
+  // in the bottom of the viewport as the cover lifts.
+  const [stealthClose, setStealthClose] = useState(false);
   const { isSignedIn } = useUser();
   const router = useRouter();
   const wasSignedInRef = useRef(null);
   const closeAfterCoverTimerRef = useRef(null);
+  const stealthResetTimerRef = useRef(null);
   const handledSignInRef = useRef(false);
 
   useEffect(() => {
@@ -42,7 +49,10 @@ export default function AuthProvider({ children }) {
     if (!state.open) handledSignInRef.current = false;
   }, [state.open]);
 
-  useEffect(() => () => clearTimeout(closeAfterCoverTimerRef.current), []);
+  useEffect(() => () => {
+    clearTimeout(closeAfterCoverTimerRef.current);
+    clearTimeout(stealthResetTimerRef.current);
+  }, []);
 
   const openAuth = useCallback((view = "sign-in", opts = {}) => {
     setState({
@@ -117,6 +127,11 @@ export default function AuthProvider({ children }) {
     const currentPath = stripQH(router.asPath);
     const willNavigate = !!targetPath && targetPath !== currentPath;
 
+    // Mark stealth mode so the modal exit animation is suppressed. We do
+    // this BEFORE triggering navigation so the flag is in place by the time
+    // the close fires.
+    setStealthClose(true);
+
     if (willNavigate) {
       router.replace(target);
     } else {
@@ -131,6 +146,14 @@ export default function AuthProvider({ children }) {
     closeAfterCoverTimerRef.current = setTimeout(() => {
       closeAuth();
       closeAfterCoverTimerRef.current = null;
+      // Clear stealth a hair after the close so AnimatePresence has a frame
+      // to read the suppressed exit, then we're back to normal close
+      // behavior for any subsequent ESC/backdrop close.
+      clearTimeout(stealthResetTimerRef.current);
+      stealthResetTimerRef.current = setTimeout(() => {
+        setStealthClose(false);
+        stealthResetTimerRef.current = null;
+      }, 120);
     }, MODAL_CLOSE_AFTER_MS);
   }, [isSignedIn, state.open, state.redirectTo, closeAuth, router]);
 
@@ -203,7 +226,13 @@ export default function AuthProvider({ children }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            // Stealth close: zero-duration exit so the modal vanishes
+            // instantly while it is already covered by the navy panel.
+            // Otherwise we'd see a 220ms backdrop fade peeking out from
+            // under the rising cover.
+            transition={stealthClose
+              ? { duration: 0 }
+              : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             style={{
               position: "fixed",
               inset: 0,
@@ -230,8 +259,12 @@ export default function AuthProvider({ children }) {
                 key="auth-modal-card"
                 initial={{ opacity: 0, y: 18, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 12, scale: 0.98 }}
-                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                exit={stealthClose
+                  ? { opacity: 0, y: 0, scale: 1 }
+                  : { opacity: 0, y: 12, scale: 0.98 }}
+                transition={stealthClose
+                  ? { duration: 0 }
+                  : { duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
                 style={{ width: "100%", maxWidth: 460 }}
               >
                 <AuthCard

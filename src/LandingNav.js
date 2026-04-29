@@ -1,3 +1,4 @@
+import { useEffect, useReducer } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/router";
 import usePaidStatus from "./usePaidStatus";
@@ -9,13 +10,37 @@ const C_SECONDARY = "#4FC3F7";
 const C_GOLD      = "#c9a84c";
 const C_MUTED     = "#94a3b8";
 
+function stripQH(p) {
+  return (p || "/").split("?")[0].split("#")[0] || "/";
+}
+
 export default function LandingNav() {
   const router = useRouter();
   const { isPaid } = usePaidStatus();
   const { isSignedIn, isLoaded } = useUser();
   const { openSignIn, openSignUp } = useAuthModal();
-  const onHero      = router.pathname === "/";
-  const onDashboard = router.pathname === "/dashboard";
+
+  // Subscribe explicitly to routeChangeComplete and bump a counter to force
+  // a re-render. useRouter's built-in re-render works in normal flows, but
+  // because we render this nav inside a `displayedView` shim in _app.js
+  // (which keeps the previous page mounted during the page-transition cover)
+  // the active state could occasionally read stale pathname after the swap.
+  // This guarantees we re-evaluate `onHero` / `onFeatures` after every
+  // navigation completes.
+  const [, bump] = useReducer((n) => n + 1, 0);
+  useEffect(() => {
+    const onComplete = () => bump();
+    router.events.on("routeChangeComplete", onComplete);
+    return () => router.events.off("routeChangeComplete", onComplete);
+  }, [router.events]);
+
+  // Use asPath (the actual URL) as the source of truth for active state and
+  // strip hash/query so anchor scrolls on the landing page (e.g. "/#hero")
+  // don't make Home appear inactive.
+  const path = stripQH(router.asPath);
+  const onHero      = path === "/" || router.pathname === "/";
+  const onFeatures  = path === "/features" || router.pathname === "/features";
+  const onDashboard = path === "/dashboard" || router.pathname === "/dashboard";
 
   return (
     <>
@@ -38,7 +63,7 @@ export default function LandingNav() {
 
         <div className="landing-nav__center">
           <NavLink active={onHero} onClick={() => onHero ? null : router.push("/")}>Home</NavLink>
-          <NavLink active={router.pathname === "/features"} onClick={() => { if (router.pathname !== "/features") router.push("/features"); }}>Features</NavLink>
+          <NavLink active={onFeatures} onClick={() => { if (!onFeatures) router.push("/features"); }}>Features</NavLink>
           <NavLink active={onDashboard} onClick={() => router.push("/dashboard")}>Dashboard</NavLink>
         </div>
 
