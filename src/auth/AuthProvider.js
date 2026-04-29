@@ -90,13 +90,14 @@ export default function AuthProvider({ children }) {
   // Sequencing matters here. To make the modal "tuck" cleanly under the
   // page-transition cover (rather than visibly fade out before the cover
   // arrives), we:
-  //   1. Trigger router.replace() FIRST — that fires routeChangeStart and the
-  //      navy cover begins sliding down over the modal.
+  //   1. Trigger the navy cover FIRST — either via router.replace() (which
+  //      fires routeChangeStart in _app.js) when we actually need to navigate,
+  //      or via the "fite:cover-flash" event when the user is already on the
+  //      destination page (e.g. signing in from the home page where the
+  //      target is also "/").
   //   2. Hold the modal open until the cover is fully opaque
   //      (MODAL_CLOSE_AFTER_MS), then close it. The exit animation now
   //      happens entirely behind the cover and is invisible to the user.
-  // If no navigation is required (target equals current asPath) we just
-  // close the modal immediately — there is no cover to hide behind.
   useEffect(() => {
     if (!state.open) return;
     if (isSignedIn !== true) return;
@@ -107,18 +108,30 @@ export default function AuthProvider({ children }) {
     const target = pending || state.redirectTo || null;
     if (typeof window !== "undefined") window.__fitePendingAuthRedirect = null;
 
-    const willNavigate = target && target !== router.asPath;
+    // Strip query / hash for the "are we already there?" comparison. The
+    // landing page in particular often has a hash (#hero, #features) from
+    // anchor links, which would otherwise force an unnecessary navigation
+    // for what is logically a same-page sign-in.
+    const stripQH = (p) => (p || "").split("?")[0].split("#")[0] || "/";
+    const targetPath = target ? stripQH(target) : null;
+    const currentPath = stripQH(router.asPath);
+    const willNavigate = !!targetPath && targetPath !== currentPath;
 
     if (willNavigate) {
       router.replace(target);
-      clearTimeout(closeAfterCoverTimerRef.current);
-      closeAfterCoverTimerRef.current = setTimeout(() => {
-        closeAuth();
-        closeAfterCoverTimerRef.current = null;
-      }, MODAL_CLOSE_AFTER_MS);
     } else {
-      closeAuth();
+      // Fire a self-contained cover sweep so the modal can exit under it,
+      // matching the navigation case visually. _app.js owns the animation.
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("fite:cover-flash"));
+      }
     }
+
+    clearTimeout(closeAfterCoverTimerRef.current);
+    closeAfterCoverTimerRef.current = setTimeout(() => {
+      closeAuth();
+      closeAfterCoverTimerRef.current = null;
+    }, MODAL_CLOSE_AFTER_MS);
   }, [isSignedIn, state.open, state.redirectTo, closeAuth, router]);
 
   // Lock scroll without moving the page. Two key ideas:

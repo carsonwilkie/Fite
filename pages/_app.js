@@ -301,6 +301,63 @@ export default function App({ Component, pageProps }) {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [goIdle, tryAdvanceToReveal]);
 
+  // ─── External cover-flash trigger ─────────────────────────────────────────
+  // Some flows (most notably "sign-in succeeded but the user is already on
+  // the destination page") need the cover to play a full down→up cycle
+  // *without* an underlying navigation, so the modal can tuck under the
+  // navy panel instead of fading out over the live page. AuthProvider fires
+  // window.dispatchEvent(new CustomEvent("fite:cover-flash")) for that case;
+  // we run a self-contained transition that swaps no view.
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const onFlash = () => {
+      // Don't interfere with an in-flight real navigation.
+      if (phaseRef.current !== "idle") return;
+
+      clearAllTimers();
+      coverDoneRef.current   = false;
+      routeReadyRef.current  = false;
+      pendingViewRef.current = null;
+      phaseRef.current       = "covering";
+
+      setFrozenScrollY(window.scrollY || window.pageYOffset || 0);
+      setIsCovering(true);
+      setTransitionMs(COVER_MS);
+      setAnim(true);
+      setY("0%");
+
+      coverDoneTimerRef.current = setTimeout(() => {
+        coverDoneTimerRef.current = null;
+        // No view to swap. Go straight from covered → revealing.
+        phaseRef.current = "revealing";
+        setIsCovering(false);
+
+        requestAnimationFrame(() => {
+          const ms = getRevealMs(router.asPath);
+          setTransitionMs(ms);
+          setAnim(true);
+          setY("-100%");
+
+          clearTimeout(revealEndTimerRef.current);
+          revealEndTimerRef.current = setTimeout(() => {
+            phaseRef.current = "idle";
+            revealEndTimerRef.current = null;
+            clearTimeout(stuckTimerRef.current);
+            stuckTimerRef.current = null;
+          }, ms + 80);
+        });
+      }, COVER_MS);
+
+      // Mirror the routeChangeStart failsafe so a flash can never strand us.
+      stuckTimerRef.current = setTimeout(() => {
+        if (phaseRef.current === "idle") return;
+        goIdle();
+      }, STUCK_MS);
+    };
+    window.addEventListener("fite:cover-flash", onFlash);
+    return () => window.removeEventListener("fite:cover-flash", onFlash);
+  }, [clearAllTimers, goIdle, router.asPath]);
+
   if (!PUBLISHABLE_KEY) {
     return <displayedView.Component {...displayedView.pageProps} />;
   }
