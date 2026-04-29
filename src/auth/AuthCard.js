@@ -102,10 +102,12 @@ export default function AuthCard({
     if (typeof window !== "undefined") {
       window.__fiteAuthRedirectInProgress = true;
       window.__fiteFastNextRouteReveal = true;
+      window.__fiteRevealIncomingViewImmediately = true;
     }
     router.replace(safeAfterAuthRedirect).finally(() => {
       if (typeof window !== "undefined") {
         window.__fiteAuthRedirectInProgress = false;
+        window.__fiteRevealIncomingViewImmediately = false;
       }
     });
   }, [router, safeAfterAuthRedirect]);

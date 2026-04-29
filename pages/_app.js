@@ -96,6 +96,30 @@ export default function App({ Component, pageProps }) {
     }, getCoverPauseMs(nextView.route));
   };
 
+  const revealViewNow = (nextView, revealMs = ENTRY_MS) => {
+    clearTimeout(revealPauseTimerRef.current);
+    clearTimeout(revealDoneTimerRef.current);
+    pendingViewRef.current = null;
+    routeReadyRef.current = false;
+    coverDoneRef.current = false;
+    phaseRef.current = "revealing";
+    setIsCovering(false);
+    resetWindowScroll();
+    setDisplayedView(nextView);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTransitionMs(revealMs);
+        setAnim(true);
+        setY("-100%");
+        revealDoneTimerRef.current = setTimeout(() => {
+          phaseRef.current = "idle";
+          revealDoneTimerRef.current = null;
+        }, revealMs);
+      });
+    });
+  };
+
   // Initial entry: reveal bottom-up after 60 ms
   useEffect(() => {
     const t = setTimeout(() => {
@@ -286,6 +310,13 @@ export default function App({ Component, pageProps }) {
     }
 
     pendingViewRef.current = incomingView;
+
+    if (window.__fiteRevealIncomingViewImmediately) {
+      window.__fiteRevealIncomingViewImmediately = false;
+      revealViewNow(incomingView, window.__fiteFastNextRouteReveal ? 260 : ENTRY_MS);
+      window.__fiteFastNextRouteReveal = false;
+      return;
+    }
 
     if (phaseRef.current === "idle") {
       resetWindowScroll();
