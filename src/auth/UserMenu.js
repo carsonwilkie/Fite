@@ -157,6 +157,7 @@ export default function UserMenu({ size = 32, align = "right" }) {
                   }
                   // Navigate home once; the global route transition owns the reveal.
                   window.__fiteSkipNextRouteCover = true;
+                  window.__fiteFastNextRouteReveal = true;
                   await router.replace("/");
                   if (typeof window !== "undefined") {
                     window.__fiteSkipNextRouteCover = false;

@@ -101,6 +101,7 @@ export default function AuthCard({
   const onAuthenticated = useCallback(() => {
     if (typeof window !== "undefined") {
       window.__fiteAuthRedirectInProgress = true;
+      window.__fiteFastNextRouteReveal = true;
     }
     router.replace(safeAfterAuthRedirect).finally(() => {
       if (typeof window !== "undefined") {

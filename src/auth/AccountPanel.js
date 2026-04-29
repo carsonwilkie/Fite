@@ -70,6 +70,7 @@ export default function AccountPanel() {
       await window.__fiteCoverInstant?.();
       await signOut();
       window.__fiteSkipNextRouteCover = true;
+      window.__fiteFastNextRouteReveal = true;
       await router.replace("/");
       if (typeof window !== "undefined") {
         window.__fiteSkipNextRouteCover = false;

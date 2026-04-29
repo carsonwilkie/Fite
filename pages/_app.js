@@ -79,7 +79,9 @@ export default function App({ Component, pageProps }) {
     revealPauseTimerRef.current = setTimeout(() => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          const revealMs = isHeroRoute(nextView.route) ? HERO_REVEAL_MS : ENTRY_MS;
+          const fastReveal = window.__fiteFastNextRouteReveal;
+          window.__fiteFastNextRouteReveal = false;
+          const revealMs = fastReveal ? 260 : isHeroRoute(nextView.route) ? HERO_REVEAL_MS : ENTRY_MS;
           setTransitionMs(revealMs);
           setAnim(true);
           setY("-100%");
@@ -233,14 +235,16 @@ export default function App({ Component, pageProps }) {
       clearTimeout(manualCoverTimer);
       clearTimeout(revealPauseTimerRef.current);
       clearTimeout(revealDoneTimerRef.current);
-      setTransitionMs(ENTRY_MS);
+      const revealMs = window.__fiteFastNextRouteReveal ? 260 : ENTRY_MS;
+      window.__fiteFastNextRouteReveal = false;
+      setTransitionMs(revealMs);
       setAnim(true);
       setY("-100%");
       setIsCovering(false);
       revealDoneTimerRef.current = setTimeout(() => {
         phaseRef.current = "idle";
         revealDoneTimerRef.current = null;
-      }, ENTRY_MS);
+      }, revealMs);
     };
     return () => {
       clearTimeout(manualCoverTimer);
