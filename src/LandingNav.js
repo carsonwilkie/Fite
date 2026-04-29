@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/router";
 import usePaidStatus from "./usePaidStatus";
@@ -20,27 +20,35 @@ export default function LandingNav() {
   const { isSignedIn, isLoaded } = useUser();
   const { openSignIn, openSignUp } = useAuthModal();
 
-  // Subscribe explicitly to routeChangeComplete and bump a counter to force
-  // a re-render. useRouter's built-in re-render works in normal flows, but
-  // because we render this nav inside a `displayedView` shim in _app.js
-  // (which keeps the previous page mounted during the page-transition cover)
-  // the active state could occasionally read stale pathname after the swap.
-  // This guarantees we re-evaluate `onHero` / `onFeatures` after every
-  // navigation completes.
-  const [, bump] = useReducer((n) => n + 1, 0);
-  useEffect(() => {
-    const onComplete = () => bump();
-    router.events.on("routeChangeComplete", onComplete);
-    return () => router.events.off("routeChangeComplete", onComplete);
-  }, [router.events]);
+  // Track the current pathname in local state so the active-link computation
+  // is independent of the useRouter() subscription. This component lives
+  // inside the displayedView shim in _app.js (which keeps the previous page
+  // mounted during the cover transition); useRouter would still update, but
+  // we've seen the active state read stale on navigations away from
+  // /features. Listening directly to router.events for the URL gives us a
+  // synchronous, deterministic source of truth.
+  const [livePath, setLivePath] = useState(() => stripQH(router.asPath));
 
-  // Use asPath (the actual URL) as the source of truth for active state and
-  // strip hash/query so anchor scrolls on the landing page (e.g. "/#hero")
-  // don't make Home appear inactive.
-  const path = stripQH(router.asPath);
-  const onHero      = path === "/" || router.pathname === "/";
-  const onFeatures  = path === "/features" || router.pathname === "/features";
-  const onDashboard = path === "/dashboard" || router.pathname === "/dashboard";
+  useEffect(() => {
+    // Sync once on mount in case router.asPath changed between SSR and now.
+    setLivePath(stripQH(router.asPath));
+    const onChange = (url) => setLivePath(stripQH(url));
+    // Update on BOTH start and complete: start gives us the destination URL
+    // immediately so by the time the cover lifts the navbar is already
+    // showing the right active state; complete is a safety net.
+    router.events.on("routeChangeStart", onChange);
+    router.events.on("routeChangeComplete", onChange);
+    router.events.on("hashChangeComplete", onChange);
+    return () => {
+      router.events.off("routeChangeStart", onChange);
+      router.events.off("routeChangeComplete", onChange);
+      router.events.off("hashChangeComplete", onChange);
+    };
+  }, [router.events, router.asPath]);
+
+  const onHero      = livePath === "/";
+  const onFeatures  = livePath === "/features";
+  const onDashboard = livePath === "/dashboard";
 
   return (
     <>
