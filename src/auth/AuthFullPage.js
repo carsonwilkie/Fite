@@ -11,7 +11,7 @@ import { sanitizeRedirectPath } from "./redirects";
 export default function AuthFullPage({ view = "sign-in", title, description }) {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useUser();
-  const redirectTo = sanitizeRedirectPath(router.query.redirect_url, "/dashboard");
+  const redirectTo = sanitizeRedirectPath(router.query.redirect_url, "/");
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {

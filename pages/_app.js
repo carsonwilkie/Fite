@@ -185,6 +185,12 @@ export default function App({ Component, pageProps }) {
   // before auth state changes, then reveal after navigating to "/".
   useEffect(() => {
     window.__fiteCoverInstant = () => {
+      // Must set phaseRef so the route-change useEffect doesn't instant-swap
+      // the page while the cover is still animating in.
+      phaseRef.current = "covering";
+      coverDoneRef.current = false;
+      routeReadyRef.current = false;
+      setFrozenScrollY(window.scrollY || window.pageYOffset || 0);
       setTransitionMs(ENTRY_MS);
       setAnim(true);
       setY("0%");
@@ -258,8 +264,8 @@ export default function App({ Component, pageProps }) {
       publishableKey={PUBLISHABLE_KEY}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
-      signInFallbackRedirectUrl="/dashboard"
-      signUpFallbackRedirectUrl="/dashboard"
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/"
       {...pageProps}
     >
       <PaidStatusProvider>

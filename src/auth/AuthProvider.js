@@ -170,7 +170,7 @@ export default function AuthProvider({ children }) {
                   initialView={state.view}
                   onClose={closeAuth}
                   variant="modal"
-                  afterAuthRedirect={state.redirectTo || "/dashboard"}
+                  afterAuthRedirect={state.redirectTo || "/"}
                 />
               </motion.div>
             </div>

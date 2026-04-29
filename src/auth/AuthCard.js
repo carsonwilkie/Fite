@@ -64,7 +64,7 @@ export default function AuthCard({
   initialView = "sign-in",
   onClose,
   variant = "modal", // "modal" | "page"
-  afterAuthRedirect = "/dashboard",
+  afterAuthRedirect = "/",
 }) {
   const router = useRouter();
   const safeAfterAuthRedirect = sanitizeRedirectPath(afterAuthRedirect, "/dashboard");
