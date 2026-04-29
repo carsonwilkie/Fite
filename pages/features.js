@@ -1030,7 +1030,7 @@ export default function FeaturesPage() {
                   { t: "5 AI-generated questions / day",  ok: true  },
                   { t: "Model answer reveal",             ok: true  },
                   { t: "Anti-repeat filter",              ok: true  },
-                  { t: "All 8 finance categories",        ok: true  },
+                  { t: "All 7 finance categories",        ok: true  },
                   { t: "AI answer grading",               ok: false },
                   { t: "Mock interview mode",             ok: false },
                   { t: "Full history + stats",            ok: false },
