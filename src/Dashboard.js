@@ -1222,7 +1222,20 @@ export default function Dashboard() {
 
   const handleInterviewDebrief = async () => { if (!interviewSession) return; setLoadingDebrief(true); try { const r = await fetch("/api/interview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "debrief", scenario: interviewSession.scenario, questions: interviewSession.questions.map((q,i) => ({ question: q.question, idealAnswer: q.idealAnswer, userAnswer: interviewUserAnswers[i] || "No answer submitted.", score: interviewResponses[i]?.score ?? null })), category, difficulty }) }); const d = await r.json(); setInterviewDebrief(d.feedback); } catch (e) { console.error(e); } setLoadingDebrief(false); };
 
-  const handleManageSub = async () => { if (!user?.id) return; const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ returnPath: router.asPath }) }); const d = await r.json(); if (d.url) window.location.href = d.url; };
+  const [loadingManageSub, setLoadingManageSub] = useState(false);
+  const handleManageSub = async () => {
+    if (!user?.id || loadingManageSub) return;
+    setLoadingManageSub(true);
+    try {
+      const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ returnPath: router.asPath }) });
+      const d = await r.json();
+      if (d.url) window.location.href = d.url;
+    } catch (e) {
+      console.error("[handleManageSub]", e);
+    } finally {
+      setLoadingManageSub(false);
+    }
+  };
   const toggleProfilePanel = () => {
     if (isSignedIn) {
       router.push("/account");
@@ -1284,7 +1297,7 @@ export default function Dashboard() {
             <NavItem icon="history" label="History" onClick={() => isPaid ? router.push("/history") : null} muted={!isPaid} />
             <NavItem icon="bar_chart" label="Stats" onClick={() => isPaid ? router.push("/stats") : null} muted={!isPaid} />
             {isPaid
-              ? <NavItem icon="credit_card" label="Manage Plan" onClick={handleManageSub} />
+              ? <NavItem icon="credit_card" label={loadingManageSub ? "Opening…" : "Manage Plan"} onClick={handleManageSub} />
               : <NavItem icon="workspace_premium" label="Upgrade" onClick={handleUpgrade} gold />
             }
             <NavItem icon="forum" label="Submit Feedback" onClick={() => isSignedIn ? router.push("/feedback") : null} muted={!isSignedIn} />
@@ -1462,11 +1475,12 @@ export default function Dashboard() {
                               <div style={{ height: 1, background: C.border, margin: "4px 6px" }} />
                               <motion.button
                                 onClick={() => { setNavOpen(false); handleManageSub(); }}
+                                disabled={loadingManageSub}
                                 whileTap={{ scale: 0.96 }}
                                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "none", border: "none", cursor: "pointer", color: C.text, fontSize: 13, fontWeight: 700, fontFamily: "Inter, sans-serif", textAlign: "left" }}
                               >
                                 <Icon name="credit_card" size={16} style={{ color: C.gold }} />
-                                Manage Plan
+                                {loadingManageSub ? "Opening…" : "Manage Plan"}
                               </motion.button>
                             </>
                           )}
