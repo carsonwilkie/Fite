@@ -41,7 +41,13 @@ export default function AccountPanel() {
   }, [user]);
 
   useEffect(() => {
-    if (isLoaded && !user && !signingOut) router.replace("/");
+    // Skip when we've already routed home — fires after handleSignOut() has
+    // cleared `signingOut`, and we're now on /. A redundant router.replace("/")
+    // here would otherwise re-trigger the page-transition cover for a
+    // same-route navigation.
+    if (!isLoaded || user || signingOut) return;
+    if (router.asPath === "/") return;
+    router.replace("/");
   }, [isLoaded, user, signingOut, router]);
 
   const displayUser = user || (signingOut ? lastUserRef.current : null);
@@ -77,7 +83,10 @@ export default function AccountPanel() {
     window.__fiteSignOutAt = Date.now();
     const navP = router.asPath !== "/" ? router.replace("/") : Promise.resolve();
     try {
-      await Promise.all([signOut(), navP]);
+      // No-op callback suppresses Clerk's built-in afterSignOutUrl redirect,
+      // which would race with our router.replace and could cancel one of the
+      // two navigations — leaving the page-transition cover stranded.
+      await Promise.all([signOut(() => {}), navP]);
     } catch (err) {
       if (process.env.NODE_ENV !== "production") {
         // eslint-disable-next-line no-console
@@ -702,11 +711,12 @@ function DangerPane({ user }) {
     setLoading(true); setErr(null);
     try {
       await user.delete();
-      // Same contract as the regular sign-out path: stamp first so AuthProvider
-      // does not race us with a second navigation when isSignedIn flips.
+      // Same contract as the regular sign-out path: stamp first, suppress
+      // Clerk's built-in afterSignOutUrl redirect, then drive navigation
+      // ourselves to keep the page-transition cover well-coordinated.
       window.__fiteSignOutAt = Date.now();
       const navP = router.asPath !== "/" ? router.replace("/") : Promise.resolve();
-      await Promise.all([signOut(), navP]);
+      await Promise.all([signOut(() => {}), navP]);
     } catch (e) {
       setErr(friendlyError(e));
       setLoading(false);

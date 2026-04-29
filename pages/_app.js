@@ -17,16 +17,20 @@ const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 // COVER_MS: time the navy panel takes to slide DOWN over the current page.
 // REVEAL_MS / HERO_REVEAL_MS: time the navy panel takes to slide UP off the
 //   destination page.
-// COVER_HOLD_MS: brief opaque hold so the destination has time to mount and
-//   paint behind the cover before reveal starts. We keep this short because
-//   the rAF gate inside startReveal() already guarantees one paint.
+// COVER_HOLD_MS: opaque hold between cover-down completing and reveal start.
+//   Kept at 0 — the single rAF in startReveal() is sufficient to ensure the
+//   destination has been committed before the reveal animation begins.
 // STUCK_MS: failsafe — if a navigation hasn't completed within this window,
 //   we lift the cover unconditionally so the user is never trapped on navy.
-const COVER_MS         = 460;
-const REVEAL_MS        = 480;
-const HERO_REVEAL_MS   = 520;
-const COVER_HOLD_MS    = 40;
-const STUCK_MS         = 1800;
+//
+// IMPORTANT: AuthProvider.js times its modal-close to MODAL_CLOSE_AFTER_MS
+// (set to ~COVER_MS) so the modal exits *under* the cover rather than before
+// it. If you change COVER_MS, update that constant too.
+const COVER_MS         = 380;
+const REVEAL_MS        = 400;
+const HERO_REVEAL_MS   = 460;
+const COVER_HOLD_MS    = 0;
+const STUCK_MS         = 1600;
 
 function isHeroRoute(route) {
   return route === "/" || route.startsWith("/?") || route.startsWith("/#");
@@ -100,29 +104,32 @@ export default function App({ Component, pageProps }) {
     setIsCovering(false);
 
     clearTimeout(revealHoldTimerRef.current);
-    revealHoldTimerRef.current = setTimeout(() => {
-      // Two RAFs guarantee the new view has been committed *and* painted
-      // before we begin the reveal animation, so the cover never lifts off
-      // a blank/un-mounted page.
+    const begin = () => {
+      // One rAF gives the new view a frame to be committed and painted before
+      // we lift the cover. Two RAFs proved unnecessary in practice and just
+      // added a perceptible navy hold.
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const ms = getRevealMs(route);
-          setTransitionMs(ms);
-          setAnim(true);
-          setY("-100%");
-          revealHoldTimerRef.current = null;
+        const ms = getRevealMs(route);
+        setTransitionMs(ms);
+        setAnim(true);
+        setY("-100%");
+        revealHoldTimerRef.current = null;
 
-          clearTimeout(revealEndTimerRef.current);
-          revealEndTimerRef.current = setTimeout(() => {
-            phaseRef.current = "idle";
-            revealEndTimerRef.current = null;
-            // Cancel the stuck failsafe — we made it.
-            clearTimeout(stuckTimerRef.current);
-            stuckTimerRef.current = null;
-          }, ms + 80);
-        });
+        clearTimeout(revealEndTimerRef.current);
+        revealEndTimerRef.current = setTimeout(() => {
+          phaseRef.current = "idle";
+          revealEndTimerRef.current = null;
+          // Cancel the stuck failsafe — we made it.
+          clearTimeout(stuckTimerRef.current);
+          stuckTimerRef.current = null;
+        }, ms + 80);
       });
-    }, COVER_HOLD_MS);
+    };
+    if (COVER_HOLD_MS > 0) {
+      revealHoldTimerRef.current = setTimeout(begin, COVER_HOLD_MS);
+    } else {
+      begin();
+    }
   }, []);
 
   // The single coordination point. Called any time one of the gating signals

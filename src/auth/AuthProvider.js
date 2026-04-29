@@ -14,6 +14,14 @@ const AuthModalContext = createContext(null);
 // of that timestamp as "already being navigated by the caller, do not push".
 const MANUAL_SIGNOUT_WINDOW_MS = 4000;
 
+// How long after firing router.replace() to hold the modal open before we
+// start its exit animation. The page-transition cover in _app.js takes
+// ~COVER_MS (380ms) to slide fully down; we wait a hair longer so the modal
+// is firmly hidden behind the opaque cover when it begins to exit. This
+// prevents the user from briefly seeing the underlying page in the gap
+// between the modal exit and the cover reaching full opacity.
+const MODAL_CLOSE_AFTER_MS = 400;
+
 export function useAuthModal() {
   const ctx = useContext(AuthModalContext);
   if (!ctx) throw new Error("useAuthModal must be used within AuthProvider");
@@ -25,6 +33,16 @@ export default function AuthProvider({ children }) {
   const { isSignedIn } = useUser();
   const router = useRouter();
   const wasSignedInRef = useRef(null);
+  const closeAfterCoverTimerRef = useRef(null);
+  const handledSignInRef = useRef(false);
+
+  useEffect(() => {
+    // Reset the per-modal "already handled" guard whenever the modal closes,
+    // so the next open is free to react to a fresh sign-in.
+    if (!state.open) handledSignInRef.current = false;
+  }, [state.open]);
+
+  useEffect(() => () => clearTimeout(closeAfterCoverTimerRef.current), []);
 
   const openAuth = useCallback((view = "sign-in", opts = {}) => {
     setState({
@@ -68,23 +86,38 @@ export default function AuthProvider({ children }) {
   //   1. window.__fitePendingAuthRedirect — set by AuthCard.onAuthenticated()
   //   2. state.redirectTo                  — set when openAuth was called
   //   3. fallback: do not navigate         — they're staying on the current page
+  //
+  // Sequencing matters here. To make the modal "tuck" cleanly under the
+  // page-transition cover (rather than visibly fade out before the cover
+  // arrives), we:
+  //   1. Trigger router.replace() FIRST — that fires routeChangeStart and the
+  //      navy cover begins sliding down over the modal.
+  //   2. Hold the modal open until the cover is fully opaque
+  //      (MODAL_CLOSE_AFTER_MS), then close it. The exit animation now
+  //      happens entirely behind the cover and is invisible to the user.
+  // If no navigation is required (target equals current asPath) we just
+  // close the modal immediately — there is no cover to hide behind.
   useEffect(() => {
     if (!state.open) return;
     if (isSignedIn !== true) return;
+    if (handledSignInRef.current) return;
+    handledSignInRef.current = true;
 
     const pending = typeof window !== "undefined" ? window.__fitePendingAuthRedirect : null;
     const target = pending || state.redirectTo || null;
     if (typeof window !== "undefined") window.__fitePendingAuthRedirect = null;
 
-    closeAuth();
+    const willNavigate = target && target !== router.asPath;
 
-    if (target && target !== router.asPath) {
-      // Wait one frame so the modal exit animation can begin before the
-      // page-cover overlay slides down, otherwise the user briefly sees the
-      // modal stack on top of the cover starting.
-      requestAnimationFrame(() => {
-        router.replace(target);
-      });
+    if (willNavigate) {
+      router.replace(target);
+      clearTimeout(closeAfterCoverTimerRef.current);
+      closeAfterCoverTimerRef.current = setTimeout(() => {
+        closeAuth();
+        closeAfterCoverTimerRef.current = null;
+      }, MODAL_CLOSE_AFTER_MS);
+    } else {
+      closeAuth();
     }
   }, [isSignedIn, state.open, state.redirectTo, closeAuth, router]);
 

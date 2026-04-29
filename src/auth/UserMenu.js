@@ -147,11 +147,15 @@ export default function UserMenu({ size = 32, align = "right" }) {
                 // way the user never sees the dashboard flash unauthenticated.
                 window.__fiteSignOutAt = Date.now();
                 const goingHome = router.asPath !== "/";
+                // Pass a no-op callback to signOut. This is the documented way
+                // to suppress Clerk's built-in afterSignOutUrl redirect, which
+                // would otherwise race with our own router.replace and cancel
+                // one of the two — sometimes leaving the page-transition cover
+                // stranded mid-animation.
                 const navP = goingHome ? router.replace("/") : Promise.resolve();
                 try {
-                  await Promise.all([signOut(), navP]);
+                  await Promise.all([signOut(() => {}), navP]);
                 } catch (err) {
-                  // Swallow — user is signed out either way; surface only in dev.
                   if (process.env.NODE_ENV !== "production") {
                     // eslint-disable-next-line no-console
                     console.warn("[UserMenu] sign-out error", err);
