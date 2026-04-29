@@ -18,6 +18,13 @@ export default function AuthProvider({ children }) {
   const { isSignedIn } = useUser();
   const router = useRouter();
   const wasSignedInRef = useRef(null);
+  const manualSignOutRef = useRef(false);
+
+  useEffect(() => {
+    const handler = () => { manualSignOutRef.current = true; };
+    window.addEventListener("fite:manual-signout", handler);
+    return () => window.removeEventListener("fite:manual-signout", handler);
+  }, []);
 
   const openAuth = useCallback((view = "sign-in", opts = {}) => {
     setState({
@@ -32,10 +39,15 @@ export default function AuthProvider({ children }) {
   }, []);
 
   // When user signs out, use Next.js router to avoid a hard-redirect white flash.
+  // Skip if UserMenu's manual sign-out flow is handling the navigation itself.
   useEffect(() => {
     if (isSignedIn === undefined) return;
     if (wasSignedInRef.current === true && isSignedIn === false) {
-      router.push("/");
+      if (manualSignOutRef.current) {
+        manualSignOutRef.current = false;
+      } else {
+        router.push("/");
+      }
     }
     wasSignedInRef.current = isSignedIn;
   }, [isSignedIn, router]);

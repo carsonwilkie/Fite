@@ -181,6 +181,28 @@ export default function App({ Component, pageProps }) {
     }
   }, []);
 
+  // Expose manual cover/reveal so the sign-out flow can cover the screen
+  // before auth state changes, then reveal after navigating to "/".
+  useEffect(() => {
+    window.__fiteCoverInstant = () => {
+      setTransitionMs(ENTRY_MS);
+      setAnim(true);
+      setY("0%");
+      setIsCovering(true);
+    };
+    window.__fiteReveal = () => {
+      setTransitionMs(ENTRY_MS);
+      setAnim(true);
+      setY("-100%");
+      setIsCovering(false);
+      phaseRef.current = "idle";
+    };
+    return () => {
+      delete window.__fiteCoverInstant;
+      delete window.__fiteReveal;
+    };
+  }, []);
+
   useEffect(() => {
     if (typeof document === "undefined") {
       return undefined;
@@ -238,7 +260,6 @@ export default function App({ Component, pageProps }) {
       signUpUrl="/sign-up"
       signInFallbackRedirectUrl="/dashboard"
       signUpFallbackRedirectUrl="/dashboard"
-      afterSignOutUrl="/"
       {...pageProps}
     >
       <PaidStatusProvider>

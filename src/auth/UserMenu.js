@@ -138,8 +138,19 @@ export default function UserMenu({ size = 32, align = "right" }) {
               label="Sign out"
               onClick={async () => {
                 setOpen(false);
-                await router.push("/");
+                // Signal AuthProvider to skip its auto-navigate for this sign-out.
+                window.dispatchEvent(new CustomEvent("fite:manual-signout"));
+                // Cover the screen before auth state changes so there's no flash.
+                window.__fiteCoverInstant?.();
+                await new Promise(r => setTimeout(r, 500));
                 await signOut();
+                if (router.pathname === "/") {
+                  // Already on home — just slide the cover away.
+                  window.__fiteReveal?.();
+                } else {
+                  // Navigate home; the route change drives the reveal.
+                  router.push("/");
+                }
               }}
               danger
             />
