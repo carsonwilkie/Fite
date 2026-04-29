@@ -84,14 +84,29 @@ export default function LandingPage() {
 
   // Freeze canvas updates as soon as navigation starts so the ScrollTrigger scrub
   // doesn't rewind frames while the cover overlay is still sliding over the page.
+  // We also freeze during the same-page "cover-flash" used for in-place sign-in
+  // / sign-up so the canvas's frame-by-frame WebP redraws don't compete with
+  // the reveal animation on the GPU.
   useEffect(() => {
     const freeze = () => { frozenRef.current = true; };
     const unfreeze = () => { frozenRef.current = false; };
+    const onFlash = () => {
+      freeze();
+      // Approximate cover-flash duration: cover + reveal + buffer.
+      // _app.js controls the actual timing, but this is a small enough
+      // window that even if the cover finishes early the user still gets
+      // a smooth reveal.
+      setTimeout(unfreeze, 700);
+    };
     router.events.on("routeChangeStart", freeze);
     router.events.on("routeChangeError", unfreeze);
+    router.events.on("routeChangeComplete", unfreeze);
+    window.addEventListener("fite:cover-flash", onFlash);
     return () => {
       router.events.off("routeChangeStart", freeze);
       router.events.off("routeChangeError", unfreeze);
+      router.events.off("routeChangeComplete", unfreeze);
+      window.removeEventListener("fite:cover-flash", onFlash);
     };
   }, [router.events]);
 

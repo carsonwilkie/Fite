@@ -152,7 +152,20 @@ export default function UserMenu({ size = 32, align = "right" }) {
                 // would otherwise race with our own router.replace and cancel
                 // one of the two — sometimes leaving the page-transition cover
                 // stranded mid-animation.
-                const navP = goingHome ? router.replace("/") : Promise.resolve();
+                let navP;
+                if (goingHome) {
+                  navP = router.replace("/");
+                } else {
+                  // Same-page sign-out (already on /). Fire a cover-flash so
+                  // the user gets visual confirmation and the home page's
+                  // GSAP canvas pauses while the auth state flips. Without
+                  // this, the home page felt sluggish vs. /features (which
+                  // gets a real transition cover).
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("fite:cover-flash"));
+                  }
+                  navP = Promise.resolve();
+                }
                 try {
                   await Promise.all([signOut(() => {}), navP]);
                 } catch (err) {

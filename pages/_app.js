@@ -26,11 +26,21 @@ const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 // IMPORTANT: AuthProvider.js times its modal-close to MODAL_CLOSE_AFTER_MS
 // (set to ~COVER_MS) so the modal exits *under* the cover rather than before
 // it. If you change COVER_MS, update that constant too.
-const COVER_MS         = 380;
-const REVEAL_MS        = 400;
-const HERO_REVEAL_MS   = 460;
+const COVER_MS         = 340;
+const REVEAL_MS        = 380;
+// HERO_REVEAL_MS used to be longer to feel "cinematic" on the landing page,
+// but the GSAP-pinned hero keeps animating behind the cover and competes with
+// the reveal for GPU time, making the lift feel sluggish vs. simpler routes.
+// Match REVEAL_MS so /, /features, and /dashboard all feel uniformly fast.
+const HERO_REVEAL_MS   = 380;
 const COVER_HOLD_MS    = 0;
 const STUCK_MS         = 1600;
+// Cover-flash is the same-page sign-in/out cover-up→cover-down cycle. There
+// is nothing to hide behind it (no view swap), so we use shorter durations
+// than a real navigation. The user just needs a brief visual confirmation
+// that the auth state changed.
+const FLASH_COVER_MS   = 260;
+const FLASH_REVEAL_MS  = 320;
 
 function isHeroRoute(route) {
   return route === "/" || route.startsWith("/?") || route.startsWith("/#");
@@ -325,7 +335,7 @@ export default function App({ Component, pageProps }) {
       pendingViewRef.current = null;
       phaseRef.current       = "covering";
 
-      setTransitionMs(COVER_MS);
+      setTransitionMs(FLASH_COVER_MS);
       setAnim(true);
       setY("0%");
 
@@ -335,8 +345,7 @@ export default function App({ Component, pageProps }) {
         phaseRef.current = "revealing";
 
         requestAnimationFrame(() => {
-          const ms = getRevealMs(router.asPath);
-          setTransitionMs(ms);
+          setTransitionMs(FLASH_REVEAL_MS);
           setAnim(true);
           setY("-100%");
 
@@ -346,9 +355,9 @@ export default function App({ Component, pageProps }) {
             revealEndTimerRef.current = null;
             clearTimeout(stuckTimerRef.current);
             stuckTimerRef.current = null;
-          }, ms + 80);
+          }, FLASH_REVEAL_MS + 80);
         });
-      }, COVER_MS);
+      }, FLASH_COVER_MS);
 
       // Mirror the routeChangeStart failsafe so a flash can never strand us.
       stuckTimerRef.current = setTimeout(() => {
