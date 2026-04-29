@@ -59,6 +59,14 @@ function friendlyError(err) {
   return "Something went wrong. Please try again.";
 }
 
+function getCodeSecondFactor(factors) {
+  return (
+    factors?.find((f) => f.strategy === "email_code") ||
+    factors?.find((f) => f.strategy === "phone_code") ||
+    null
+  );
+}
+
 export default function AuthCard({
   initialView = "sign-in",
   onClose,
@@ -414,13 +422,12 @@ function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
         await setActive({ session: result.createdSessionId });
         onAuthenticated();
       } else if (result.status === "needs_client_trust") {
-        const emailFactor = result.supportedFirstFactors?.find(
-          (f) => f.strategy === "email_code"
-        );
-        if (emailFactor) {
-          await signIn.prepareFirstFactor({
-            strategy: "email_code",
-            emailAddressId: emailFactor.emailAddressId,
+        const codeFactor = getCodeSecondFactor(result.supportedSecondFactors);
+        if (codeFactor) {
+          await signIn.prepareSecondFactor({
+            strategy: codeFactor.strategy,
+            emailAddressId: codeFactor.emailAddressId,
+            phoneNumberId: codeFactor.phoneNumberId,
           });
           onSwitch("client-trust", 1);
         } else {
@@ -857,6 +864,7 @@ function ClientTrustView({ onSwitch, onAuthenticated }) {
   const [shake, setShake] = useState(0);
   const [cooldown, setCooldown] = useState(RESEND_SECONDS);
   const [resending, setResending] = useState(false);
+  const factor = useMemo(() => getCodeSecondFactor(signIn?.supportedSecondFactors), [signIn?.supportedSecondFactors]);
 
   useEffect(() => {
     if (cooldown <= 0) return undefined;
@@ -871,7 +879,11 @@ function ClientTrustView({ onSwitch, onAuthenticated }) {
     setLoading(true);
     setErr(null);
     try {
-      const res = await signIn.attemptFirstFactor({ strategy: "email_code", code: codeStr });
+      if (!factor) {
+        setErr("This account requires a verification method that is not available in this sign-in form.");
+        return;
+      }
+      const res = await signIn.attemptSecondFactor({ strategy: factor.strategy, code: codeStr });
       if (res.status === "complete") {
         await setActive({ session: res.createdSessionId });
         onAuthenticated();
@@ -884,16 +896,19 @@ function ClientTrustView({ onSwitch, onAuthenticated }) {
     } finally {
       setLoading(false);
     }
-  }, [code, isLoaded, loading, setActive, signIn, onAuthenticated]);
+  }, [code, factor, isLoaded, loading, setActive, signIn, onAuthenticated]);
 
   const handleResend = async () => {
     if (!isLoaded || resending || cooldown > 0) return;
     setResending(true);
     setErr(null);
     try {
-      const emailFactor = signIn.supportedFirstFactors?.find((f) => f.strategy === "email_code");
-      if (emailFactor) {
-        await signIn.prepareFirstFactor({ strategy: "email_code", emailAddressId: emailFactor.emailAddressId });
+      if (factor) {
+        await signIn.prepareSecondFactor({
+          strategy: factor.strategy,
+          emailAddressId: factor.emailAddressId,
+          phoneNumberId: factor.phoneNumberId,
+        });
       }
       setCooldown(RESEND_SECONDS);
     } catch (e) {
@@ -903,8 +918,22 @@ function ClientTrustView({ onSwitch, onAuthenticated }) {
     }
   };
 
+  if (!factor) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <ErrorBanner error="This account requires a verification method that is not available in this sign-in form." />
+        <GhostButton onClick={() => onSwitch("sign-in", -1)}>Back to sign in</GhostButton>
+      </div>
+    );
+  }
+
+  const deliveryLabel = factor.strategy === "phone_code" ? "phone" : "email";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ color: AUTH_COLORS.textMuted, fontSize: 13, fontFamily: "Manrope, sans-serif", lineHeight: 1.55, textAlign: "center" }}>
+        Enter the 6-digit code we sent to your {deliveryLabel}.
+      </div>
       <ShakeWrapper trigger={shake}>
         <CodeInput value={code} onChange={setCode} onComplete={(v) => submit(v)} autoFocus />
       </ShakeWrapper>
