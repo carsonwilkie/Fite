@@ -845,7 +845,7 @@ export default function FeaturesPage() {
                     Dial in the exact reps you need. Pick from 8 finance verticals, three difficulty tiers, optional math, and — for Premium — a free-text custom descriptor that reshapes the question on the fly.
                   </p>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 22 }}>
-                    {["Investment Banking", "Private Equity", "Asset Mgmt", "S&T", "Valuation", "Accounting", "Consulting", "Hedge Funds"].map(tag => (
+                    {["Investment Banking", "Private Equity", "Asset Mgmt", "S&T", "Valuation", "Accounting", "Consulting"].map(tag => (
                       <span key={tag} className="lp-tag">{tag}</span>
                     ))}
                   </div>
