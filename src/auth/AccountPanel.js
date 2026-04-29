@@ -33,12 +33,20 @@ export default function AccountPanel() {
   const router = useRouter();
   const [tab, setTab] = useState("profile");
   const [tabDir, setTabDir] = useState(1);
+  const [signingOut, setSigningOut] = useState(false);
+  const lastUserRef = useRef(user);
 
   useEffect(() => {
-    if (isLoaded && !user && !window.__fiteManualSignOutInProgress) router.replace("/");
-  }, [isLoaded, user, router]);
+    if (user) lastUserRef.current = user;
+  }, [user]);
 
-  if (!isLoaded || !user) {
+  useEffect(() => {
+    if (isLoaded && !user && !signingOut) router.replace("/");
+  }, [isLoaded, user, signingOut, router]);
+
+  const displayUser = user || (signingOut ? lastUserRef.current : null);
+
+  if (!isLoaded || !displayUser) {
     return (
       <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Spinner />
@@ -62,29 +70,14 @@ export default function AccountPanel() {
   };
 
   const handleSignOut = async () => {
-    if (typeof window !== "undefined") {
-      window.__fiteManualSignOutInProgress = true;
-    }
+    if (signingOut) return;
+    setSigningOut(true);
     try {
       window.dispatchEvent(new CustomEvent("fite:manual-signout"));
-      await window.__fiteCoverInstant?.();
       await signOut();
-      window.__fiteSkipNextRouteCover = true;
-      window.__fiteFastNextRouteReveal = true;
-      window.__fiteRevealIncomingViewImmediately = true;
       await router.replace("/");
-      if (typeof window !== "undefined") {
-        window.__fiteSkipNextRouteCover = false;
-        window.__fiteRevealIncomingViewImmediately = false;
-        window.__fiteManualSignOutInProgress = false;
-      }
     } catch (err) {
-      if (typeof window !== "undefined") {
-        window.__fiteSkipNextRouteCover = false;
-        window.__fiteRevealIncomingViewImmediately = false;
-        window.__fiteManualSignOutInProgress = false;
-      }
-      window.__fiteReveal?.();
+      setSigningOut(false);
       throw err;
     }
   };
@@ -132,16 +125,16 @@ export default function AccountPanel() {
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 28, flexWrap: "wrap" }}
         >
-          <AvatarRing user={user} />
+          <AvatarRing user={displayUser} />
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontSize: 11, fontFamily: "Manrope, sans-serif", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: AUTH_COLORS.secondary, marginBottom: 4 }}>
               Account
             </div>
             <div style={{ fontSize: 28, fontWeight: 900, fontFamily: "Inter, sans-serif", letterSpacing: "-0.02em", lineHeight: 1.1 }}>
-              {user.fullName || user.firstName || "Your Account"}
+              {displayUser.fullName || displayUser.firstName || "Your Account"}
             </div>
             <div style={{ fontSize: 13, color: AUTH_COLORS.textMuted, fontFamily: "Manrope, sans-serif", marginTop: 4 }}>
-              {user.primaryEmailAddress?.emailAddress}
+              {displayUser.primaryEmailAddress?.emailAddress}
             </div>
           </div>
           <motion.button
@@ -155,12 +148,13 @@ export default function AccountPanel() {
               color: AUTH_COLORS.text,
               fontFamily: "Manrope, sans-serif",
               fontWeight: 700, fontSize: 12, letterSpacing: "0.12em",
-              textTransform: "uppercase", cursor: "pointer",
+              textTransform: "uppercase", cursor: signingOut ? "default" : "pointer",
+              opacity: signingOut ? 0.65 : 1,
               display: "flex", alignItems: "center", gap: 8,
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: 16 }}>logout</span>
-            Sign out
+            {signingOut ? "Signing out..." : "Sign out"}
           </motion.button>
         </motion.div>
 
@@ -221,10 +215,10 @@ export default function AccountPanel() {
                 exit={{ opacity: 0, x: tabDir > 0 ? -24 : 24 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               >
-                {tab === "profile"  && <ProfilePane user={user} />}
-                {tab === "security" && <SecurityPane user={user} />}
-                {tab === "sessions" && <SessionsPane user={user} />}
-                {tab === "danger"   && <DangerPane user={user} />}
+                {tab === "profile"  && <ProfilePane user={displayUser} />}
+                {tab === "security" && <SecurityPane user={displayUser} />}
+                {tab === "sessions" && <SessionsPane user={displayUser} />}
+                {tab === "danger"   && <DangerPane user={displayUser} />}
               </motion.div>
             </AnimatePresence>
           </section>

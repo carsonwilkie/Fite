@@ -55,13 +55,12 @@ export default function AuthProvider({ children }) {
   // Auto-close if user becomes signed in while modal is open.
   useEffect(() => {
     if (state.open && isSignedIn) {
-      const t = setTimeout(() => {
-        closeAuth();
-        if (state.redirectTo && !window.__fiteAuthRedirectInProgress) {
-          router.push(state.redirectTo);
-        }
-      }, 350);
-      return () => clearTimeout(t);
+      const redirectTo = window.__fitePendingAuthRedirect || state.redirectTo;
+      window.__fitePendingAuthRedirect = null;
+      closeAuth();
+      if (redirectTo) {
+        router.replace(redirectTo);
+      }
     }
     return undefined;
   }, [isSignedIn, state.open, state.redirectTo, closeAuth, router]);

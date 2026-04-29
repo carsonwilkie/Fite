@@ -79,9 +79,7 @@ export default function App({ Component, pageProps }) {
     revealPauseTimerRef.current = setTimeout(() => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          const fastReveal = window.__fiteFastNextRouteReveal;
-          window.__fiteFastNextRouteReveal = false;
-          const revealMs = fastReveal ? 260 : isHeroRoute(nextView.route) ? HERO_REVEAL_MS : ENTRY_MS;
+          const revealMs = isHeroRoute(nextView.route) ? HERO_REVEAL_MS : ENTRY_MS;
           setTransitionMs(revealMs);
           setAnim(true);
           setY("-100%");
@@ -94,30 +92,6 @@ export default function App({ Component, pageProps }) {
         });
       });
     }, getCoverPauseMs(nextView.route));
-  };
-
-  const revealViewNow = (nextView, revealMs = ENTRY_MS) => {
-    clearTimeout(revealPauseTimerRef.current);
-    clearTimeout(revealDoneTimerRef.current);
-    pendingViewRef.current = null;
-    routeReadyRef.current = false;
-    coverDoneRef.current = false;
-    phaseRef.current = "revealing";
-    setIsCovering(false);
-    resetWindowScroll();
-    setDisplayedView(nextView);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setTransitionMs(revealMs);
-        setAnim(true);
-        setY("-100%");
-        revealDoneTimerRef.current = setTimeout(() => {
-          phaseRef.current = "idle";
-          revealDoneTimerRef.current = null;
-        }, revealMs);
-      });
-    });
   };
 
   // Initial entry: reveal bottom-up after 60 ms
@@ -155,18 +129,6 @@ export default function App({ Component, pageProps }) {
       clearTimeout(revealTimer);
       clearTimeout(revealPauseTimerRef.current);
       clearTimeout(stuckCheckTimer);
-      if (window.__fiteSkipNextRouteCover) {
-        routeReadyRef.current = false;
-        coverDoneRef.current = true;
-        phaseRef.current = "covering";
-        setIsCovering(true);
-        stuckCheckTimer = setTimeout(() => {
-          if (phaseRef.current === "covering" || phaseRef.current === "revealing") {
-            resetStuckTransition();
-          }
-        }, 3000);
-        return;
-      }
       coverStartedAtRef.current = Date.now();
       routeReadyRef.current = false;
       coverDoneRef.current = false;
@@ -230,53 +192,6 @@ export default function App({ Component, pageProps }) {
     }
   }, []);
 
-  // Expose manual cover/reveal so the sign-out flow can cover the screen
-  // before auth state changes, then reveal after navigating to "/".
-  useEffect(() => {
-    let manualCoverTimer;
-
-    window.__fiteCoverInstant = () => {
-      clearTimeout(manualCoverTimer);
-      // Must set phaseRef so the route-change useEffect doesn't instant-swap
-      // the page while the cover is still animating in.
-      phaseRef.current = "covering";
-      coverDoneRef.current = false;
-      routeReadyRef.current = false;
-      setFrozenScrollY(window.scrollY || window.pageYOffset || 0);
-      setTransitionMs(ENTRY_MS);
-      setAnim(true);
-      setY("0%");
-      setIsCovering(true);
-
-      return new Promise((resolve) => {
-        manualCoverTimer = setTimeout(() => {
-          coverDoneRef.current = true;
-          resolve();
-        }, ENTRY_MS);
-      });
-    };
-    window.__fiteReveal = () => {
-      clearTimeout(manualCoverTimer);
-      clearTimeout(revealPauseTimerRef.current);
-      clearTimeout(revealDoneTimerRef.current);
-      const revealMs = window.__fiteFastNextRouteReveal ? 260 : ENTRY_MS;
-      window.__fiteFastNextRouteReveal = false;
-      setTransitionMs(revealMs);
-      setAnim(true);
-      setY("-100%");
-      setIsCovering(false);
-      revealDoneTimerRef.current = setTimeout(() => {
-        phaseRef.current = "idle";
-        revealDoneTimerRef.current = null;
-      }, revealMs);
-    };
-    return () => {
-      clearTimeout(manualCoverTimer);
-      delete window.__fiteCoverInstant;
-      delete window.__fiteReveal;
-    };
-  }, []);
-
   useEffect(() => {
     if (typeof document === "undefined") {
       return undefined;
@@ -310,13 +225,6 @@ export default function App({ Component, pageProps }) {
     }
 
     pendingViewRef.current = incomingView;
-
-    if (window.__fiteRevealIncomingViewImmediately) {
-      window.__fiteRevealIncomingViewImmediately = false;
-      revealViewNow(incomingView, window.__fiteFastNextRouteReveal ? 260 : ENTRY_MS);
-      window.__fiteFastNextRouteReveal = false;
-      return;
-    }
 
     if (phaseRef.current === "idle") {
       resetWindowScroll();

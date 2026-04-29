@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useSignIn, useSignUp } from "@clerk/nextjs/legacy";
 import { sanitizeRedirectPath } from "./redirects";
 import {
@@ -66,7 +65,6 @@ export default function AuthCard({
   variant = "modal", // "modal" | "page"
   afterAuthRedirect = "/",
 }) {
-  const router = useRouter();
   const safeAfterAuthRedirect = sanitizeRedirectPath(afterAuthRedirect, "/dashboard");
   const [view, setView] = useState(initialView); // sign-in | sign-up | verify | forgot | reset | second-factor | new-password
   const [dir, setDir] = useState(1);
@@ -100,17 +98,9 @@ export default function AuthCard({
 
   const onAuthenticated = useCallback(() => {
     if (typeof window !== "undefined") {
-      window.__fiteAuthRedirectInProgress = true;
-      window.__fiteFastNextRouteReveal = true;
-      window.__fiteRevealIncomingViewImmediately = true;
+      window.__fitePendingAuthRedirect = safeAfterAuthRedirect;
     }
-    router.replace(safeAfterAuthRedirect).finally(() => {
-      if (typeof window !== "undefined") {
-        window.__fiteAuthRedirectInProgress = false;
-        window.__fiteRevealIncomingViewImmediately = false;
-      }
-    });
-  }, [router, safeAfterAuthRedirect]);
+  }, [safeAfterAuthRedirect]);
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;

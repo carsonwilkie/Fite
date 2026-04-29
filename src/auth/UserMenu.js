@@ -12,6 +12,7 @@ export default function UserMenu({ size = 32, align = "right" }) {
   const { isPaid } = usePaidStatus();
   const [open, setOpen] = useState(false);
   const [managingSub, setManagingSub] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const anchorRef = useRef(null);
 
   const handleManageSub = async () => {
@@ -135,44 +136,24 @@ export default function UserMenu({ size = 32, align = "right" }) {
             <div style={{ height: 1, background: AUTH_COLORS.borderSoft, margin: "6px 8px" }} />
             <MenuItem
               icon="logout"
-              label="Sign out"
+              label={signingOut ? "Signing out..." : "Sign out"}
               onClick={async () => {
+                if (signingOut) return;
                 setOpen(false);
-                if (typeof window !== "undefined") {
-                  window.__fiteManualSignOutInProgress = true;
-                }
+                setSigningOut(true);
                 try {
                   // Signal AuthProvider to skip its auto-navigate for this sign-out.
                   window.dispatchEvent(new CustomEvent("fite:manual-signout"));
-                  // Cover the screen completely before auth state changes so protected
-                  // pages cannot render their signed-out state during the sweep.
-                  await window.__fiteCoverInstant?.();
                   await signOut();
                   if (router.asPath === "/") {
-                    if (typeof window !== "undefined") {
-                      window.__fiteManualSignOutInProgress = false;
-                    }
-                    window.__fiteReveal?.();
+                    setSigningOut(false);
                     return;
                   }
-                  // Navigate home once; the global route transition owns the reveal.
-                  window.__fiteSkipNextRouteCover = true;
-                  window.__fiteFastNextRouteReveal = true;
-                  window.__fiteRevealIncomingViewImmediately = true;
                   await router.replace("/");
-                  if (typeof window !== "undefined") {
-                    window.__fiteSkipNextRouteCover = false;
-                    window.__fiteRevealIncomingViewImmediately = false;
-                    window.__fiteManualSignOutInProgress = false;
-                  }
                 } catch (err) {
-                  if (typeof window !== "undefined") {
-                    window.__fiteSkipNextRouteCover = false;
-                    window.__fiteRevealIncomingViewImmediately = false;
-                    window.__fiteManualSignOutInProgress = false;
-                  }
-                  window.__fiteReveal?.();
                   throw err;
+                } finally {
+                  setSigningOut(false);
                 }
               }}
               danger
