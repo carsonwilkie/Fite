@@ -238,7 +238,7 @@ export default function AuthCard({
       <div
         style={{
           position: "relative",
-          zIndex: 2,
+          zIndex: 3,
           overflow: "hidden",
           height: bodyHeight === "auto" ? "auto" : `${bodyHeight}px`,
           transition: bodyHeight === "auto" ? "none" : "height 0.32s cubic-bezier(0.22, 1, 0.36, 1)",
