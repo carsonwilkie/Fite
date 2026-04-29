@@ -1229,9 +1229,15 @@ export default function Dashboard() {
     try {
       const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ returnPath: router.asPath }) });
       const d = await r.json();
-      if (d.url) window.location.href = d.url;
+      if (d.url) {
+        window.location.href = d.url;
+      } else {
+        console.error("[handleManageSub] portal error:", d.error, "status:", r.status);
+        alert(`Could not open billing portal: ${d.error || "Unknown error"}`);
+      }
     } catch (e) {
       console.error("[handleManageSub]", e);
+      alert(`Could not open billing portal: ${e.message}`);
     } finally {
       setLoadingManageSub(false);
     }
