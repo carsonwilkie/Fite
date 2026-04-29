@@ -70,6 +70,8 @@ export default function AccountPanel() {
       await window.__fiteCoverInstant?.();
       await signOut();
       await router.replace("/");
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      window.__fiteReveal?.();
       if (typeof window !== "undefined") {
         window.__fiteManualSignOutInProgress = false;
       }

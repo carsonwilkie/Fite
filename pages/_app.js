@@ -46,6 +46,7 @@ export default function App({ Component, pageProps }) {
   const coverDoneRef = useRef(false);
   const pendingViewRef = useRef(null);
   const revealPauseTimerRef = useRef(null);
+  const revealDoneTimerRef = useRef(null);
 
   // ─── Page transition overlay ────────────────────────────────────────────────
   // y: CSS translateY value for the overlay
@@ -78,11 +79,16 @@ export default function App({ Component, pageProps }) {
     revealPauseTimerRef.current = setTimeout(() => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          setTransitionMs(isHeroRoute(nextView.route) ? HERO_REVEAL_MS : ENTRY_MS);
+          const revealMs = isHeroRoute(nextView.route) ? HERO_REVEAL_MS : ENTRY_MS;
+          setTransitionMs(revealMs);
           setAnim(true);
           setY("-100%");
-          phaseRef.current = "idle";
           revealPauseTimerRef.current = null;
+          clearTimeout(revealDoneTimerRef.current);
+          revealDoneTimerRef.current = setTimeout(() => {
+            phaseRef.current = "idle";
+            revealDoneTimerRef.current = null;
+          }, revealMs);
         });
       });
     }, getCoverPauseMs(nextView.route));
@@ -107,6 +113,7 @@ export default function App({ Component, pageProps }) {
       clearTimeout(coverTimer);
       clearTimeout(revealTimer);
       clearTimeout(revealPauseTimerRef.current);
+      clearTimeout(revealDoneTimerRef.current);
       clearTimeout(stuckCheckTimer);
       routeReadyRef.current = false;
       coverDoneRef.current = false;
@@ -155,8 +162,12 @@ export default function App({ Component, pageProps }) {
       }, 0);
     };
 
-    const handleError = () => {
-      // Navigation cancelled — remove cover
+    const handleError = (err) => {
+      if (err?.cancelled) {
+        return;
+      }
+      // Navigation cancelled — remove cover unless another route change has
+      // already taken ownership of the transition.
       resetStuckTransition();
     };
 
@@ -171,6 +182,7 @@ export default function App({ Component, pageProps }) {
       clearTimeout(revealTimer);
       clearTimeout(stuckCheckTimer);
       clearTimeout(revealPauseTimerRef.current);
+      clearTimeout(revealDoneTimerRef.current);
     };
   }, [router.events]);
 
@@ -207,11 +219,16 @@ export default function App({ Component, pageProps }) {
     };
     window.__fiteReveal = () => {
       clearTimeout(manualCoverTimer);
+      clearTimeout(revealPauseTimerRef.current);
+      clearTimeout(revealDoneTimerRef.current);
       setTransitionMs(ENTRY_MS);
       setAnim(true);
       setY("-100%");
       setIsCovering(false);
-      phaseRef.current = "idle";
+      revealDoneTimerRef.current = setTimeout(() => {
+        phaseRef.current = "idle";
+        revealDoneTimerRef.current = null;
+      }, ENTRY_MS);
     };
     return () => {
       clearTimeout(manualCoverTimer);

@@ -157,6 +157,8 @@ export default function UserMenu({ size = 32, align = "right" }) {
                   }
                   // Navigate home once; the global route transition owns the reveal.
                   await router.replace("/");
+                  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                  window.__fiteReveal?.();
                   if (typeof window !== "undefined") {
                     window.__fiteManualSignOutInProgress = false;
                   }
