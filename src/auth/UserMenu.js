@@ -138,7 +138,8 @@ export default function UserMenu({ size = 32, align = "right" }) {
               label="Sign out"
               onClick={async () => {
                 setOpen(false);
-                await signOut({ redirectUrl: "/" });
+                await router.push("/");
+                await signOut();
               }}
               danger
             />

@@ -263,7 +263,7 @@ export default function App({ Component, pageProps }) {
           style={{
             position: "fixed",
             inset: 0,
-            zIndex: 9999,
+            zIndex: 10001,
             background: "#020817",
             transform: `translateY(${y})`,
             transition: anim
