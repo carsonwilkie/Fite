@@ -18,14 +18,24 @@ module.exports = async function handler(req, res) {
     let customerId = await redis.get(`stripe_customer:${userId}`);
 
     if (!customerId) {
-      // Fallback for users who subscribed before the customer ID was cached.
-      // Scan up to 100 sessions; writes the result back so future calls skip this.
-      const sessions = await stripe.checkout.sessions.list({ limit: 100 });
-      const match = sessions.data.find((s) => s.metadata?.userId === userId);
-      if (!match?.customer) {
-        return res.status(404).json({ error: "No customer found" });
+      // Search active/past-due subscriptions by userId metadata — reliable for
+      // any subscriber regardless of when they signed up.
+      const results = await stripe.subscriptions.search({
+        query: `metadata['userId']:'${userId}'`,
+        limit: 1,
+      });
+      const sub = results.data[0];
+      if (sub?.customer) {
+        customerId = sub.customer;
+      } else {
+        // Last-resort: scan recent checkout sessions (covers canceled/incomplete subs).
+        const sessions = await stripe.checkout.sessions.list({ limit: 100 });
+        const match = sessions.data.find((s) => s.metadata?.userId === userId);
+        if (!match?.customer) {
+          return res.status(404).json({ error: "No customer found" });
+        }
+        customerId = match.customer;
       }
-      customerId = match.customer;
       await redis.set(`stripe_customer:${userId}`, customerId);
     }
 
