@@ -386,14 +386,15 @@ export function CodeInput({ length = 6, value, onChange, onComplete, autoFocus }
   );
 }
 
-export function GoogleButton({ onClick, disabled, label = "Continue with Google" }) {
+export function GoogleButton({ onClick, disabled, loading, label = "Continue with Google" }) {
+  const inactive = disabled || loading;
   return (
     <motion.button
       type="button"
       onClick={onClick}
-      disabled={disabled}
-      whileHover={disabled ? undefined : { y: -1 }}
-      whileTap={disabled ? undefined : { scale: 0.98 }}
+      disabled={inactive}
+      whileHover={inactive ? undefined : { y: -1 }}
+      whileTap={inactive ? undefined : { scale: 0.98 }}
       style={{
         width: "100%",
         height: 48,
@@ -401,7 +402,7 @@ export function GoogleButton({ onClick, disabled, label = "Continue with Google"
         background: "rgba(255,255,255,0.04)",
         color: AUTH_COLORS.text,
         borderRadius: 12,
-        cursor: disabled ? "not-allowed" : "pointer",
+        cursor: inactive ? (loading ? "wait" : "not-allowed") : "pointer",
         fontFamily: "Inter, sans-serif",
         fontSize: 14,
         fontWeight: 600,
@@ -410,21 +411,21 @@ export function GoogleButton({ onClick, disabled, label = "Continue with Google"
         justifyContent: "center",
         gap: 10,
         transition: "border-color 0.2s, background 0.2s",
-        opacity: disabled ? 0.6 : 1,
+        opacity: inactive ? 0.6 : 1,
       }}
       onMouseEnter={(e) => {
-        if (disabled) return;
+        if (inactive) return;
         e.currentTarget.style.borderColor = AUTH_COLORS.secondary;
         e.currentTarget.style.background = "rgba(255,255,255,0.07)";
       }}
       onMouseLeave={(e) => {
-        if (disabled) return;
+        if (inactive) return;
         e.currentTarget.style.borderColor = AUTH_COLORS.border;
         e.currentTarget.style.background = "rgba(255,255,255,0.04)";
       }}
     >
-      <GoogleIcon />
-      {label}
+      {loading ? <ButtonSpinner /> : <GoogleIcon />}
+      {loading ? "Opening Google..." : label}
     </motion.button>
   );
 }

@@ -384,11 +384,13 @@ function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [shake, setShake] = useState(0);
 
   const handleGoogle = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || oauthLoading) return;
     setErr(null);
+    setOauthLoading(true);
     try {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
@@ -397,12 +399,13 @@ function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
       });
     } catch (e) {
       setErr(friendlyError(e));
+      setOauthLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isLoaded || loading) return;
+    if (!isLoaded || loading || oauthLoading) return;
     setErr(null);
     setLoading(true);
     try {
@@ -443,7 +446,7 @@ function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <ClerkLoadBanner visible={loadTimedOut} kind="sign-in" afterAuthRedirect={afterAuthRedirect} />
-      <GoogleButton onClick={handleGoogle} disabled={loading || !isLoaded} />
+      <GoogleButton onClick={handleGoogle} loading={oauthLoading} disabled={loading || !isLoaded} />
       <Divider label="or" />
       <ShakeWrapper trigger={shake}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -513,11 +516,13 @@ function SignUpView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [shake, setShake] = useState(0);
 
   const handleGoogle = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || oauthLoading) return;
     setErr(null);
+    setOauthLoading(true);
     try {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
@@ -526,12 +531,13 @@ function SignUpView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
       });
     } catch (e) {
       setErr(friendlyError(e));
+      setOauthLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isLoaded || loading) return;
+    if (!isLoaded || loading || oauthLoading) return;
     setErr(null);
     setLoading(true);
     try {
@@ -559,7 +565,7 @@ function SignUpView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <ClerkLoadBanner visible={loadTimedOut} kind="sign-up" afterAuthRedirect={afterAuthRedirect} />
-      <GoogleButton onClick={handleGoogle} disabled={loading || !isLoaded} label="Sign up with Google" />
+      <GoogleButton onClick={handleGoogle} loading={oauthLoading} disabled={loading || !isLoaded} label="Sign up with Google" />
       <Divider label="or" />
       <ShakeWrapper trigger={shake}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
