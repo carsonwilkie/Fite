@@ -138,18 +138,34 @@ export default function UserMenu({ size = 32, align = "right" }) {
               label="Sign out"
               onClick={async () => {
                 setOpen(false);
-                // Signal AuthProvider to skip its auto-navigate for this sign-out.
-                window.dispatchEvent(new CustomEvent("fite:manual-signout"));
-                // Cover the screen before auth state changes so there's no flash.
-                window.__fiteCoverInstant?.();
-                await new Promise(r => setTimeout(r, 500));
-                await signOut();
-                if (router.pathname === "/") {
-                  // Already on home — just slide the cover away.
+                if (typeof window !== "undefined") {
+                  window.__fiteManualSignOutInProgress = true;
+                }
+                try {
+                  // Signal AuthProvider to skip its auto-navigate for this sign-out.
+                  window.dispatchEvent(new CustomEvent("fite:manual-signout"));
+                  // Cover the screen completely before auth state changes so protected
+                  // pages cannot render their signed-out state during the sweep.
+                  await window.__fiteCoverInstant?.();
+                  await signOut();
+                  if (router.asPath === "/") {
+                    if (typeof window !== "undefined") {
+                      window.__fiteManualSignOutInProgress = false;
+                    }
+                    window.__fiteReveal?.();
+                    return;
+                  }
+                  // Navigate home once; the global route transition owns the reveal.
+                  await router.replace("/");
+                  if (typeof window !== "undefined") {
+                    window.__fiteManualSignOutInProgress = false;
+                  }
+                } catch (err) {
+                  if (typeof window !== "undefined") {
+                    window.__fiteManualSignOutInProgress = false;
+                  }
                   window.__fiteReveal?.();
-                } else {
-                  // Navigate home; the route change drives the reveal.
-                  router.push("/");
+                  throw err;
                 }
               }}
               danger

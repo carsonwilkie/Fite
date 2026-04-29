@@ -145,7 +145,6 @@ export default function App({ Component, pageProps }) {
     };
 
     const handleComplete = () => {
-      clearTimeout(stuckCheckTimer);
       routeReadyRef.current = true;
       const elapsed = Date.now() - coverStartedAtRef.current;
       if (elapsed >= ENTRY_MS) {
@@ -184,7 +183,10 @@ export default function App({ Component, pageProps }) {
   // Expose manual cover/reveal so the sign-out flow can cover the screen
   // before auth state changes, then reveal after navigating to "/".
   useEffect(() => {
+    let manualCoverTimer;
+
     window.__fiteCoverInstant = () => {
+      clearTimeout(manualCoverTimer);
       // Must set phaseRef so the route-change useEffect doesn't instant-swap
       // the page while the cover is still animating in.
       phaseRef.current = "covering";
@@ -195,8 +197,16 @@ export default function App({ Component, pageProps }) {
       setAnim(true);
       setY("0%");
       setIsCovering(true);
+
+      return new Promise((resolve) => {
+        manualCoverTimer = setTimeout(() => {
+          coverDoneRef.current = true;
+          resolve();
+        }, ENTRY_MS);
+      });
     };
     window.__fiteReveal = () => {
+      clearTimeout(manualCoverTimer);
       setTransitionMs(ENTRY_MS);
       setAnim(true);
       setY("-100%");
@@ -204,6 +214,7 @@ export default function App({ Component, pageProps }) {
       phaseRef.current = "idle";
     };
     return () => {
+      clearTimeout(manualCoverTimer);
       delete window.__fiteCoverInstant;
       delete window.__fiteReveal;
     };

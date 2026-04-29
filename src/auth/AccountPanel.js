@@ -35,7 +35,7 @@ export default function AccountPanel() {
   const [tabDir, setTabDir] = useState(1);
 
   useEffect(() => {
-    if (isLoaded && !user) router.replace("/");
+    if (isLoaded && !user && !window.__fiteManualSignOutInProgress) router.replace("/");
   }, [isLoaded, user, router]);
 
   if (!isLoaded || !user) {
@@ -58,6 +58,27 @@ export default function AccountPanel() {
       router.back();
     } else {
       router.push("/");
+    }
+  };
+
+  const handleSignOut = async () => {
+    if (typeof window !== "undefined") {
+      window.__fiteManualSignOutInProgress = true;
+    }
+    try {
+      window.dispatchEvent(new CustomEvent("fite:manual-signout"));
+      await window.__fiteCoverInstant?.();
+      await signOut();
+      await router.replace("/");
+      if (typeof window !== "undefined") {
+        window.__fiteManualSignOutInProgress = false;
+      }
+    } catch (err) {
+      if (typeof window !== "undefined") {
+        window.__fiteManualSignOutInProgress = false;
+      }
+      window.__fiteReveal?.();
+      throw err;
     }
   };
 
@@ -119,7 +140,7 @@ export default function AccountPanel() {
           <motion.button
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.97 }}
-            onClick={async () => { await signOut({ redirectUrl: "/" }); }}
+            onClick={handleSignOut}
             style={{
               padding: "10px 18px", borderRadius: 12,
               border: `1px solid ${AUTH_COLORS.border}`,
