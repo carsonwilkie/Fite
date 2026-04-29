@@ -188,7 +188,7 @@ export default function AuthCard({
 
       {/* Tabs (sign-in / sign-up only) */}
       {showTabs && (
-        <div style={{ position: "relative", zIndex: 2, display: "flex", marginBottom: 22, background: "rgba(13,27,42,0.6)", border: `1px solid ${AUTH_COLORS.borderSoft}`, borderRadius: 12, padding: 4 }}>
+        <div style={{ position: "relative", zIndex: 2, display: "flex", marginBottom: 22, background: "rgba(13,27,42,0.6)", border: `1px solid ${AUTH_COLORS.borderSoft}`, borderRadius: 12, padding: 4, overflow: "hidden" }}>
           {[["sign-in", "Sign In"], ["sign-up", "Sign Up"]].map(([key, label], i) => {
             const active = view === key;
             return (
