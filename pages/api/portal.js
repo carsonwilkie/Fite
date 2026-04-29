@@ -1,6 +1,9 @@
 const Stripe = require("stripe");
+const { Redis } = require("@upstash/redis");
 const { requireAuthenticatedUserId, sanitizeRedirectPath } = require("../../src/server/auth");
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const redis = Redis.fromEnv();
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -12,15 +15,22 @@ module.exports = async function handler(req, res) {
   const { returnPath } = req.body || {};
 
   try {
-    const sessions = await stripe.checkout.sessions.list({ limit: 100 });
-    const session = sessions.data.find(s => s.metadata?.userId === userId);
+    let customerId = await redis.get(`stripe_customer:${userId}`);
 
-    if (!session?.customer) {
-      return res.status(404).json({ error: "No customer found" });
+    if (!customerId) {
+      // Fallback for users who subscribed before the customer ID was cached.
+      // Scan up to 100 sessions; writes the result back so future calls skip this.
+      const sessions = await stripe.checkout.sessions.list({ limit: 100 });
+      const match = sessions.data.find((s) => s.metadata?.userId === userId);
+      if (!match?.customer) {
+        return res.status(404).json({ error: "No customer found" });
+      }
+      customerId = match.customer;
+      await redis.set(`stripe_customer:${userId}`, customerId);
     }
 
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: session.customer,
+      customer: customerId,
       return_url: `${process.env.NEXT_PUBLIC_URL}${sanitizeRedirectPath(returnPath, "/")}`,
     });
 

@@ -43,6 +43,9 @@ export default async function handler(req, res) {
     const userId = session.metadata.userId;
     console.log("Marking user as paid:", userId);
     await redis.set(`paid:${userId}`, "true");
+    if (session.customer) {
+      await redis.set(`stripe_customer:${userId}`, session.customer);
+    }
   }
 
   if (event.type === "customer.subscription.deleted") {
