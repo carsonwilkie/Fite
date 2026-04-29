@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
@@ -13,47 +13,46 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 
-// Durations (ms)
-const ENTRY_MS = 500;   // close current page / default reveal
-const HERO_REVEAL_MS = 520;
-const COVER_PAUSE_MS = 80;
-const HERO_COVER_PAUSE_MS = 0;
+// ─── Page-transition timing ─────────────────────────────────────────────────
+// COVER_MS: time the navy panel takes to slide DOWN over the current page.
+// REVEAL_MS / HERO_REVEAL_MS: time the navy panel takes to slide UP off the
+//   destination page.
+// COVER_HOLD_MS: brief opaque hold so the destination has time to mount and
+//   paint behind the cover before reveal starts. We keep this short because
+//   the rAF gate inside startReveal() already guarantees one paint.
+// STUCK_MS: failsafe — if a navigation hasn't completed within this window,
+//   we lift the cover unconditionally so the user is never trapped on navy.
+const COVER_MS         = 460;
+const REVEAL_MS        = 480;
+const HERO_REVEAL_MS   = 520;
+const COVER_HOLD_MS    = 40;
+const STUCK_MS         = 1800;
 
 function isHeroRoute(route) {
   return route === "/" || route.startsWith("/?") || route.startsWith("/#");
 }
 
-function getCoverPauseMs(route) {
-  return isHeroRoute(route) ? HERO_COVER_PAUSE_MS : COVER_PAUSE_MS;
+function getRevealMs(route) {
+  return isHeroRoute(route) ? HERO_REVEAL_MS : REVEAL_MS;
 }
 
 function resetWindowScroll() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
+  if (typeof window === "undefined") return;
   const opts = { top: 0, left: 0, behavior: "instant" };
-  window.scrollTo(opts);
-  document.documentElement.scrollTo(opts);
-  document.body.scrollTo(opts);
+  try { window.scrollTo(opts); } catch { window.scrollTo(0, 0); }
+  try { document.documentElement.scrollTo(opts); } catch (_) {}
+  try { document.body.scrollTo(opts); } catch (_) {}
 }
 
 export default function App({ Component, pageProps }) {
-  const router  = useRouter();
-  const coverStartedAtRef = useRef(0);
-  const phaseRef = useRef("idle");
-  const routeReadyRef = useRef(false);
-  const coverDoneRef = useRef(false);
-  const pendingViewRef = useRef(null);
-  const revealPauseTimerRef = useRef(null);
-  const revealDoneTimerRef = useRef(null);
+  const router = useRouter();
 
-  // ─── Page transition overlay ────────────────────────────────────────────────
-  // y: CSS translateY value for the overlay
-  // anim: whether a CSS transition should run
-  const [y, setY]       = useState("0%");    // start covering
-  const [anim, setAnim] = useState(false);   // no transition on first paint
-  const [transitionMs, setTransitionMs] = useState(ENTRY_MS);
+  // ─── overlay state ────────────────────────────────────────────────────────
+  // y === "0%"    → covering (panel is fully over the page)
+  // y === "-100%" → revealed (panel is parked above the viewport)
+  const [y, setY]                 = useState("0%");
+  const [anim, setAnim]           = useState(false);
+  const [transitionMs, setTransitionMs] = useState(REVEAL_MS);
   const [frozenScrollY, setFrozenScrollY] = useState(0);
   const [isCovering, setIsCovering] = useState(false);
   const [displayedView, setDisplayedView] = useState(() => ({
@@ -62,113 +61,156 @@ export default function App({ Component, pageProps }) {
     route: router.asPath,
   }));
 
-  const revealPendingView = () => {
-    if (!coverDoneRef.current || !routeReadyRef.current || !pendingViewRef.current) {
-      return;
-    }
+  // Phase machine: idle | covering | covered | revealing
+  const phaseRef          = useRef("idle");
+  const pendingViewRef    = useRef(null);
+  const coverDoneRef      = useRef(false);
+  const routeReadyRef     = useRef(false);
 
-    const nextView = pendingViewRef.current;
+  const coverDoneTimerRef = useRef(null);
+  const stuckTimerRef     = useRef(null);
+  const revealHoldTimerRef = useRef(null);
+  const revealEndTimerRef = useRef(null);
+
+  const clearAllTimers = useCallback(() => {
+    clearTimeout(coverDoneTimerRef.current); coverDoneTimerRef.current = null;
+    clearTimeout(stuckTimerRef.current);     stuckTimerRef.current = null;
+    clearTimeout(revealHoldTimerRef.current); revealHoldTimerRef.current = null;
+    clearTimeout(revealEndTimerRef.current); revealEndTimerRef.current = null;
+  }, []);
+
+  // Force the overlay back to idle/revealed without animating into a stuck
+  // state. Used by the failsafe and routeChangeError handler.
+  const goIdle = useCallback(() => {
+    clearAllTimers();
+    phaseRef.current      = "idle";
     pendingViewRef.current = null;
+    coverDoneRef.current  = false;
     routeReadyRef.current = false;
+    setIsCovering(false);
+    setTransitionMs(REVEAL_MS);
+    setAnim(true);
+    setY("-100%");
+  }, [clearAllTimers]);
+
+  // Slide the cover off and return to idle. Called once both the cover and
+  // the next view are confirmed ready.
+  const startReveal = useCallback((route) => {
     phaseRef.current = "revealing";
     setIsCovering(false);
-    resetWindowScroll();
-    setDisplayedView(nextView);
 
-    clearTimeout(revealPauseTimerRef.current);
-    revealPauseTimerRef.current = setTimeout(() => {
+    clearTimeout(revealHoldTimerRef.current);
+    revealHoldTimerRef.current = setTimeout(() => {
+      // Two RAFs guarantee the new view has been committed *and* painted
+      // before we begin the reveal animation, so the cover never lifts off
+      // a blank/un-mounted page.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          const revealMs = isHeroRoute(nextView.route) ? HERO_REVEAL_MS : ENTRY_MS;
-          setTransitionMs(revealMs);
+          const ms = getRevealMs(route);
+          setTransitionMs(ms);
           setAnim(true);
           setY("-100%");
-          revealPauseTimerRef.current = null;
-          clearTimeout(revealDoneTimerRef.current);
-          revealDoneTimerRef.current = setTimeout(() => {
+          revealHoldTimerRef.current = null;
+
+          clearTimeout(revealEndTimerRef.current);
+          revealEndTimerRef.current = setTimeout(() => {
             phaseRef.current = "idle";
-            revealDoneTimerRef.current = null;
-          }, revealMs);
+            revealEndTimerRef.current = null;
+            // Cancel the stuck failsafe — we made it.
+            clearTimeout(stuckTimerRef.current);
+            stuckTimerRef.current = null;
+          }, ms + 80);
         });
       });
-    }, getCoverPauseMs(nextView.route));
-  };
+    }, COVER_HOLD_MS);
+  }, []);
 
-  // Initial entry: reveal bottom-up after 60 ms
+  // The single coordination point. Called any time one of the gating signals
+  // (coverDone, routeReady, pendingView) flips. Only proceeds when all three
+  // are satisfied.
+  const tryAdvanceToReveal = useCallback(() => {
+    if (phaseRef.current !== "covering" && phaseRef.current !== "covered") return;
+    if (!coverDoneRef.current)  return;
+    if (!routeReadyRef.current) return;
+    if (!pendingViewRef.current) return;
+
+    const next = pendingViewRef.current;
+    pendingViewRef.current = null;
+    coverDoneRef.current   = false;
+    routeReadyRef.current  = false;
+    phaseRef.current       = "covered";
+
+    resetWindowScroll();
+    setDisplayedView(next);
+    startReveal(next.route);
+  }, [startReveal]);
+
+  // ─── Initial mount: lift the cover after the first paint ──────────────────
   useEffect(() => {
     const t = setTimeout(() => {
+      setTransitionMs(REVEAL_MS);
       setAnim(true);
       setY("-100%");
     }, 60);
-    return () => clearTimeout(t);
+    const t2 = setTimeout(() => {
+      phaseRef.current = "idle";
+    }, 60 + REVEAL_MS + 80);
+    return () => { clearTimeout(t); clearTimeout(t2); };
   }, []);
 
-  // Route-change transitions
+  // ─── Route-change wiring ──────────────────────────────────────────────────
   useEffect(() => {
-    let coverTimer;
-    let revealTimer;
-    let stuckCheckTimer;
+    const handleStart = (_url, opts) => {
+      // Shallow navigations don't replace the page — skip the cover.
+      if (opts && opts.shallow) return;
 
-    const resetStuckTransition = () => {
-      clearTimeout(coverTimer);
-      clearTimeout(revealTimer);
-      clearTimeout(revealPauseTimerRef.current);
-      clearTimeout(revealDoneTimerRef.current);
-      clearTimeout(stuckCheckTimer);
-      routeReadyRef.current = false;
-      coverDoneRef.current = false;
+      clearAllTimers();
+      coverDoneRef.current   = false;
+      routeReadyRef.current  = false;
       pendingViewRef.current = null;
-      phaseRef.current = "idle";
-      setIsCovering(false);
-      setAnim(true);
-      setY("-100%");
-    };
+      phaseRef.current       = "covering";
 
-    const handleStart = () => {
-      clearTimeout(coverTimer);
-      clearTimeout(revealTimer);
-      clearTimeout(revealPauseTimerRef.current);
-      clearTimeout(stuckCheckTimer);
-      coverStartedAtRef.current = Date.now();
-      routeReadyRef.current = false;
-      coverDoneRef.current = false;
-      phaseRef.current = "covering";
       setFrozenScrollY(window.scrollY || window.pageYOffset || 0);
       setIsCovering(true);
-      // Sweep the current page closed before we reverse the cover to reveal the next one.
-      setTransitionMs(ENTRY_MS);
+      setTransitionMs(COVER_MS);
       setAnim(true);
       setY("0%");
-      coverTimer = setTimeout(() => {
+
+      // Mark the cover as visually complete after COVER_MS. setTimeout in
+      // browsers fires no earlier than the requested delay, so the panel is
+      // guaranteed to be fully down when this resolves.
+      coverDoneTimerRef.current = setTimeout(() => {
         coverDoneRef.current = true;
-        revealPendingView();
-      }, ENTRY_MS);
-      // Safety: if transition doesn't complete in 3 seconds, force reset
-      stuckCheckTimer = setTimeout(() => {
-        if (phaseRef.current === "covering" || phaseRef.current === "revealing") {
-          resetStuckTransition();
+        if (phaseRef.current === "covering") phaseRef.current = "covered";
+        coverDoneTimerRef.current = null;
+        tryAdvanceToReveal();
+      }, COVER_MS);
+
+      // Failsafe: if we've been mid-transition past STUCK_MS, force a
+      // resolution. Either advance with whatever we have, or lift the cover.
+      stuckTimerRef.current = setTimeout(() => {
+        if (phaseRef.current === "idle") return;
+        coverDoneRef.current  = true;
+        routeReadyRef.current = true;
+        if (pendingViewRef.current) {
+          tryAdvanceToReveal();
+        } else {
+          goIdle();
         }
-      }, 3000);
+      }, STUCK_MS);
     };
 
     const handleComplete = () => {
       routeReadyRef.current = true;
-      const elapsed = Date.now() - coverStartedAtRef.current;
-      if (elapsed >= ENTRY_MS) {
-        coverDoneRef.current = true;
-      }
-      revealTimer = setTimeout(() => {
-        revealPendingView();
-      }, 0);
+      tryAdvanceToReveal();
     };
 
     const handleError = (err) => {
-      if (err?.cancelled) {
-        return;
-      }
-      // Navigation cancelled — remove cover unless another route change has
-      // already taken ownership of the transition.
-      resetStuckTransition();
+      // err.cancelled means another navigation has already started and will
+      // re-arm everything via its own routeChangeStart, so just bail.
+      if (err && err.cancelled) return;
+      // Real failure: do not strand the user on the navy panel.
+      goIdle();
     };
 
     router.events.on("routeChangeStart",    handleStart);
@@ -178,14 +220,39 @@ export default function App({ Component, pageProps }) {
       router.events.off("routeChangeStart",    handleStart);
       router.events.off("routeChangeComplete", handleComplete);
       router.events.off("routeChangeError",    handleError);
-      clearTimeout(coverTimer);
-      clearTimeout(revealTimer);
-      clearTimeout(stuckCheckTimer);
-      clearTimeout(revealPauseTimerRef.current);
-      clearTimeout(revealDoneTimerRef.current);
+      clearAllTimers();
     };
-  }, [router.events]);
+  }, [router.events, clearAllTimers, goIdle, tryAdvanceToReveal]);
 
+  // ─── Track incoming Component/pageProps ───────────────────────────────────
+  useEffect(() => {
+    const incoming = { Component, pageProps, route: router.asPath };
+
+    // Same logical route — just keep props in sync. No transition.
+    if (displayedView.route === incoming.route) {
+      if (
+        displayedView.Component !== incoming.Component ||
+        displayedView.pageProps !== incoming.pageProps
+      ) {
+        setDisplayedView(incoming);
+      }
+      return;
+    }
+
+    if (phaseRef.current === "idle") {
+      // Route changed without us hearing routeChangeStart (very rare — e.g.
+      // first hydration after SSR). Silently sync rather than animate, so we
+      // never strand the user with no overlay state at all.
+      resetWindowScroll();
+      setDisplayedView(incoming);
+      return;
+    }
+
+    pendingViewRef.current = incoming;
+    tryAdvanceToReveal();
+  }, [Component, pageProps, router.asPath, displayedView.route, displayedView.Component, displayedView.pageProps, tryAdvanceToReveal]);
+
+  // ─── Misc browser plumbing ────────────────────────────────────────────────
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.history.scrollRestoration = "manual";
@@ -193,50 +260,39 @@ export default function App({ Component, pageProps }) {
   }, []);
 
   useEffect(() => {
-    if (typeof document === "undefined") {
-      return undefined;
-    }
-
+    if (typeof document === "undefined") return undefined;
     const previousOverflow = document.body.style.overflow;
     if (isCovering) {
       document.body.style.overflow = "hidden";
     }
-
     return () => {
       document.body.style.overflow = previousOverflow;
     };
   }, [isCovering]);
 
+  // Pause any costly per-tab animations while the tab is hidden — when the
+  // user returns we re-arm the failsafe so we never wake up to a stuck cover.
   useEffect(() => {
-    const incomingView = {
-      Component,
-      pageProps,
-      route: router.asPath,
+    if (typeof document === "undefined") return undefined;
+    const onVisibility = () => {
+      if (document.visibilityState !== "visible") return;
+      if (phaseRef.current === "idle") return;
+      // Re-arm a short stuck timer so we can recover quickly.
+      clearTimeout(stuckTimerRef.current);
+      stuckTimerRef.current = setTimeout(() => {
+        if (phaseRef.current === "idle") return;
+        coverDoneRef.current  = true;
+        routeReadyRef.current = true;
+        if (pendingViewRef.current) {
+          tryAdvanceToReveal();
+        } else {
+          goIdle();
+        }
+      }, 600);
     };
-
-    if (displayedView.route === incomingView.route) {
-      if (
-        displayedView.Component !== incomingView.Component ||
-        displayedView.pageProps !== incomingView.pageProps
-      ) {
-        setDisplayedView(incomingView);
-      }
-      return;
-    }
-
-    pendingViewRef.current = incomingView;
-
-    if (phaseRef.current === "idle") {
-      resetWindowScroll();
-      setDisplayedView(incomingView);
-      pendingViewRef.current = null;
-      routeReadyRef.current = false;
-      coverDoneRef.current = false;
-      return;
-    }
-
-    revealPendingView();
-  }, [Component, pageProps, router.asPath, displayedView.route, displayedView.Component, displayedView.pageProps]);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [goIdle, tryAdvanceToReveal]);
 
   if (!PUBLISHABLE_KEY) {
     return <displayedView.Component {...displayedView.pageProps} />;

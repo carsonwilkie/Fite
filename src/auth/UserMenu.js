@@ -141,17 +141,21 @@ export default function UserMenu({ size = 32, align = "right" }) {
                 if (signingOut) return;
                 setOpen(false);
                 setSigningOut(true);
+                // Tell AuthProvider we own the navigation for this sign-out.
+                // Stamp BEFORE the route push so the cover overlay starts to
+                // close before Clerk has fully torn down the session — that
+                // way the user never sees the dashboard flash unauthenticated.
+                window.__fiteSignOutAt = Date.now();
+                const goingHome = router.asPath !== "/";
+                const navP = goingHome ? router.replace("/") : Promise.resolve();
                 try {
-                  // Signal AuthProvider to skip its auto-navigate for this sign-out.
-                  window.dispatchEvent(new CustomEvent("fite:manual-signout"));
-                  await signOut();
-                  if (router.asPath === "/") {
-                    setSigningOut(false);
-                    return;
-                  }
-                  await router.replace("/");
+                  await Promise.all([signOut(), navP]);
                 } catch (err) {
-                  throw err;
+                  // Swallow — user is signed out either way; surface only in dev.
+                  if (process.env.NODE_ENV !== "production") {
+                    // eslint-disable-next-line no-console
+                    console.warn("[UserMenu] sign-out error", err);
+                  }
                 } finally {
                   setSigningOut(false);
                 }

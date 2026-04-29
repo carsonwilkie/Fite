@@ -11,12 +11,28 @@ import { sanitizeRedirectPath } from "./redirects";
 export default function AuthFullPage({ view = "sign-in", title, description }) {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useUser();
+  // ?redirect_url=... wins; otherwise default home — the modal flow defaults
+  // to /dashboard when a feature gate triggers it, but the standalone /sign-in
+  // and /sign-up routes are usually entered from marketing surfaces, so / is
+  // the safer fallback for that flow.
   const redirectTo = sanitizeRedirectPath(router.query.redirect_url, "/");
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      router.replace(redirectTo);
+    if (!isLoaded || !isSignedIn) return;
+    // AuthCard also stamps window.__fitePendingAuthRedirect on a successful
+    // sign-in. Consume it (and prefer it if set) so the same value isn't
+    // applied again the next time the modal opens. If a query-string redirect
+    // is provided, that wins because it was an explicit caller intent.
+    if (typeof window !== "undefined") {
+      const pending = window.__fitePendingAuthRedirect;
+      window.__fitePendingAuthRedirect = null;
+      const target = router.query.redirect_url
+        ? redirectTo
+        : sanitizeRedirectPath(pending, redirectTo);
+      router.replace(target || "/");
+      return;
     }
+    router.replace(redirectTo);
   }, [isLoaded, isSignedIn, redirectTo, router]);
 
   return (

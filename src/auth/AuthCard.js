@@ -194,9 +194,13 @@ export default function AuthCard({
         <CardTitle view={view} />
       </div>
 
-      {/* Tabs (sign-in / sign-up only) */}
+      {/* Tabs (sign-in / sign-up only).
+          NOTE: marginBottom is generous (28px) to keep clearance from the
+          Google CTA below — when that button hovers it lifts by 1px and the
+          first auth-input focuses with a 2px ring; we want neither to ever
+          collide with the tabs' indicator shadow. */}
       {showTabs && (
-        <div style={{ position: "relative", zIndex: 2, display: "flex", marginBottom: 22, background: "rgba(13,27,42,0.6)", border: `1px solid ${AUTH_COLORS.borderSoft}`, borderRadius: 12, padding: 4, overflow: "hidden" }}>
+        <div style={{ position: "relative", zIndex: 2, display: "flex", marginBottom: 28, background: "rgba(13,27,42,0.6)", border: `1px solid ${AUTH_COLORS.borderSoft}`, borderRadius: 12, padding: 4, overflow: "hidden" }}>
           {[["sign-in", "Sign In"], ["sign-up", "Sign Up"]].map(([key, label], i) => {
             const active = view === key;
             return (
@@ -230,7 +234,11 @@ export default function AuthCard({
                       inset: 0,
                       borderRadius: 9,
                       background: cyberGrad,
-                      boxShadow: "0 4px 14px rgba(21,101,192,0.4)",
+                      // Indicator shadow is kept *inside* the tabs container's
+                      // overflow:hidden, but we also tone it down so any
+                      // visual bleed past the rounded corners can't read as
+                      // overlapping the Google CTA below.
+                      boxShadow: "0 2px 8px rgba(21,101,192,0.32)",
                       zIndex: -1,
                     }}
                   />
@@ -242,13 +250,20 @@ export default function AuthCard({
         </div>
       )}
 
-      {/* Body views */}
+      {/* Body views.
+          The body container clips overflow vertically so the height transition
+          looks clean. We add a small paddingTop so the first row's interactive
+          element (Google CTA) — which lifts 1px on hover — never visually
+          touches the tabs container above. The matching negative marginTop
+          keeps the layout pixel-identical to before. */}
       <div
         style={{
           position: "relative",
           zIndex: 3,
           overflow: "hidden",
-          height: bodyHeight === "auto" ? "auto" : `${bodyHeight}px`,
+          paddingTop: 4,
+          marginTop: -4,
+          height: bodyHeight === "auto" ? "auto" : `${bodyHeight + 4}px`,
           transition: bodyHeight === "auto" ? "none" : "height 0.32s cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       >
@@ -330,24 +345,24 @@ function CardTitle({ view }) {
 const rollVariants = {
   enter: {
     opacity: 0,
-    y: 8,
-    scaleY: 0.985,
-    clipPath: "inset(0% 0% 100% 0%)",
+    y: 6,
   },
   center: {
     opacity: 1,
     y: 0,
-    scaleY: 1,
-    clipPath: "inset(0% 0% 0% 0%)",
   },
   exit: {
     opacity: 0,
-    y: -8,
-    scaleY: 0.985,
-    clipPath: "inset(0% 0% 100% 0%)",
+    y: -6,
   },
 };
 
+// Per-view enter/exit. We deliberately drop the previous clipPath + scaleY
+// effects: with the body container clipping overflow, those transforms only
+// added perceived "shrink" without helping the animation, and combined with
+// the GoogleButton's whileHover y:-1 they sometimes pulled the top edge of
+// the CTA into the tabs above. A simple opacity + y fade behaves the same
+// visually but never clips a child.
 function ViewWrap({ children }) {
   return (
     <motion.div
@@ -358,14 +373,10 @@ function ViewWrap({ children }) {
       transition={{
         opacity: { duration: 0.2, ease: "easeOut" },
         y: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
-        scaleY: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
-        clipPath: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
       }}
       style={{
         width: "100%",
-        overflow: "hidden",
-        transformOrigin: "top center",
-        willChange: "clip-path, transform, opacity",
+        willChange: "transform, opacity",
       }}
     >
       {children}

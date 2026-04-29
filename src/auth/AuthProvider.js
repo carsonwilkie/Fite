@@ -7,6 +7,13 @@ import { sanitizeRedirectPath } from "./redirects";
 
 const AuthModalContext = createContext(null);
 
+// Window-scoped helpers used to coordinate sign-out across components without
+// a custom-event race. UserMenu / AccountPanel set `__fiteSignOutAt = Date.now()`
+// *before* awaiting Clerk.signOut(), and the AuthProvider treats any
+// isSignedIn=true→false transition that lands within MANUAL_SIGNOUT_WINDOW_MS
+// of that timestamp as "already being navigated by the caller, do not push".
+const MANUAL_SIGNOUT_WINDOW_MS = 4000;
+
 export function useAuthModal() {
   const ctx = useContext(AuthModalContext);
   if (!ctx) throw new Error("useAuthModal must be used within AuthProvider");
@@ -18,13 +25,6 @@ export default function AuthProvider({ children }) {
   const { isSignedIn } = useUser();
   const router = useRouter();
   const wasSignedInRef = useRef(null);
-  const manualSignOutRef = useRef(false);
-
-  useEffect(() => {
-    const handler = () => { manualSignOutRef.current = true; };
-    window.addEventListener("fite:manual-signout", handler);
-    return () => window.removeEventListener("fite:manual-signout", handler);
-  }, []);
 
   const openAuth = useCallback((view = "sign-in", opts = {}) => {
     setState({
@@ -38,31 +38,54 @@ export default function AuthProvider({ children }) {
     setState((s) => ({ ...s, open: false }));
   }, []);
 
-  // When user signs out, use Next.js router to avoid a hard-redirect white flash.
-  // Skip if UserMenu's manual sign-out flow is handling the navigation itself.
+  // Sign-out side effect: when the user transitions from signed-in to
+  // signed-out, navigate home — UNLESS the transition was triggered by
+  // UserMenu/AccountPanel, which handle navigation themselves. The
+  // `__fiteSignOutAt` timestamp is the contract for "I am the caller and I
+  // will route." We use a timestamp instead of a boolean ref so we are not
+  // sensitive to event ordering or stale flags.
   useEffect(() => {
     if (isSignedIn === undefined) return;
     if (wasSignedInRef.current === true && isSignedIn === false) {
-      if (manualSignOutRef.current) {
-        manualSignOutRef.current = false;
-      } else {
-        router.push("/");
+      const t = typeof window !== "undefined" ? (window.__fiteSignOutAt || 0) : 0;
+      const fresh = Date.now() - t < MANUAL_SIGNOUT_WINDOW_MS;
+      if (!fresh) {
+        // Defer to the next tick so any concurrent route change (e.g. Clerk
+        // tearing down session listeners that themselves may trigger renders)
+        // settles before we issue navigation.
+        const id = setTimeout(() => {
+          if (router.asPath !== "/") router.push("/");
+        }, 0);
+        return () => clearTimeout(id);
       }
     }
     wasSignedInRef.current = isSignedIn;
+    return undefined;
   }, [isSignedIn, router]);
 
-  // Auto-close if user becomes signed in while modal is open.
+  // Auto-close the modal once Clerk reports the user as signed in. The redirect
+  // target is determined in this priority order:
+  //   1. window.__fitePendingAuthRedirect — set by AuthCard.onAuthenticated()
+  //   2. state.redirectTo                  — set when openAuth was called
+  //   3. fallback: do not navigate         — they're staying on the current page
   useEffect(() => {
-    if (state.open && isSignedIn) {
-      const redirectTo = window.__fitePendingAuthRedirect || state.redirectTo;
-      window.__fitePendingAuthRedirect = null;
-      closeAuth();
-      if (redirectTo) {
-        router.replace(redirectTo);
-      }
+    if (!state.open) return;
+    if (isSignedIn !== true) return;
+
+    const pending = typeof window !== "undefined" ? window.__fitePendingAuthRedirect : null;
+    const target = pending || state.redirectTo || null;
+    if (typeof window !== "undefined") window.__fitePendingAuthRedirect = null;
+
+    closeAuth();
+
+    if (target && target !== router.asPath) {
+      // Wait one frame so the modal exit animation can begin before the
+      // page-cover overlay slides down, otherwise the user briefly sees the
+      // modal stack on top of the cover starting.
+      requestAnimationFrame(() => {
+        router.replace(target);
+      });
     }
-    return undefined;
   }, [isSignedIn, state.open, state.redirectTo, closeAuth, router]);
 
   // Lock scroll without moving the page. Two key ideas:

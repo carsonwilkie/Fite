@@ -72,13 +72,19 @@ export default function AccountPanel() {
   const handleSignOut = async () => {
     if (signingOut) return;
     setSigningOut(true);
+    // Stamp before tearing down the session so AuthProvider treats this as
+    // caller-owned navigation and does not double-push.
+    window.__fiteSignOutAt = Date.now();
+    const navP = router.asPath !== "/" ? router.replace("/") : Promise.resolve();
     try {
-      window.dispatchEvent(new CustomEvent("fite:manual-signout"));
-      await signOut();
-      await router.replace("/");
+      await Promise.all([signOut(), navP]);
     } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.warn("[AccountPanel] sign-out error", err);
+      }
+    } finally {
       setSigningOut(false);
-      throw err;
     }
   };
 
@@ -696,8 +702,11 @@ function DangerPane({ user }) {
     setLoading(true); setErr(null);
     try {
       await user.delete();
-      await signOut();
-      router.push("/");
+      // Same contract as the regular sign-out path: stamp first so AuthProvider
+      // does not race us with a second navigation when isSignedIn flips.
+      window.__fiteSignOutAt = Date.now();
+      const navP = router.asPath !== "/" ? router.replace("/") : Promise.resolve();
+      await Promise.all([signOut(), navP]);
     } catch (e) {
       setErr(friendlyError(e));
       setLoading(false);

@@ -393,7 +393,10 @@ export function GoogleButton({ onClick, disabled, loading, label = "Continue wit
       type="button"
       onClick={onClick}
       disabled={inactive}
-      whileHover={inactive ? undefined : { y: -1 }}
+      // Intentionally no whileHover lift here. The Google CTA is the first
+      // element in the body container; a 1px translateY combined with the
+      // outer overflow clip caused the top of the button to read as if it
+      // were tucked under the sign-in/sign-up tabs above it.
       whileTap={inactive ? undefined : { scale: 0.98 }}
       style={{
         width: "100%",
