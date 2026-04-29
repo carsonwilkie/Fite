@@ -57,7 +57,7 @@ export default function AuthProvider({ children }) {
     if (state.open && isSignedIn) {
       const t = setTimeout(() => {
         closeAuth();
-        if (state.redirectTo) {
+        if (state.redirectTo && !window.__fiteAuthRedirectInProgress) {
           router.push(state.redirectTo);
         }
       }, 350);

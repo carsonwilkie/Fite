@@ -156,14 +156,15 @@ export default function UserMenu({ size = 32, align = "right" }) {
                     return;
                   }
                   // Navigate home once; the global route transition owns the reveal.
+                  window.__fiteSkipNextRouteCover = true;
                   await router.replace("/");
-                  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-                  window.__fiteReveal?.();
                   if (typeof window !== "undefined") {
+                    window.__fiteSkipNextRouteCover = false;
                     window.__fiteManualSignOutInProgress = false;
                   }
                 } catch (err) {
                   if (typeof window !== "undefined") {
+                    window.__fiteSkipNextRouteCover = false;
                     window.__fiteManualSignOutInProgress = false;
                   }
                   window.__fiteReveal?.();

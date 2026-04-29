@@ -99,7 +99,14 @@ export default function AuthCard({
   }, []);
 
   const onAuthenticated = useCallback(() => {
-    router.replace(safeAfterAuthRedirect);
+    if (typeof window !== "undefined") {
+      window.__fiteAuthRedirectInProgress = true;
+    }
+    router.replace(safeAfterAuthRedirect).finally(() => {
+      if (typeof window !== "undefined") {
+        window.__fiteAuthRedirectInProgress = false;
+      }
+    });
   }, [router, safeAfterAuthRedirect]);
 
   const handleMouseMove = (e) => {

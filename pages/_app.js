@@ -129,6 +129,18 @@ export default function App({ Component, pageProps }) {
       clearTimeout(revealTimer);
       clearTimeout(revealPauseTimerRef.current);
       clearTimeout(stuckCheckTimer);
+      if (window.__fiteSkipNextRouteCover) {
+        routeReadyRef.current = false;
+        coverDoneRef.current = true;
+        phaseRef.current = "covering";
+        setIsCovering(true);
+        stuckCheckTimer = setTimeout(() => {
+          if (phaseRef.current === "covering" || phaseRef.current === "revealing") {
+            resetStuckTransition();
+          }
+        }, 3000);
+        return;
+      }
       coverStartedAtRef.current = Date.now();
       routeReadyRef.current = false;
       coverDoneRef.current = false;

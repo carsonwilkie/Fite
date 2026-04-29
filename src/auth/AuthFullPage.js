@@ -14,7 +14,7 @@ export default function AuthFullPage({ view = "sign-in", title, description }) {
   const redirectTo = sanitizeRedirectPath(router.query.redirect_url, "/");
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
+    if (isLoaded && isSignedIn && !window.__fiteAuthRedirectInProgress) {
       router.replace(redirectTo);
     }
   }, [isLoaded, isSignedIn, redirectTo, router]);

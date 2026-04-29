@@ -69,14 +69,15 @@ export default function AccountPanel() {
       window.dispatchEvent(new CustomEvent("fite:manual-signout"));
       await window.__fiteCoverInstant?.();
       await signOut();
+      window.__fiteSkipNextRouteCover = true;
       await router.replace("/");
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      window.__fiteReveal?.();
       if (typeof window !== "undefined") {
+        window.__fiteSkipNextRouteCover = false;
         window.__fiteManualSignOutInProgress = false;
       }
     } catch (err) {
       if (typeof window !== "undefined") {
+        window.__fiteSkipNextRouteCover = false;
         window.__fiteManualSignOutInProgress = false;
       }
       window.__fiteReveal?.();
