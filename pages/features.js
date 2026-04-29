@@ -842,7 +842,7 @@ export default function FeaturesPage() {
                   </div>
                   <h3 className="lp-card-title">Customized Practice Engine</h3>
                   <p className="lp-card-body" style={{ marginBottom: 20 }}>
-                    Dial in the exact reps you need. Pick from 8 finance verticals, three difficulty tiers, optional math, and — for Premium — a free-text custom descriptor that reshapes the question on the fly.
+                    Dial in the exact reps you need. Pick from 7 finance verticals, three difficulty tiers, optional math, and — for Premium — a free-text custom descriptor that reshapes the question on the fly.
                   </p>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 22 }}>
                     {["Investment Banking", "Private Equity", "Asset Mgmt", "S&T", "Valuation", "Accounting", "Consulting"].map(tag => (
