@@ -446,7 +446,7 @@ export default function StatsPage() {
                               </div>
                               {/* Q number */}
                               <div style={{ textAlign: "center", paddingTop: 3 }}>
-                                <span style={{ fontSize: 7, color: isHov ? C.secondary : C.textMuted, fontFamily: "Manrope, sans-serif", fontWeight: 700, lineHeight: 1 }}>
+                                <span style={{ fontSize: 7, color: isHov ? C.secondary : C.textMuted, fontFamily: "Manrope, sans-serif", fontWeight: 700, lineHeight: 1, visibility: isHov || clampedN <= 20 || i % Math.ceil(clampedN / 20) === 0 || i === clampedN - 1 ? "visible" : "hidden" }}>
                                   {qNum}
                                 </span>
                               </div>
