@@ -43,7 +43,7 @@ export default function FeatureVotePageRoute() {
   return (
     <SubmissionPage
       type="vote"
-      title="Feature Vote · Fite Finance"
+      title="Vote · Fite Finance"
       metaDescription="Vote on what ships next in Fite Finance. Premium users only."
       eyebrow="Feature vote"
       heading="Help pick what ships next"

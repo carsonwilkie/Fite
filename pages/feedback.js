@@ -4,7 +4,7 @@ export default function FeedbackPageRoute() {
   return (
     <SubmissionPage
       type="feedback"
-      title="Submit Feedback · Fite Finance"
+      title="Feedback · Fite Finance"
       metaDescription="Share your thoughts on Fite Finance. Your feedback shapes what we build next."
       eyebrow="Submit feedback"
       heading="Tell us what's on your mind"

@@ -509,7 +509,7 @@ export default function LandingPage() {
     <>
       <Head>
         <title>Fite Finance</title>
-        <meta name="description" content="Free, AI-powered finance interview prep. Practice unlimited real questions, get instant AI grading, and ace your finance interview." />
+        <meta name="description" content="Free, AI-powered finance technical prep. Practice unlimited real questions, get instant AI feedback and grading, and ace your finance interview." />
         <link rel="canonical" href="https://fitefinance.com/" />
 
         {/* Open Graph (Facebook, LinkedIn, iMessage) */}
@@ -517,7 +517,7 @@ export default function LandingPage() {
         <meta property="og:site_name" content="Fite Finance" />
         <meta property="og:url" content="https://fitefinance.com/" />
         <meta property="og:title" content="Fite Finance" />
-        <meta property="og:description" content="AI-powered finance interview prep. Practice unlimited real questions, get instant AI grading, and ace your finance interview." />
+        <meta property="og:description" content="Free, AI-powered finance technical prep. Practice unlimited real questions, get instant AI feedback and grading, and ace your finance interview." />
         <meta property="og:image" content="https://fitefinance.com/logo-og.jpg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="669" />
@@ -525,7 +525,7 @@ export default function LandingPage() {
         {/* Twitter / X */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Fite Finance" />
-        <meta name="twitter:description" content="AI-powered finance interview prep. Practice unlimited real questions, get instant AI grading, and ace your finance interview." />
+        <meta name="twitter:description" content="Free, AI-powered finance technical prep. Practice unlimited real questions, get instant AI feedback and grading, and ace your finance interview." />
         <meta name="twitter:image" content="https://fitefinance.com/logo-og.jpg" />
 
         {/* Structured data — helps Google recognize "Fite Finance" as a brand */}
@@ -546,7 +546,7 @@ export default function LandingPage() {
                   "width": 1200,
                   "height": 669
                 },
-                "description": "AI-powered finance interview prep. Practice unlimited real questions, get instant AI grading, and ace your finance interview.",
+                "description": "Free, AI-powered finance technical prep. Practice unlimited real questions, get instant AI feedback and grading, and ace your finance interview.",
                 "sameAs": [
                   "https://x.com/FiteF92063",
                   "https://www.linkedin.com/company/fite-finance",

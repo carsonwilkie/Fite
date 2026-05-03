@@ -1552,7 +1552,7 @@ export default function Dashboard() {
                     const active = difficulty === d;
                     return (
                       <motion.button key={d} onClick={() => setDifficulty(d)} whileTap={{ scale: 0.92 }}
-                        style={{ position: "relative", flex: 1, padding: "9px 0", fontSize: 10, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: 8, cursor: "pointer", fontFamily: "Manrope, sans-serif", transition: "all 0.2s", background: active ? cyberGrad : "transparent", color: active ? "#fff" : C.textMuted, border: active ? "none" : `1px solid ${C.border}`, boxShadow: active ? "0 4px 14px rgba(21,101,192,0.35)" : "none" }}>
+                        style={{ position: "relative", flex: 1, padding: "9px 0", fontSize: 10, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: 8, cursor: "pointer", fontFamily: "Manrope, sans-serif", transition: "all 0.2s", background: active ? cyberGrad : "transparent", color: active ? "#fff" : C.textMuted, border: active ? "1px solid transparent" : `1px solid ${C.border}`, boxShadow: active ? "0 4px 14px rgba(21,101,192,0.35)" : "none" }}>
                         {d}
                         {isOTG && <OtgInfoBadge active={active} />}
                       </motion.button>
@@ -1855,7 +1855,7 @@ export default function Dashboard() {
                       const active = difficulty === d;
                       return (
                         <motion.button key={d} onClick={() => setDifficulty(d)} whileTap={{ scale: 0.92 }}
-                          style={{ position: "relative", flex: 1, padding: "11px 0", fontSize: 11, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: 8, cursor: "pointer", fontFamily: "Manrope, sans-serif", transition: "all 0.2s", background: active ? cyberGrad : "transparent", color: active ? "#fff" : C.textMuted, border: active ? "none" : `1px solid ${C.border}`, boxShadow: active ? "0 4px 14px rgba(21,101,192,0.35)" : "none" }}>
+                          style={{ position: "relative", flex: 1, padding: "11px 0", fontSize: 11, fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: 8, cursor: "pointer", fontFamily: "Manrope, sans-serif", transition: "all 0.2s", background: active ? cyberGrad : "transparent", color: active ? "#fff" : C.textMuted, border: active ? "1px solid transparent" : `1px solid ${C.border}`, boxShadow: active ? "0 4px 14px rgba(21,101,192,0.35)" : "none" }}>
                           {d}
                           {isOTG && <OtgInfoBadge active={active} />}
                         </motion.button>
