@@ -8,7 +8,7 @@ Free users are limited to 5 generated questions per day. Premium users unlock un
 ## Tech Stack
 - Frontend: Next.js 16.2.3 (Pages Router), React 19, `motion/react`
 - Backend: Vercel serverless functions in `/api`
-- Auth: Clerk via `@clerk/clerk-react`
+- Auth: Clerk via `@clerk/nextjs`
 - Payments: Stripe subscriptions + Stripe Billing Portal
 - AI: OpenAI via `openai` SDK, currently using `gpt-4o-mini`
 - Data: Upstash Redis
@@ -21,7 +21,10 @@ Free users are limited to 5 generated questions per day. Premium users unlock un
 npm run dev
 npm run build
 npm run start
+npm run qcount
 ```
+
+`npm run qcount` prints question-bank totals by category, difficulty, and format.
 
 ## Security
 Never read, display, or reference the contents of `.env`, `.env.local`, or any `.env.*` file.
@@ -43,6 +46,7 @@ Never read, display, or reference the contents of `.env`, `.env.local`, or any `
 /privacy       → Privacy policy
 /terms         → Terms of service
 /refunds       → Refund policy
+/sitemap.xml   → Server-rendered XML sitemap
 ```
 
 Notes:
@@ -69,10 +73,17 @@ Notes:
 ### `pages/_document.js`
 - Loads Google Fonts for `Inter`, `Manrope`, and `Material Symbols Outlined`
 - Advertises versioned favicon assets:
-  - `/favicon-v2.ico`
-  - `/favicon-v2.png`
+  - `/favicon-1.ico`
+  - `/favicon-v3.png`
   - `/apple-touch-icon-v2.png`
 - The versioned favicon paths are intentional, used to nudge search engines away from cached old favicon URLs.
+
+### `proxy.js`
+- Runs Clerk middleware through `@clerk/nextjs/server`
+- Applies to app routes and API routes while excluding static assets, `_next`, and common public file extensions
+
+### `next.config.js`
+- Enables `reactStrictMode`
 
 ## File Structure
 ```text
@@ -90,12 +101,27 @@ Notes:
   refunds.js
   sign-in.js
   sign-up.js
+  sitemap.xml.js
   sso-callback.js
   stats.js
   success.js
   terms.js
   api/
     admin-users.js
+    checkPaid.js
+    checkout.js
+    feedback.js
+    grade.js
+    history.js
+    interview.js
+    portal.js
+    price.js
+    question.js
+    total-questions.js
+    webhook.js
+    _constants.js
+    _openai.js
+    _questionBank.js
 
 /src
   App.css
@@ -118,32 +144,18 @@ Notes:
   usePrice.js
   useStableViewport.js
   useUpgrade.js
+  server/
+    auth.js
   auth/
     AccountPanel.js
     AuthCard.js
     AuthFullPage.js
     AuthPrimitives.js
     AuthProvider.js
+    redirects.js
     UserMenu.js
 
-/api
-  _constants.js
-  _openai.js
-  _questionBank.js
-  checkPaid.js
-  checkout.js
-  feedback.js
-  grade.js
-  history.js
-  interview.js
-  portal.js
-  price.js
-  question.js
-  total-questions.js
-  webhook.js
-
 /public
-  Background.png
   Fite_Premium_NB.png
   apple-touch-icon.png
   apple-touch-icon-v2.png
@@ -152,9 +164,13 @@ Notes:
   favicon-v2.ico
   favicon-v2.png
   favicon-1.ico
-  logo-og.jpg
+  favicon-v3.png
+  google2aa907af818e918b.html
+  logo-realistic-small.png
   logo-realistic.png
   logo-realistic.webp
+  social-banner.jpg
+  social_banner.jpg
   frames/frame-0002.webp ... frame-0169.webp
   frames/mobile/frame-0003.webp ... frame-0169.webp
   robots.txt
@@ -309,6 +325,10 @@ Key features:
 Important implementation notes:
 - `INTERVIEW_QUESTIONS` is fixed at 4
 - Timer presets are `[60, 120, 180, 300]`
+- Question mode supports `OTG` ("On The Go") as a fourth difficulty; interview mode intentionally does not
+- Switching from question mode to interview mode while `OTG` is selected resets difficulty to `Medium`
+- Custom descriptors are disabled while `OTG` is selected
+- The `OtgInfoBadge` helper shows a delayed hover/tap tooltip without triggering the parent difficulty button
 - The toggle controls use a shared `ToggleSwitch` helper
 - The profile card forwards account/profile actions through the auth user menu/account route
 - Sidebar and drawer scrollbars are hidden via `.hide-scrollbar`
@@ -346,7 +366,7 @@ Timer behavior:
 
 #### `src/HistoryDark.js`
 - Premium-only page
-- Fetches history from `/api/history?userId=...`
+- Fetches history from `/api/history`; the API derives the user from Clerk auth
 - Supports:
   - search
   - category filter
@@ -356,6 +376,7 @@ Timer behavior:
 - Groups entries by formatted date
 - Renders both normal question entries and interview entries
 - Can auto-expand and scroll to a highlighted history entry when arriving from the stats page
+- Uses `QUESTION_DIFFICULTIES`, so OTG history can be filtered alongside Easy/Medium/Hard
 
 #### `src/StatsPage.js`
 - Premium-only page
@@ -369,6 +390,7 @@ Timer behavior:
   - category performance
   - difficulty breakdown
   - recent score trend
+- Tracks OTG in the difficulty breakdown
 - Links back into `/history` with a `highlight` timestamp
 
 ### Feedback and feature voting
@@ -379,10 +401,7 @@ Timer behavior:
 - Supports optional roadmap list content
 - Enforces premium gating when `paidOnly` is true
 - Posts to `/api/feedback`
-- Sends signed-in user metadata when available:
-  - `userId`
-  - email
-  - name
+- Sends only `type` and `message`; the API enriches submissions with signed-in Clerk metadata when available
 - Caps message length at 4000 characters
 - Shows animated success state and links back to `/dashboard`
 
@@ -423,13 +442,14 @@ Timer behavior:
 - Uses Clerk `useUser()`
 - Calls `POST /api/checkPaid`
 - Persists a local `isPaid` hint in `localStorage`
+- The API derives the user from Clerk request auth; the client no longer sends `userId`
 
 ### `src/usePaidStatus.js`
 - Thin wrapper around the context hook
 
 ### `src/useUpgrade.js`
 - If signed out: opens the custom auth modal
-- If signed in: calls `POST /api/checkout` and redirects to Stripe Checkout
+- If signed in: calls `POST /api/checkout` with an empty body and redirects to Stripe Checkout
 
 ### `src/usePrice.js`
 - Calls `GET /api/price`
@@ -450,6 +470,7 @@ Timer behavior:
 ### Frontend: `src/constants.js`
 ```js
 export const DIFFICULTIES = ["Easy", "Medium", "Hard"];
+export const QUESTION_DIFFICULTIES = ["Easy", "Medium", "Hard", "OTG"];
 export const CATEGORIES = [
   "All",
   "Investment Banking",
@@ -466,6 +487,20 @@ export const CATEGORIES = [
 - Same categories, but without `"All"`
 - Used by API routes that need a concrete finance category
 
+OTG is intentionally frontend/question-route only. Interview mode and backend category constants stay on Easy/Medium/Hard and concrete categories.
+
+## Server Auth Helpers
+
+### `src/server/auth.js`
+- Wraps Clerk request auth for API routes:
+  - `getAuthenticatedUserId(req)`
+  - `requireAuthenticatedUserId(req, res)`
+  - `getAuthenticatedUserEmail(userId)`
+  - `getAuthenticatedUserProfile(userId)`
+  - `sanitizeRedirectPath(value, fallback)`
+- `requireAuthenticatedUserId()` responds with `401` and `{ error: "Authentication required" }` when no Clerk user is present
+- `sanitizeRedirectPath()` only allows same-site relative paths and rejects protocol-relative or external redirects
+
 ## API Surface
 
 ### `GET /api/admin-users` via `pages/api/admin-users.js`
@@ -481,20 +516,29 @@ export const CATEGORIES = [
   - lastSignInAt
 
 ### `POST /api/checkPaid`
-- Input: `{ userId }`
+- Requires authenticated Clerk user
+- Input: empty body
 - Output: `{ isPaid: boolean }`
-- Reads `paid:${userId}` from Redis
+- Reads `paid:${authenticatedUserId}` from Redis
 
 ### `POST /api/checkout`
-- Input: `{ userId, email }`
+- Requires authenticated Clerk user
+- Input: empty body
 - Creates a Stripe subscription checkout session
-- Adds `userId` to both checkout metadata and subscription metadata
+- Looks up the primary Clerk email and passes it as `customer_email` when available
+- Adds authenticated user ID to both checkout metadata and subscription metadata
+- Allows Stripe promotion codes
 - Redirects to `/success` on success and `/` on cancel
 
 ### `POST /api/portal`
-- Input: `{ userId, returnPath }`
+- Requires authenticated Clerk user
+- Input: `{ returnPath }`
 - Creates a Stripe Billing Portal session
-- Finds the Stripe customer by scanning recent checkout sessions for matching metadata
+- First reads `stripe_customer:${userId}` from Redis
+- If missing, searches Stripe subscriptions by `metadata['userId']`
+- Falls back to scanning recent checkout sessions
+- Caches the resolved customer ID back to Redis
+- Sanitizes `returnPath` before composing the portal `return_url`
 
 ### `GET /api/price`
 - Returns Stripe price info from `STRIPE_PRICE_ID`
@@ -506,16 +550,18 @@ export const CATEGORIES = [
 - Output shape: `{ total }`
 
 ### `GET|POST /api/history`
-- GET input: `?userId=...`
-- POST input: `{ userId, entry }`
-- Storage key: `history:${userId}`
+- Requires authenticated Clerk user
+- GET input: none
+- POST input: `{ entry }`
+- Storage key: `history:${authenticatedUserId}`
 - Entries are stored with `LPUSH`
 - History is capped to 100 entries with `LTRIM`
 
 ### `POST /api/feedback`
 - Handles both feedback and feature-vote submissions
-- Input: `{ type, message, userId, email, name }`
+- Input: `{ type, message }`
 - `type === "vote"` stores under `vote:submissions`; all other values store as `feedback`
+- Reads Clerk auth opportunistically and enriches records with `{ userId, email, name }` when available
 - Requires non-empty `message`
 - Rejects messages over 4000 characters
 - Stores recent submissions in Redis with `LPUSH` and caps each list to 500
@@ -531,6 +577,7 @@ Two modes:
 - Non-paid users are limited to 5/day
 - Limit key: `questions:${userId || clientIp}:${YYYY-MM-DD}`
 - Supports SSE streaming when `stream: true`
+- Streaming responses include `questionsUsed` and `questionsLimit` when a free-user count was incremented
 - Increments the aggregate Redis counter `stats:total_questions`
 - Uses:
   - category
@@ -538,21 +585,37 @@ Two modes:
   - math
   - optional custom prompt
   - few-shot examples from `_questionBank`
+- Non-OTG requests randomly select one of five formats:
+  - scenario
+  - pitch
+  - walk-through
+  - comparison
+  - pressure-test
+- Non-OTG requests inject a Q2 2026 market-context block and negative examples to avoid generic definition prompts
+- OTG requests skip the question bank, format selection, custom descriptor, and negative examples
+- OTG questions have separate prompts for mental-math vs. quick conceptual/brain-teaser questions
 
 2. `type === "answer"`
 - Generates a markdown model answer for a question
+- OTG answers use a separate short plain-text answer prompt
+- Standard answers are tiered by difficulty and return exactly:
+  - `## Model Answer`
+  - `## Other Angles to Mention`
 
 Current model:
 - `gpt-4o-mini`
 
 ### `POST /api/grade`
 - Premium-only
-- Input: `{ question, userAnswer, userId }`
+- Requires authenticated Clerk user
+- Input: `{ question, userAnswer, idealAnswer }`
 - Returns `{ feedback, score }`
 - If the answer is blank, returns score `0` and a timeout-style message
+- Uses optional `idealAnswer` as an internal grading anchor when provided
 
 ### `POST /api/interview`
 Unified interview endpoint. Dispatches on `action` in the request body:
+- Requires authenticated Clerk user and an active Redis paid flag before any action runs
 
 - `action: "generate"`
   - Extra input: `{ category, difficulty, math, customPrompt }`
@@ -570,7 +633,9 @@ Consolidated from three separate `interview-*` routes to stay under Vercel Hobby
 
 ### `POST /api/webhook`
 - Stripe webhook handler
+- Disables the default Next.js body parser so Stripe signature verification can use the raw body
 - On `checkout.session.completed`, sets `paid:${userId}` to `"true"`
+- On `checkout.session.completed`, also stores `stripe_customer:${userId}` when Stripe provides a customer ID
 - On `customer.subscription.deleted`, deletes `paid:${userId}`
 - On `customer.subscription.updated`, deletes `paid:${userId}` when `cancel_at_period_end` is true
 - Check this file before changing billing assumptions because Redis paid-state is driven here
@@ -589,6 +654,8 @@ Consolidated from three separate `interview-*` routes to stay under Vercel Hobby
   "difficulty": "Hard",
   "math": "With Math",
   "customPrompt": "LBO modeling",
+  "timeTaken": 118,
+  "timeRemaining": 2,
   "timestamp": 1234567890000
 }
 ```
@@ -663,7 +730,7 @@ Consolidated from three separate `interview-*` routes to stay under Vercel Hobby
 
 ## Important Implementation Notes
 - Navigation is Next.js-only via `next/router` and `next/link`
-- The project still contains some old CRA-era dependencies in `package.json` (`react-router-dom`, `react-scripts`), but the runtime app is Next.js Pages Router
+- The runtime app is Next.js Pages Router; old CRA runtime files/dependencies are no longer part of the shipped app
 - `public/index.html`, `public/manifest.json`, the old redirect routes, and `src/Navbar.js` were removed in the cleanup
 - The repo still contains non-runtime archive/design folders outside the app shell; do not assume everything in the repo is part of the shipped website
 - Several full-height screens now use `useStableViewport()` instead of raw `100vh` to reduce Chrome mobile resize jitter
@@ -692,5 +759,5 @@ FEEDBACK_FROM_EMAIL
 - If you are changing auth UI, inspect `src/auth/AuthCard.js`, `src/auth/AuthPrimitives.js`, and `src/auth/AuthProvider.js`
 - If you are changing account management, inspect `src/auth/AccountPanel.js`
 - If you are changing billing behavior, verify `checkout.js`, `portal.js`, and `webhook.js` together
-- If you are changing feedback or feature voting, inspect `src/SubmissionPage.js` and `api/feedback.js`
+- If you are changing feedback or feature voting, inspect `src/SubmissionPage.js` and `pages/api/feedback.js`
 - If you are changing categories, update both `src/constants.js` and `api/_constants.js`
