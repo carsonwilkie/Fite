@@ -569,7 +569,7 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
             <div style={{ padding: "12px 14px 0", flexShrink: 0 }}>
               {filterBar}
             </div>
-            <div className="hide-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "0 14px 24px" }}>
+            <div className="hide-scrollbar" style={{ flex: 1, overflowY: "auto", overscrollBehavior: "contain", padding: "0 14px 24px" }}>
               {filtered.length === 0 ? (
                 <div style={{ padding: 30, textAlign: "center", color: C.textMuted, fontSize: 13 }}>
                   No questions match your filters.
