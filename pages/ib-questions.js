@@ -2,9 +2,19 @@ import Head from "next/head";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
+import { getAuth } from "@clerk/nextjs/server";
 import IBQuestions from "../src/IBQuestionsPage";
 
-export default function IBQuestionsPage() {
+export async function getServerSideProps(ctx) {
+  const { userId } = getAuth(ctx.req);
+  if (!userId) {
+    return { redirect: { destination: "/sign-in?redirect_url=/ib-questions", permanent: false } };
+  }
+  const { IB_QUESTIONS } = require("./api/_ibQuestions");
+  return { props: { questions: IB_QUESTIONS } };
+}
+
+export default function IBQuestionsPage({ questions }) {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
 
@@ -20,7 +30,7 @@ export default function IBQuestionsPage() {
         <title>IB 400 · Fite Finance</title>
         <meta name="robots" content="noindex,nofollow" />
       </Head>
-      {isLoaded && isSignedIn ? <IBQuestions /> : null}
+      {isLoaded && isSignedIn ? <IBQuestions initialQuestions={questions} /> : null}
     </>
   );
 }

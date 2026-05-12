@@ -51,7 +51,7 @@ function difficultyColor(d) {
   return C.textMuted;
 }
 
-export default function IBQuestionsPage() {
+export default function IBQuestionsPage({ initialQuestions = [] }) {
   const { isPaid } = usePaidStatus();
   const upgrade = useUpgrade();
   const viewport = useStableViewport();
@@ -64,14 +64,8 @@ export default function IBQuestionsPage() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // ── Questions (fetched server-side so the bank never ships in the JS bundle) ──
-  const [questions, setQuestions] = useState([]);
-  useEffect(() => {
-    fetch("/api/ib-questions")
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.questions) setQuestions(d.questions); })
-      .catch(() => {});
-  }, []);
+  // ── Questions (passed from getServerSideProps so the bank never ships in the JS bundle) ──
+  const [questions, setQuestions] = useState(initialQuestions);
 
   // ── Filters ──
   const [search, setSearch] = useState("");
@@ -82,7 +76,7 @@ export default function IBQuestionsPage() {
     const set = new Set();
     questions.forEach(q => q.category && set.add(q.category));
     return ["All", ...Array.from(set)];
-  }, []);
+  }, [questions]);
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -266,7 +260,7 @@ export default function IBQuestionsPage() {
             </span>
           )}
         </div>
-        <div style={{ fontSize: 13, color: isActive ? C.text : C.textMuted, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+        <div style={{ fontSize: 13, color: isActive ? C.text : C.textMuted, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", userSelect: "none", WebkitUserSelect: "none" }}>
           {q.question}
         </div>
       </motion.button>
@@ -301,7 +295,7 @@ export default function IBQuestionsPage() {
               <span style={{ fontSize: 9, fontWeight: 800, padding: "3px 9px", borderRadius: 6, background: `${difficultyColor(active.difficulty)}1f`, color: difficultyColor(active.difficulty), fontFamily: "Manrope, sans-serif", letterSpacing: "0.1em", textTransform: "uppercase" }}>{active.difficulty}</span>
             )}
           </div>
-          <div style={{ fontSize: 19, color: C.text, lineHeight: 1.55, fontFamily: "Inter, sans-serif" }}>
+          <div style={{ fontSize: 19, color: C.text, lineHeight: 1.55, fontFamily: "Inter, sans-serif", userSelect: "none", WebkitUserSelect: "none" }}>
             {active.question}
           </div>
         </div>
@@ -348,7 +342,7 @@ export default function IBQuestionsPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              style={{ padding: 22, borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}
+              style={{ padding: 22, borderRadius: 14, background: C.surface, border: `1px solid ${C.border}`, userSelect: "none", WebkitUserSelect: "none" }}
             >
               <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.15em", textTransform: "uppercase", color: C.secondary, fontFamily: "Manrope, sans-serif", marginBottom: 12 }}>Model Answer</div>
               <div className="dashboard-markdown">
