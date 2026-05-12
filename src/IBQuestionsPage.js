@@ -540,7 +540,7 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
   const showPanelOnMobile = isMobile && activeId;
 
   return (
-    <div style={{ minHeight: toViewportCssValue(viewport), background: C.bg, color: C.text, display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: toViewportCssValue(viewport.height), background: C.bg, color: C.text, display: "flex", flexDirection: "column" }}>
       {/* Top bar */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14, background: `${C.bg}f2`, borderBottom: `1px solid ${C.border}`, backdropFilter: "blur(8px)" }}>
         {showPanelOnMobile ? (
@@ -564,7 +564,7 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
       <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {/* Left: List */}
         {(!isMobile || showListOnMobile) && (
-          <div style={{ width: isMobile ? "100%" : 380, flexShrink: 0, borderRight: isMobile ? "none" : `1px solid ${C.border}`, position: isMobile ? "static" : "sticky", top: 0, height: isMobile ? "auto" : toViewportCssValue(viewport), display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ width: isMobile ? "100%" : 380, flexShrink: 0, borderRight: isMobile ? "none" : `1px solid ${C.border}`, position: isMobile ? "static" : "sticky", top: 0, height: isMobile ? "auto" : toViewportCssValue(viewport.height), display: "flex", flexDirection: "column", overflow: "hidden" }}>
             {progressSummary}
             <div style={{ padding: "12px 14px 0", flexShrink: 0 }}>
               {filterBar}
