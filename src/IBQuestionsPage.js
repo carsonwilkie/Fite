@@ -539,7 +539,7 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
   const showPanelOnMobile = isMobile && activeId;
 
   return (
-    <div style={{ minHeight: toViewportCssValue(viewport), background: C.bg, color: C.text, display: "flex", flexDirection: "column" }}>
+    <div style={{ height: toViewportCssValue(viewport), background: C.bg, color: C.text, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* Top bar */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14, background: `${C.bg}f2`, borderBottom: `1px solid ${C.border}`, backdropFilter: "blur(8px)" }}>
         {showPanelOnMobile ? (
