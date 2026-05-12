@@ -3,7 +3,7 @@
 // Sources: QBANK 700+ (14 banks), TD Securities Preview, UBS Toughest Questions,
 //          adapted questions from _questionBank.js, and original generated questions
 
-export const IB_QUESTIONS = [
+const IB_QUESTIONS = [
 
   // ─── ACCOUNTING (55) ─────────────────────────────────────────────────────────
 
@@ -2467,3 +2467,5 @@ export const IB_QUESTIONS = [
     difficulty: "Hard",
   },
 ];
+
+module.exports = { IB_QUESTIONS };

@@ -11,6 +11,11 @@ import "../src/LandingPage.css";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
+if (typeof window !== "undefined") {
+  window.totalQuestions = () =>
+    fetch("/api/total-questions").then(r => r.json()).then(d => console.log("Total questions:", d.total));
+}
+
 const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 
 // ─── Page-transition timing ─────────────────────────────────────────────────

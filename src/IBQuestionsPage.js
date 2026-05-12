@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
-import { IB_QUESTIONS } from "./ibQuestions";
 import usePaidStatus from "./usePaidStatus";
 import useUpgrade from "./useUpgrade";
 import useStableViewport, { toViewportCssValue } from "./useStableViewport";
@@ -65,6 +64,15 @@ export default function IBQuestionsPage() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  // ── Questions (fetched server-side so the bank never ships in the JS bundle) ──
+  const [questions, setQuestions] = useState([]);
+  useEffect(() => {
+    fetch("/api/ib-questions")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.questions) setQuestions(d.questions); })
+      .catch(() => {});
+  }, []);
+
   // ── Filters ──
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -72,13 +80,13 @@ export default function IBQuestionsPage() {
 
   const categories = useMemo(() => {
     const set = new Set();
-    IB_QUESTIONS.forEach(q => q.category && set.add(q.category));
+    questions.forEach(q => q.category && set.add(q.category));
     return ["All", ...Array.from(set)];
   }, []);
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
-    return IB_QUESTIONS.filter(q => {
+    return questions.filter(q => {
       if (categoryFilter !== "All" && q.category !== categoryFilter) return false;
       if (difficultyFilter !== "All" && q.difficulty !== difficultyFilter) return false;
       if (s && !q.question.toLowerCase().includes(s)) return false;
@@ -123,13 +131,13 @@ export default function IBQuestionsPage() {
   };
 
   const completedCount = Object.keys(progress).length;
-  const totalCount = IB_QUESTIONS.length;
+  const totalCount = questions.length;
   const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   // ── Active question ──
   const [activeId, setActiveId] = useState(null);
   const active = useMemo(
-    () => IB_QUESTIONS.find(q => q.id === activeId) || null,
+    () => questions.find(q => q.id === activeId) || null,
     [activeId]
   );
 
@@ -223,7 +231,7 @@ export default function IBQuestionsPage() {
   const renderListItem = (q) => {
     const saved = progress[q.id];
     const isActive = q.id === activeId;
-    const numIdx = IB_QUESTIONS.findIndex(x => x.id === q.id) + 1;
+    const numIdx = questions.findIndex(x => x.id === q.id) + 1;
     const numStr = `#${String(numIdx).padStart(3, "0")}`;
     const completed = !!saved;
     return (
@@ -286,7 +294,7 @@ export default function IBQuestionsPage() {
         <div style={{ padding: 22, borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
             <span style={{ fontSize: 10, fontWeight: 900, color: C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.12em" }}>
-              #{String(IB_QUESTIONS.findIndex(q => q.id === active.id) + 1).padStart(3, "0")}
+              #{String(questions.findIndex(q => q.id === active.id) + 1).padStart(3, "0")}
             </span>
             <span style={{ fontSize: 9, fontWeight: 800, padding: "3px 9px", borderRadius: 6, background: "rgba(79,195,247,0.12)", color: C.secondary, fontFamily: "Manrope, sans-serif", letterSpacing: "0.1em", textTransform: "uppercase" }}>{active.category}</span>
             {active.difficulty && (
