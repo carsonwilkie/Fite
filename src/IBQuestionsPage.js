@@ -129,9 +129,21 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
   const totalCount = questions.length;
   const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState("");
   const [resetting, setResetting] = useState(false);
+  const resetInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!resetModalOpen) { setResetConfirmText(""); return; }
+    const onKey = (e) => { if (e.key === "Escape") setResetModalOpen(false); };
+    window.addEventListener("keydown", onKey);
+    setTimeout(() => resetInputRef.current?.focus(), 80);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [resetModalOpen]);
+
   const handleReset = async () => {
-    if (!window.confirm("Reset all progress? This cannot be undone.")) return;
+    if (resetConfirmText !== "CONFIRM") return;
     setResetting(true);
     try {
       await fetch("/api/history?scope=ib", { method: "DELETE" });
@@ -140,6 +152,7 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
       console.error(e);
     }
     setResetting(false);
+    setResetModalOpen(false);
   };
 
   const handleShuffle = () => {
@@ -572,12 +585,11 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
           </span>
           {progressLoaded && completedCount > 0 && (
             <button
-              onClick={handleReset}
-              disabled={resetting}
+              onClick={() => setResetModalOpen(true)}
               title="Reset all progress"
-              style={{ background: "none", border: "none", padding: 0, cursor: resetting ? "default" : "pointer", display: "flex", alignItems: "center", opacity: resetting ? 0.4 : 0.6, transition: "opacity 0.15s" }}
-              onMouseEnter={e => { if (!resetting) e.currentTarget.style.opacity = 1; }}
-              onMouseLeave={e => { if (!resetting) e.currentTarget.style.opacity = 0.6; }}
+              style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = 1; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = 0.6; }}
             >
               <Icon name="restart_alt" size={16} style={{ color: C.danger }} />
             </button>
@@ -653,7 +665,145 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
       <style jsx global>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { scrollbar-width: none; }
+        .ibq-confirm-input::placeholder { color: rgba(148,163,184,0.45); }
+        .ibq-confirm-input:focus { border-color: rgba(79,195,247,0.45) !important; outline: none; }
       `}</style>
+
+      {/* Reset confirmation modal */}
+      <AnimatePresence>
+        {resetModalOpen && (
+          <motion.div
+            key="reset-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 10000,
+              overflowY: "auto",
+              background: "rgba(2, 8, 23, 0.72)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
+            }}
+            onMouseDown={(e) => { if (e.target === e.currentTarget) setResetModalOpen(false); }}
+          >
+            <div
+              style={{ display: "flex", minHeight: "100%", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}
+              onMouseDown={(e) => { if (e.target === e.currentTarget) setResetModalOpen(false); }}
+            >
+              <motion.div
+                key="reset-modal-card"
+                initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.98 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                style={{
+                  width: "100%",
+                  maxWidth: 420,
+                  background: "linear-gradient(145deg, #0d1b2a 0%, #0b1120 100%)",
+                  border: "1px solid rgba(21,101,192,0.28)",
+                  borderRadius: 18,
+                  boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(79,195,247,0.06)",
+                  padding: "30px 28px 28px",
+                  position: "relative",
+                }}
+              >
+                {/* Close button */}
+                <button
+                  onClick={() => setResetModalOpen(false)}
+                  style={{ position: "absolute", top: 16, right: 16, background: "none", border: "none", cursor: "pointer", color: C.textMuted, display: "flex", alignItems: "center", padding: 4, borderRadius: 6, opacity: 0.7, transition: "opacity 0.15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = 1; }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = 0.7; }}
+                >
+                  <Icon name="close" size={20} />
+                </button>
+
+                {/* Icon + title */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 22 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: `${C.danger}18`, border: `1.5px solid ${C.danger}55`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Icon name="restart_alt" size={24} style={{ color: C.danger }} />
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 17, fontWeight: 900, color: C.text, fontFamily: "Manrope, sans-serif", marginBottom: 6 }}>Reset All Progress?</div>
+                    <div style={{ fontSize: 13, color: C.textMuted, fontFamily: "Inter, sans-serif", lineHeight: 1.55 }}>
+                      This will permanently erase your completion status and scores for all {totalCount} questions. This cannot be undone.
+                    </div>
+                  </div>
+                </div>
+
+                {/* CONFIRM input */}
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.14em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 8 }}>
+                    Type <span style={{ color: C.danger, letterSpacing: "0.18em" }}>CONFIRM</span> to continue
+                  </div>
+                  <input
+                    ref={resetInputRef}
+                    className="ibq-confirm-input"
+                    type="text"
+                    value={resetConfirmText}
+                    onChange={(e) => setResetConfirmText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleReset(); }}
+                    placeholder="CONFIRM"
+                    autoComplete="off"
+                    spellCheck={false}
+                    style={{
+                      width: "100%",
+                      padding: "12px 14px",
+                      borderRadius: 10,
+                      background: C.surfaceLow,
+                      border: `1px solid ${C.border}`,
+                      color: C.text,
+                      fontSize: 15,
+                      fontFamily: "Manrope, sans-serif",
+                      fontWeight: 700,
+                      letterSpacing: "0.12em",
+                      boxSizing: "border-box",
+                      transition: "border-color 0.15s",
+                    }}
+                  />
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <motion.button
+                    onClick={() => setResetModalOpen(false)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{ flex: 1, padding: "12px 0", borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.textMuted, fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "Manrope, sans-serif" }}
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    onClick={handleReset}
+                    disabled={resetConfirmText !== "CONFIRM" || resetting}
+                    whileHover={resetConfirmText === "CONFIRM" && !resetting ? { scale: 1.02 } : {}}
+                    whileTap={resetConfirmText === "CONFIRM" && !resetting ? { scale: 0.97 } : {}}
+                    style={{
+                      flex: 1,
+                      padding: "12px 0",
+                      borderRadius: 10,
+                      border: "none",
+                      background: resetConfirmText === "CONFIRM" && !resetting ? C.danger : `${C.danger}40`,
+                      color: "#fff",
+                      fontSize: 12,
+                      fontWeight: 900,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                      cursor: resetConfirmText === "CONFIRM" && !resetting ? "pointer" : "not-allowed",
+                      fontFamily: "Manrope, sans-serif",
+                      transition: "background 0.15s",
+                    }}
+                  >
+                    {resetting ? "Resetting…" : "Reset"}
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
