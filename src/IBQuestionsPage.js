@@ -129,6 +129,27 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
   const totalCount = questions.length;
   const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
+  const [resetting, setResetting] = useState(false);
+  const handleReset = async () => {
+    if (!window.confirm("Reset all progress? This cannot be undone.")) return;
+    setResetting(true);
+    try {
+      await fetch("/api/history?scope=ib", { method: "DELETE" });
+      setProgress({});
+    } catch (e) {
+      console.error(e);
+    }
+    setResetting(false);
+  };
+
+  const handleShuffle = () => {
+    const pool = filtered.filter(q => !progress[q.id]);
+    const source = pool.length > 0 ? pool : filtered;
+    if (source.length === 0) return;
+    const pick = source[Math.floor(Math.random() * source.length)];
+    handleSelect(pick.id);
+  };
+
   // ── Active question ──
   const [activeId, setActiveId] = useState(null);
   const active = useMemo(
@@ -272,9 +293,41 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
   const renderActivePanel = () => {
     if (!active) {
       return (
-        <div key="empty" style={{ padding: 40, color: C.textMuted, textAlign: "center", fontSize: 14, fontFamily: "Inter, sans-serif" }}>
-          Select a question from the list to get started.
-        </div>
+        <motion.div
+          key="empty"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 320, gap: 20, padding: 40, textAlign: "center" }}
+        >
+          <Icon name="quiz" size={40} style={{ color: C.border, display: "block" }} />
+          <div style={{ color: C.textMuted, fontSize: 15, fontFamily: "Inter, sans-serif", lineHeight: 1.6 }}>
+            Select a question from the list,<br />or shuffle to a random one.
+          </div>
+          <motion.button
+            onClick={handleShuffle}
+            disabled={filtered.length === 0}
+            whileHover={filtered.length > 0 ? { scale: 1.04 } : {}}
+            whileTap={filtered.length > 0 ? { scale: 0.97 } : {}}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "13px 26px",
+              borderRadius: 10,
+              border: "none",
+              background: filtered.length === 0 ? "rgba(21,101,192,0.3)" : cyberGrad,
+              color: "#fff",
+              fontSize: 12,
+              fontWeight: 900,
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              cursor: filtered.length === 0 ? "not-allowed" : "pointer",
+              fontFamily: "Manrope, sans-serif",
+            }}
+          >
+            <Icon name="shuffle" size={18} /> Shuffle Question
+          </motion.button>
+        </motion.div>
       );
     }
     return (
@@ -301,9 +354,36 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
           </div>
         </div>
 
-        {/* Reveal button */}
-        {!answerRevealed && (
-          <div>
+        {/* Your answer (always visible) */}
+        <div style={{ padding: 22, borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}>
+          <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.15em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 10 }}>Your Answer</div>
+          <textarea
+            value={userAnswer}
+            onChange={(e) => setUserAnswer(e.target.value)}
+            placeholder={isPaid ? "Write your answer here before revealing the model answer…" : "Premium members can submit answers for AI grading."}
+            disabled={!isPaid || graded}
+            rows={6}
+            style={{
+              width: "100%",
+              padding: 14,
+              borderRadius: 10,
+              background: C.surfaceLow,
+              border: `1px solid ${C.border}`,
+              color: C.text,
+              fontSize: 15,
+              fontFamily: "Inter, sans-serif",
+              lineHeight: 1.55,
+              resize: "vertical",
+              outline: "none",
+              opacity: isPaid && !graded ? 1 : 0.6,
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
+        {/* Actions row: reveal + grade */}
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+          {!answerRevealed && (
             <motion.button
               onClick={handleReveal}
               disabled={loadingAnswer}
@@ -313,8 +393,45 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
             >
               {loadingAnswer ? "Loading…" : "Reveal Model Answer"}
             </motion.button>
-          </div>
-        )}
+          )}
+          {isPaid ? (
+            <motion.button
+              onClick={handleGrade}
+              disabled={loadingGrade || !userAnswer.trim() || graded}
+              whileHover={!loadingGrade && !graded && userAnswer.trim() ? { scale: 1.02 } : {}}
+              whileTap={!loadingGrade && !graded && userAnswer.trim() ? { scale: 0.97 } : {}}
+              style={{
+                padding: "13px 28px",
+                borderRadius: 10,
+                border: "none",
+                background: (loadingGrade || !userAnswer.trim() || graded) ? "rgba(21,101,192,0.4)" : cyberGrad,
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 900,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                cursor: (loadingGrade || !userAnswer.trim() || graded) ? "not-allowed" : "pointer",
+                fontFamily: "Manrope, sans-serif",
+                opacity: (!userAnswer.trim() && !graded) ? 0.5 : 1,
+              }}
+            >
+              {loadingGrade ? "Grading…" : graded ? "Graded ✓" : "Grade My Answer"}
+            </motion.button>
+          ) : (
+            <div style={{ padding: "10px 16px", borderRadius: 10, background: "rgba(201,168,76,0.08)", border: `1px solid rgba(201,168,76,0.3)`, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <Icon name="workspace_premium" size={18} style={{ color: C.gold }} />
+              <span style={{ fontSize: 12, color: C.gold, fontFamily: "Manrope, sans-serif", fontWeight: 700 }}>AI grading is Premium-only.</span>
+              <motion.button
+                onClick={upgrade}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: C.gold, color: "#0b0b0b", fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "Manrope, sans-serif" }}
+              >
+                Upgrade
+              </motion.button>
+            </div>
+          )}
+        </div>
 
         {/* Loading skeleton */}
         <AnimatePresence>
@@ -352,78 +469,6 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Your answer + grading */}
-        {answerRevealed && (
-          <div style={{ padding: 22, borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}>
-            <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.15em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 10 }}>Your Answer</div>
-            <textarea
-              value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value)}
-              placeholder={isPaid ? "Type your answer here for AI grading…" : "Premium members can submit answers for AI grading."}
-              disabled={!isPaid}
-              rows={6}
-              style={{
-                width: "100%",
-                padding: 14,
-                borderRadius: 10,
-                background: C.surfaceLow,
-                border: `1px solid ${C.border}`,
-                color: C.text,
-                fontSize: 15,
-                fontFamily: "Inter, sans-serif",
-                lineHeight: 1.55,
-                resize: "vertical",
-                outline: "none",
-                opacity: isPaid ? 1 : 0.6,
-                boxSizing: "border-box",
-              }}
-            />
-
-            {isPaid ? (
-              <div style={{ marginTop: 14, display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                <motion.button
-                  onClick={handleGrade}
-                  disabled={loadingGrade || !userAnswer.trim() || graded}
-                  whileHover={!loadingGrade && !graded && userAnswer.trim() ? { scale: 1.02 } : {}}
-                  whileTap={!loadingGrade && !graded && userAnswer.trim() ? { scale: 0.97 } : {}}
-                  style={{
-                    padding: "13px 28px",
-                    borderRadius: 10,
-                    border: "none",
-                    background: (loadingGrade || !userAnswer.trim() || graded) ? "rgba(21,101,192,0.4)" : cyberGrad,
-                    color: "#fff",
-                    fontSize: 12,
-                    fontWeight: 900,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.12em",
-                    cursor: (loadingGrade || !userAnswer.trim() || graded) ? "not-allowed" : "pointer",
-                    fontFamily: "Manrope, sans-serif",
-                    opacity: (!userAnswer.trim() && !graded) ? 0.5 : 1,
-                  }}
-                >
-                  {loadingGrade ? "Grading…" : graded ? "Graded ✓" : "Grade My Answer"}
-                </motion.button>
-              </div>
-            ) : (
-              <div style={{ marginTop: 14, padding: 16, borderRadius: 10, background: "rgba(201,168,76,0.08)", border: `1px solid rgba(201,168,76,0.3)`, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                <Icon name="workspace_premium" size={22} style={{ color: C.gold }} />
-                <div style={{ flex: 1, minWidth: 200 }}>
-                  <div style={{ fontSize: 11, fontWeight: 900, color: C.gold, fontFamily: "Manrope, sans-serif", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 4 }}>AI Grading Locked</div>
-                  <div style={{ fontSize: 13, color: C.textMuted, lineHeight: 1.5 }}>Upgrade to Premium to submit your written answers and get instant AI feedback and scoring.</div>
-                </div>
-                <motion.button
-                  onClick={upgrade}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  style={{ padding: "11px 20px", borderRadius: 9, border: "none", background: C.gold, color: "#0b0b0b", fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", cursor: "pointer", fontFamily: "Manrope, sans-serif" }}
-                >
-                  Upgrade
-                </motion.button>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Feedback */}
         <AnimatePresence>
@@ -521,9 +566,23 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
     <div style={{ padding: "14px 14px 12px", borderBottom: `1px solid ${C.border}` }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <span style={{ fontSize: 10, fontWeight: 900, color: C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.15em", textTransform: "uppercase" }}>Progress</span>
-        <span style={{ fontSize: 12, fontWeight: 900, color: C.text, fontFamily: "Manrope, sans-serif" }}>
-          {progressLoaded ? `${completedCount} / ${totalCount}` : "…"}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 900, color: C.text, fontFamily: "Manrope, sans-serif" }}>
+            {progressLoaded ? `${completedCount} / ${totalCount}` : "…"}
+          </span>
+          {progressLoaded && completedCount > 0 && (
+            <button
+              onClick={handleReset}
+              disabled={resetting}
+              title="Reset all progress"
+              style={{ background: "none", border: "none", padding: 0, cursor: resetting ? "default" : "pointer", display: "flex", alignItems: "center", opacity: resetting ? 0.4 : 0.6, transition: "opacity 0.15s" }}
+              onMouseEnter={e => { if (!resetting) e.currentTarget.style.opacity = 1; }}
+              onMouseLeave={e => { if (!resetting) e.currentTarget.style.opacity = 0.6; }}
+            >
+              <Icon name="restart_alt" size={16} style={{ color: C.danger }} />
+            </button>
+          )}
+        </div>
       </div>
       <div style={{ height: 4, background: C.surfaceHigh, borderRadius: 2, overflow: "hidden" }}>
         <motion.div

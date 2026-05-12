@@ -35,6 +35,11 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    if (req.method === "DELETE") {
+      await redis.del(key);
+      return res.status(200).json({ ok: true });
+    }
+
     return res.status(405).json({ error: "Method not allowed" });
   }
 
