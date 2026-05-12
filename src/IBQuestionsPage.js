@@ -64,6 +64,11 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
   // ── Questions (passed from getServerSideProps so the bank never ships in the JS bundle) ──
   const [questions, setQuestions] = useState(initialQuestions);
 
