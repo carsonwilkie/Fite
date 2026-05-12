@@ -1300,6 +1300,7 @@ export default function Dashboard() {
           </div>
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid rgba(21,101,192,0.06)` }}>
             <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", padding: "0 14px", marginBottom: 6, opacity: 0.4 }}>Account</div>
+            <NavItem icon="menu_book" label="IB 400" onClick={() => router.push("/ib-questions")} />
             <NavItem icon="history" label="History" onClick={() => isPaid ? router.push("/history") : null} muted={!isPaid} />
             <NavItem icon="bar_chart" label="Stats" onClick={() => isPaid ? router.push("/stats") : null} muted={!isPaid} />
             {isPaid
@@ -1738,6 +1739,16 @@ export default function Dashboard() {
       {/* ── Mobile Bottom Nav ── */}
       {isMobile && (
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 64, backgroundColor: C.surfaceLow, borderTop: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-around", zIndex: 200, backdropFilter: "blur(16px)" }}>
+
+          {/* IB 400 */}
+          <motion.button
+            onClick={() => router.push("/ib-questions")}
+            whileTap={{ scale: 0.88 }}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 12px", borderRadius: 10 }}
+          >
+            <Icon name="menu_book" size={22} style={{ color: C.textMuted }} />
+            <span style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>IB 400</span>
+          </motion.button>
 
           {/* History */}
           <motion.button
