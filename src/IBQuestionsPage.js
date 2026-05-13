@@ -134,6 +134,10 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
   const [resetting, setResetting] = useState(false);
   const resetInputRef = useRef(null);
 
+  const [removeModalOpen, setRemoveModalOpen] = useState(false);
+  const [questionToRemove, setQuestionToRemove] = useState(null);
+  const [removing, setRemoving] = useState(false);
+
   useEffect(() => {
     if (!resetModalOpen) { setResetConfirmText(""); return; }
     const onKey = (e) => { if (e.key === "Escape") setResetModalOpen(false); };
@@ -141,6 +145,13 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
     setTimeout(() => resetInputRef.current?.focus(), 80);
     return () => window.removeEventListener("keydown", onKey);
   }, [resetModalOpen]);
+
+  useEffect(() => {
+    if (!removeModalOpen) return;
+    const onKey = (e) => { if (e.key === "Escape") setRemoveModalOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [removeModalOpen]);
 
   const handleReset = async () => {
     if (resetConfirmText !== "CONFIRM") return;
@@ -153,6 +164,28 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
     }
     setResetting(false);
     setResetModalOpen(false);
+  };
+
+  const removeProgress = async (questionId) => {
+    setRemoving(true);
+    setProgress(prev => {
+      const next = { ...prev };
+      delete next[questionId];
+      return next;
+    });
+    if (questionId === activeId) {
+      setScore(null);
+      setGraded(false);
+      setFeedback("");
+    }
+    try {
+      await fetch(`/api/history?scope=ib&questionId=${encodeURIComponent(questionId)}`, { method: "DELETE" });
+    } catch (e) {
+      console.error(e);
+    }
+    setRemoving(false);
+    setRemoveModalOpen(false);
+    setQuestionToRemove(null);
   };
 
   const handleShuffle = () => {
@@ -368,6 +401,17 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
             {active.difficulty && (
               <span style={{ fontSize: 9, fontWeight: 800, padding: "3px 9px", borderRadius: 6, background: `${difficultyColor(active.difficulty)}1f`, color: difficultyColor(active.difficulty), fontFamily: "Manrope, sans-serif", letterSpacing: "0.1em", textTransform: "uppercase" }}>{active.difficulty}</span>
             )}
+            {progress[active.id] && (
+              <button
+                onClick={() => { setQuestionToRemove(active.id); setRemoveModalOpen(true); }}
+                title="Remove from progress"
+                style={{ marginLeft: "auto", background: "none", border: "none", padding: 4, cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.55, transition: "opacity 0.15s", borderRadius: 6 }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = 1; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = 0.55; }}
+              >
+                <Icon name="remove_done" size={16} style={{ color: C.danger }} />
+              </button>
+            )}
           </div>
           <div style={{ fontSize: 19, color: C.text, lineHeight: 1.55, fontFamily: "Inter, sans-serif", userSelect: "none", WebkitUserSelect: "none" }}>
             {active.question}
@@ -403,14 +447,20 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
 
         {/* Actions row: reveal + grade */}
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-          {!answerRevealed && (
+          {(!answerRevealed || loadingAnswer) && (
             <motion.button
               onClick={handleReveal}
               disabled={loadingAnswer}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
-              style={{ padding: "13px 26px", borderRadius: 10, border: `2px solid ${C.border}`, background: "transparent", color: C.text, fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", cursor: loadingAnswer ? "default" : "pointer", fontFamily: "Manrope, sans-serif" }}
+              style={{ padding: "13px 26px", borderRadius: 10, border: `2px solid ${loadingAnswer ? C.secondary + "55" : C.border}`, background: "transparent", color: loadingAnswer ? C.secondary : C.text, fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", cursor: loadingAnswer ? "default" : "pointer", fontFamily: "Manrope, sans-serif", display: "flex", alignItems: "center", gap: 8, transition: "border-color 0.2s, color 0.2s" }}
             >
+              {loadingAnswer && (
+                <svg width="14" height="14" viewBox="0 0 14 14" style={{ animation: "fite-spin 0.8s linear infinite", flexShrink: 0 }}>
+                  <style>{`@keyframes fite-spin { to { transform: rotate(360deg); } }`}</style>
+                  <circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="22 8" />
+                </svg>
+              )}
               {loadingAnswer ? "Loading…" : "Reveal Model Answer"}
             </motion.button>
           )}
@@ -745,6 +795,107 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
         .ibq-confirm-input::placeholder { color: rgba(148,163,184,0.45); }
         .ibq-confirm-input:focus { border-color: rgba(79,195,247,0.45) !important; outline: none; }
       `}</style>
+
+      {/* Remove single question modal */}
+      <AnimatePresence>
+        {removeModalOpen && (
+          <motion.div
+            key="remove-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 10000,
+              overflowY: "auto",
+              background: "rgba(2, 8, 23, 0.72)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
+            }}
+            onMouseDown={(e) => { if (e.target === e.currentTarget) setRemoveModalOpen(false); }}
+          >
+            <div
+              style={{ display: "flex", minHeight: "100%", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}
+              onMouseDown={(e) => { if (e.target === e.currentTarget) setRemoveModalOpen(false); }}
+            >
+              <motion.div
+                key="remove-modal-card"
+                initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.98 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                style={{
+                  width: "100%",
+                  maxWidth: 400,
+                  background: "linear-gradient(145deg, #0d1b2a 0%, #0b1120 100%)",
+                  border: "1px solid rgba(21,101,192,0.28)",
+                  borderRadius: 18,
+                  boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(79,195,247,0.06)",
+                  padding: "30px 28px 28px",
+                  position: "relative",
+                }}
+              >
+                <button
+                  onClick={() => setRemoveModalOpen(false)}
+                  style={{ position: "absolute", top: 16, right: 16, background: "none", border: "none", cursor: "pointer", color: C.textMuted, display: "flex", alignItems: "center", padding: 4, borderRadius: 6, opacity: 0.7, transition: "opacity 0.15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = 1; }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = 0.7; }}
+                >
+                  <Icon name="close" size={20} />
+                </button>
+
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 26 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: `${C.danger}18`, border: `1.5px solid ${C.danger}55`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Icon name="remove_done" size={24} style={{ color: C.danger }} />
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 17, fontWeight: 900, color: C.text, fontFamily: "Manrope, sans-serif", marginBottom: 6 }}>Remove from Progress?</div>
+                    <div style={{ fontSize: 13, color: C.textMuted, fontFamily: "Inter, sans-serif", lineHeight: 1.55 }}>
+                      This will remove your completion status and score for this question. You can re-attempt it any time.
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: 10 }}>
+                  <motion.button
+                    onClick={() => setRemoveModalOpen(false)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{ flex: 1, padding: "12px 0", borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.textMuted, fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "Manrope, sans-serif" }}
+                  >
+                    Dismiss
+                  </motion.button>
+                  <motion.button
+                    onClick={() => questionToRemove && removeProgress(questionToRemove)}
+                    disabled={removing}
+                    whileHover={!removing ? { scale: 1.02 } : {}}
+                    whileTap={!removing ? { scale: 0.97 } : {}}
+                    style={{
+                      flex: 1,
+                      padding: "12px 0",
+                      borderRadius: 10,
+                      border: "none",
+                      background: removing ? `${C.danger}40` : C.danger,
+                      color: "#fff",
+                      fontSize: 12,
+                      fontWeight: 900,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                      cursor: removing ? "not-allowed" : "pointer",
+                      fontFamily: "Manrope, sans-serif",
+                      transition: "background 0.15s",
+                    }}
+                  >
+                    {removing ? "Removing…" : "Confirm"}
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Reset confirmation modal */}
       <AnimatePresence>

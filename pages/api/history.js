@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
   const userId = requireAuthenticatedUserId(req, res);
   if (!userId) return;
 
-  const scope = (req.method === "GET" ? req.query?.scope : req.body?.scope) || null;
+  const scope = req.query?.scope || req.body?.scope || null;
 
   if (scope === "ib") {
     const key = `ib_progress:${userId}`;
@@ -36,7 +36,12 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "DELETE") {
-      await redis.del(key);
+      const questionId = req.query?.questionId || req.body?.questionId;
+      if (questionId) {
+        await redis.hdel(key, questionId);
+      } else {
+        await redis.del(key);
+      }
       return res.status(200).json({ ok: true });
     }
 

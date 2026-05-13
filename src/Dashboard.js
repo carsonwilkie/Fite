@@ -700,7 +700,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
         {/* Action buttons */}
         {!isLimitMsg && (
           <div className="qc-actions" style={{ display: "flex", gap: 14, justifyContent: "flex-end", flexWrap: "wrap" }}>
-            {!answerRevealed && (
+            {(!answerRevealed || loadingAnswer) && (
               <motion.button
                 onClick={onGetAnswer}
                 disabled={loadingAnswer || answerRevealed}
