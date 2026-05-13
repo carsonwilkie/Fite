@@ -16,7 +16,10 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.fitefinance.app",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -41,15 +44,20 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 200
         }
-      ]
+      ],
+      "expo-web-browser",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
+      "clerkPublishableKey": "pk_live_Y2xlcmsuZml0ZWZpbmFuY2UuY29tJA",
+      "router": {},
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "fdb0d132-8f06-4504-bd5c-35e8d3fdfafe"
       }
-    }
+    },
+    "owner": "carsonwilkie"
   }
 }

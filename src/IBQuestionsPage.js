@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import usePaidStatus from "./usePaidStatus";
@@ -52,9 +53,15 @@ function difficultyColor(d) {
 }
 
 export default function IBQuestionsPage({ initialQuestions = [] }) {
-  const { isPaid } = usePaidStatus();
+  const router = useRouter();
+  const { isPaid, loading: paidLoading } = usePaidStatus();
   const upgrade = useUpgrade();
   const viewport = useStableViewport();
+
+  useEffect(() => {
+    if (paidLoading) return;
+    if (!isPaid) { router.push("/"); }
+  }, [isPaid, paidLoading, router]);
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {

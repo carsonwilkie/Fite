@@ -75,58 +75,60 @@ export async function generateQuestion(params: {
 }): Promise<QuestionResult> {
   const { category, difficulty, math, customPrompt, token, onChunk } = params;
 
-  const body = JSON.stringify({
+  const bodyStr = JSON.stringify({
     type: 'question',
     category,
     difficulty,
     math,
     customPrompt: customPrompt || undefined,
-    stream: !!onChunk,
+    stream: true,
   });
 
-  if (onChunk) {
-    // Streaming mode
-    const res = await apiFetch('/question', { method: 'POST', body, token });
-    if (!res.ok) throw new Error('Failed to generate question');
+  // Use XHR instead of fetch — React Native fetch doesn't support ReadableStream,
+  // but XHR fires onprogress as SSE chunks arrive, keeping the connection alive
+  // past Vercel's 10s function timeout.
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}/question`);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
-    const reader = res.body?.getReader();
-    if (!reader) throw new Error('No response body');
-
-    const decoder = new TextDecoder();
-    let buffer = '';
+    let processed = 0;
     let question = '';
     let questionsUsed: number | undefined;
     let questionsLimit: number | undefined;
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() ?? '';
-      for (const line of lines) {
+    xhr.onprogress = () => {
+      const chunk = xhr.responseText.slice(processed);
+      processed = xhr.responseText.length;
+      console.log('XHR progress chunk length:', chunk.length, '| preview:', chunk.slice(0, 80));
+      for (const line of chunk.split('\n')) {
         if (!line.startsWith('data: ')) continue;
         const raw = line.slice(6).trim();
         if (raw === '[DONE]') continue;
         try {
           const parsed = JSON.parse(raw);
-          if (parsed.question) {
-            question += parsed.question;
-            onChunk(question);
-          }
+          if (parsed.text) { question = parsed.text; onChunk?.(question); }
           if (parsed.questionsUsed !== undefined) questionsUsed = parsed.questionsUsed;
           if (parsed.questionsLimit !== undefined) questionsLimit = parsed.questionsLimit;
         } catch {}
       }
-    }
+    };
 
-    return { question, questionsUsed, questionsLimit };
-  } else {
-    const res = await apiFetch('/question', { method: 'POST', body, token });
-    if (!res.ok) throw new Error('Failed to generate question');
-    const data = await res.json();
-    return { question: data.question, questionsUsed: data.questionsUsed, questionsLimit: data.questionsLimit };
-  }
+    xhr.onload = () => {
+      console.log('XHR onload status:', xhr.status, '| question length:', question.length, '| body preview:', xhr.responseText.slice(0, 200));
+      if (xhr.status >= 400) {
+        reject(new Error(`Failed to generate question (${xhr.status})`));
+      } else {
+        resolve({ question, questionsUsed, questionsLimit });
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Network error generating question'));
+    xhr.ontimeout = () => reject(new Error('Request timed out'));
+    xhr.timeout = 60000;
+    xhr.send(bodyStr);
+  });
 }
 
 export async function generateAnswer(params: {
@@ -139,52 +141,48 @@ export async function generateAnswer(params: {
 }): Promise<string> {
   const { question, category, difficulty, math, token, onChunk } = params;
 
-  const body = JSON.stringify({
+  const bodyStr = JSON.stringify({
     type: 'answer',
     question,
     category,
     difficulty,
     math,
-    stream: !!onChunk,
+    stream: true,
   });
 
-  if (onChunk) {
-    const res = await apiFetch('/question', { method: 'POST', body, token });
-    if (!res.ok) throw new Error('Failed to generate answer');
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}/question`);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
-    const reader = res.body?.getReader();
-    if (!reader) throw new Error('No response body');
-
-    const decoder = new TextDecoder();
-    let buffer = '';
+    let processed = 0;
     let answer = '';
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() ?? '';
-      for (const line of lines) {
+    xhr.onprogress = () => {
+      const chunk = xhr.responseText.slice(processed);
+      processed = xhr.responseText.length;
+      for (const line of chunk.split('\n')) {
         if (!line.startsWith('data: ')) continue;
         const raw = line.slice(6).trim();
         if (raw === '[DONE]') continue;
         try {
           const parsed = JSON.parse(raw);
-          if (parsed.answer) {
-            answer += parsed.answer;
-            onChunk(answer);
-          }
+          if (parsed.text) { answer = parsed.text; onChunk?.(answer); }
         } catch {}
       }
-    }
-    return answer;
-  } else {
-    const res = await apiFetch('/question', { method: 'POST', body, token });
-    if (!res.ok) throw new Error('Failed to generate answer');
-    const data = await res.json();
-    return data.answer;
-  }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 400) reject(new Error(`Failed to generate answer (${xhr.status})`));
+      else resolve(answer);
+    };
+
+    xhr.onerror = () => reject(new Error('Network error generating answer'));
+    xhr.ontimeout = () => reject(new Error('Request timed out'));
+    xhr.timeout = 60000;
+    xhr.send(bodyStr);
+  });
 }
 
 // ─── Grading ──────────────────────────────────────────────────────────────────
@@ -241,7 +239,8 @@ export async function getHistory(token: string): Promise<HistoryEntry[]> {
   const res = await apiFetch('/history', { method: 'GET', token });
   if (!res.ok) return [];
   const data = await res.json();
-  return data.history ?? [];
+  // Web returns { entries }; older callers may have used `history`.
+  return data.entries ?? data.history ?? [];
 }
 
 export async function saveHistory(entry: HistoryEntry, token: string): Promise<void> {
@@ -314,6 +313,57 @@ export async function debriefInterview(params: {
   });
   if (!res.ok) throw new Error('Failed to get debrief');
   return res.json();
+}
+
+// ─── IB 400 Question Bank ─────────────────────────────────────────────────────
+
+export interface IBQuestion {
+  id: string;
+  question: string;
+  category: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+}
+
+export async function getIBQuestions(token: string): Promise<IBQuestion[]> {
+  const res = await apiFetch('/ib-questions', { method: 'GET', token });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.questions ?? [];
+}
+
+export interface IBProgressEntry {
+  score: number | null;
+  timestamp: number;
+}
+
+export async function getIBProgress(token: string): Promise<Record<string, IBProgressEntry>> {
+  const res = await apiFetch('/history?scope=ib', { method: 'GET', token });
+  if (!res.ok) return {};
+  const data = await res.json();
+  return data.progress ?? {};
+}
+
+export async function saveIBProgress(params: {
+  questionId: string;
+  score: number | null;
+  token: string;
+}): Promise<void> {
+  await apiFetch('/history?scope=ib', {
+    method: 'POST',
+    body: JSON.stringify({
+      questionId: params.questionId,
+      score: params.score,
+      timestamp: Date.now(),
+    }),
+    token: params.token,
+  });
+}
+
+export async function resetIBProgress(questionId: string | null, token: string): Promise<void> {
+  const path = questionId
+    ? `/history?scope=ib&questionId=${encodeURIComponent(questionId)}`
+    : '/history?scope=ib';
+  await apiFetch(path, { method: 'DELETE', token });
 }
 
 // ─── Feedback ─────────────────────────────────────────────────────────────────

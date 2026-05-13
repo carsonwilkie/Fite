@@ -5,14 +5,35 @@ import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import Constants from 'expo-constants';
+import * as SplashScreen from 'expo-splash-screen';
+import { guestMode } from '../src/guestMode';
+import {
+  useFonts as useInterFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+import {
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  Manrope_800ExtraBold,
+} from '@expo-google-fonts/manrope';
+import { Colors } from '../src/theme';
 
-const publishableKey = Constants.expoConfig?.extra?.clerkPublishableKey
-  ?? process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
-  ?? '';
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
-// Clerk secure token cache — required for native apps
+const publishableKey =
+  Constants.expoConfig?.extra?.clerkPublishableKey ??
+  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+  '';
+
+console.log('Clerk key:', publishableKey ? publishableKey.slice(0, 20) + '...' : 'EMPTY');
+
 const tokenCache = {
   async getToken(key: string) {
     try {
@@ -36,15 +57,23 @@ function AuthGate() {
   useEffect(() => {
     if (!isLoaded) return;
     const inAuthGroup = segments[0] === '(auth)';
-    if (!isSignedIn && !inAuthGroup) {
+    if (!isSignedIn && !inAuthGroup && !guestMode.isAllowed()) {
       router.replace('/(auth)/sign-in');
     } else if (isSignedIn && inAuthGroup) {
+      // User signed in — clear any guest bypass so the flow is clean next time.
+      guestMode.reset();
       router.replace('/(tabs)');
     }
   }, [isSignedIn, isLoaded, segments, router]);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: Colors.bg },
+        animation: 'fade',
+      }}
+    >
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen
@@ -63,21 +92,51 @@ function AuthGate() {
         name="feature-vote"
         options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
       />
+      <Stack.Screen
+        name="ib-question"
+        options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+      />
     </Stack>
   );
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useInterFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    Manrope_800ExtraBold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return (
+      <View style={[styles.root, styles.loading]}>
+        <ActivityIndicator color={Colors.secondary} />
+      </View>
+    );
+  }
+
   return (
     <GestureHandlerRootView style={styles.root}>
-      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-        <StatusBar style="light" />
-        <AuthGate />
-      </ClerkProvider>
+      <SafeAreaProvider>
+        <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+          <StatusBar style="light" />
+          <AuthGate />
+        </ClerkProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: 1, backgroundColor: Colors.bg },
+  loading: { alignItems: 'center', justifyContent: 'center' },
 });

@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert, Pressable } from 'react-native';
 import { useSignUp, useOAuth } from '@clerk/clerk-expo';
 import { useRouter, Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as WebBrowser from 'expo-web-browser';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+
+import { Background } from '../../src/components/Background';
+import { GlassCard } from '../../src/components/GlassCard';
+import { GradientButton } from '../../src/components/GradientButton';
+import { BrandLogo } from '../../src/components/BrandLogo';
 import { Colors, Typography, Spacing, Radius } from '../../src/theme';
-import { Button } from '../../src/components/Button';
+import { guestMode } from '../../src/guestMode';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -26,31 +24,28 @@ export default function SignUpScreen() {
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [code, setCode] = useState('');
-  const [pendingVerification, setPendingVerification] = useState(false);
+  const [pending, setPending] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
 
   async function handleSignUp() {
     if (!isLoaded) return;
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
       await signUp.create({ firstName, emailAddress: email, password });
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-      setPendingVerification(true);
+      setPending(true);
     } catch (e: any) {
       setError(e.errors?.[0]?.message ?? 'Sign up failed.');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
   async function handleVerify() {
     if (!isLoaded) return;
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
       const result = await signUp.attemptEmailAddressVerification({ code });
       if (result.status === 'complete') {
@@ -59,9 +54,7 @@ export default function SignUpScreen() {
       }
     } catch (e: any) {
       setError(e.errors?.[0]?.message ?? 'Invalid code.');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
   async function handleGoogle() {
@@ -74,232 +67,197 @@ export default function SignUpScreen() {
       }
     } catch (e: any) {
       Alert.alert('Google sign-up failed', e.message ?? 'Please try again.');
-    } finally {
-      setGoogleLoading(false);
-    }
+    } finally { setGoogleLoading(false); }
   }
 
-  if (pendingVerification) {
+  if (pending) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.verifyContainer}>
-          <Text style={styles.verifyTitle}>Check your email</Text>
-          <Text style={styles.verifySubtitle}>
-            We sent a 6-digit code to {email}
-          </Text>
-          <View style={styles.field}>
-            <Text style={styles.label}>Verification Code</Text>
-            <TextInput
-              style={styles.input}
-              value={code}
-              onChangeText={setCode}
-              placeholder="000000"
-              placeholderTextColor={Colors.textFaint}
-              keyboardType="number-pad"
-              maxLength={6}
-            />
+      <Background variant="deep">
+        <SafeAreaView style={styles.safe}>
+          <View style={styles.verifyWrap}>
+            <Animated.View entering={FadeInDown.duration(500)} style={{ alignItems: 'center' }}>
+              <View style={styles.verifyIcon}>
+                <Ionicons name="mail-open" size={32} color={Colors.bgDeep} />
+              </View>
+              <Text style={styles.verifyTitle}>Check your email</Text>
+              <Text style={styles.verifySub}>We sent a 6-digit code to{'\n'}<Text style={{ color: Colors.secondary }}>{email}</Text></Text>
+            </Animated.View>
+
+            <Animated.View entering={FadeInUp.duration(500).delay(120)} style={{ width: '100%', marginTop: Spacing.xl }}>
+              <GlassCard accent="cyan" padding={20} animate={false}>
+                <Text style={styles.label}>VERIFICATION CODE</Text>
+                <TextInput
+                  style={styles.codeInput}
+                  value={code}
+                  onChangeText={setCode}
+                  placeholder="000000"
+                  placeholderTextColor={Colors.textFaint}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  textAlign="center"
+                />
+                {!!error && (
+                  <View style={styles.errorBox}>
+                    <Ionicons name="alert-circle" size={14} color={Colors.error} />
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                )}
+                <View style={{ marginTop: Spacing.md }}>
+                  <GradientButton label="Verify Email" icon="checkmark-circle" onPress={handleVerify} loading={loading} fullWidth size="lg" />
+                </View>
+              </GlassCard>
+            </Animated.View>
           </View>
-          {!!error && <Text style={styles.error}>{error}</Text>}
-          <Button label="Verify Email" onPress={handleVerify} loading={loading} />
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </Background>
     );
   }
 
+  function handleSkip() {
+    guestMode.allow();
+    router.replace('/(tabs)');
+  }
+
   return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.header}>
-            <Text style={styles.logo}>FITE</Text>
-            <Text style={styles.logoSub}>Finance Interview Prep</Text>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.title}>Create account</Text>
-            <Text style={styles.subtitle}>Start your interview prep today</Text>
-
-            <Button
-              label={googleLoading ? 'Connecting...' : 'Continue with Google'}
-              onPress={handleGoogle}
-              loading={googleLoading}
-              variant="ghost"
-              style={styles.googleBtn}
-            />
-
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.dividerLine} />
+    <Background variant="deep">
+      <SafeAreaView style={styles.safe}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            {/* Skip row */}
+            <View style={styles.skipRow}>
+              <View style={{ flex: 1 }} />
+              <Pressable onPress={handleSkip} hitSlop={12} style={styles.skipBtn}>
+                <Text style={styles.skipText}>Skip</Text>
+                <Ionicons name="chevron-forward" size={14} color={Colors.textMuted} />
+              </Pressable>
             </View>
 
-            <View style={styles.field}>
-              <Text style={styles.label}>First Name</Text>
-              <TextInput
-                style={styles.input}
-                value={firstName}
-                onChangeText={setFirstName}
-                placeholder="Alex"
-                placeholderTextColor={Colors.textFaint}
-                autoCapitalize="words"
-              />
-            </View>
+            <Animated.View entering={FadeInDown.duration(500)} style={styles.header}>
+              <BrandLogo size="lg" />
+              <Text style={styles.tagline}>Start drilling finance interviews in 60 seconds.</Text>
+            </Animated.View>
 
-            <View style={styles.field}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="you@example.com"
-                placeholderTextColor={Colors.textFaint}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
+            <Animated.View entering={FadeInUp.duration(500).delay(120)}>
+              <GlassCard accent="cyan" glow padding={24} animate={false}>
+                <Text style={styles.title}>Create account</Text>
+                <Text style={styles.subtitle}>Free forever · 5 questions/day</Text>
 
-            <View style={styles.field}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                placeholder="••••••••"
-                placeholderTextColor={Colors.textFaint}
-                secureTextEntry
-              />
-            </View>
+                <GradientButton
+                  label={googleLoading ? 'Connecting…' : 'Continue with Google'}
+                  icon="logo-google"
+                  variant="ghost"
+                  onPress={handleGoogle}
+                  loading={googleLoading}
+                  fullWidth
+                />
 
-            {!!error && <Text style={styles.error}>{error}</Text>}
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>OR EMAIL</Text>
+                  <View style={styles.dividerLine} />
+                </View>
 
-            <Button
-              label="Create Account"
-              onPress={handleSignUp}
-              loading={loading}
-              style={styles.submitBtn}
-            />
+                <Text style={styles.label}>FIRST NAME</Text>
+                <View style={styles.inputWrap}>
+                  <Ionicons name="person-outline" size={16} color={Colors.textFaint} style={{ marginRight: 8 }} />
+                  <TextInput style={styles.input} value={firstName} onChangeText={setFirstName} placeholder="Alex" placeholderTextColor={Colors.textFaint} autoCapitalize="words" />
+                </View>
 
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account? </Text>
-              <Link href="/(auth)/sign-in">
-                <Text style={styles.footerLink}>Sign in</Text>
-              </Link>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+                <Text style={[styles.label, { marginTop: 14 }]}>EMAIL</Text>
+                <View style={styles.inputWrap}>
+                  <Ionicons name="mail-outline" size={16} color={Colors.textFaint} style={{ marginRight: 8 }} />
+                  <TextInput
+                    style={styles.input} value={email} onChangeText={setEmail}
+                    placeholder="you@example.com" placeholderTextColor={Colors.textFaint}
+                    keyboardType="email-address" autoCapitalize="none" autoCorrect={false}
+                  />
+                </View>
+
+                <Text style={[styles.label, { marginTop: 14 }]}>PASSWORD</Text>
+                <View style={styles.inputWrap}>
+                  <Ionicons name="lock-closed-outline" size={16} color={Colors.textFaint} style={{ marginRight: 8 }} />
+                  <TextInput
+                    style={styles.input} value={password} onChangeText={setPassword}
+                    placeholder="••••••••" placeholderTextColor={Colors.textFaint}
+                    secureTextEntry={!showPw}
+                  />
+                  <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={18} color={Colors.textFaint} onPress={() => setShowPw(s => !s)} />
+                </View>
+
+                {!!error && (
+                  <View style={styles.errorBox}>
+                    <Ionicons name="alert-circle" size={14} color={Colors.error} />
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                )}
+
+                <View style={{ marginTop: Spacing.lg }}>
+                  <GradientButton label="Create Account" iconRight="arrow-forward" onPress={handleSignUp} loading={loading} fullWidth size="lg" />
+                </View>
+
+                <View style={styles.footer}>
+                  <Text style={styles.footerText}>Already have an account? </Text>
+                  <Link href="/(auth)/sign-in" style={styles.footerLink as any}>Sign in</Link>
+                </View>
+              </GlassCard>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </Background>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.bg },
-  flex: { flex: 1 },
-  container: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: Spacing.xl,
+  safe: { flex: 1 },
+  container: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, paddingTop: Spacing.sm },
+  skipRow: { flexDirection: 'row', alignItems: 'center', paddingTop: Spacing.sm, paddingHorizontal: Spacing.xs },
+  skipBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: Spacing.xs },
+  skipText: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm },
+  header: { alignItems: 'center', marginBottom: Spacing.xl },
+  tagline: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm, marginTop: 12, textAlign: 'center' },
+
+  title: { color: Colors.text, fontFamily: Typography.fonts.displayExtra, fontSize: 26, fontWeight: '800', letterSpacing: -0.5 },
+  subtitle: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm, marginTop: 4, marginBottom: Spacing.lg },
+
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: Spacing.lg },
+  dividerLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Colors.borderLight },
+  dividerText: { color: Colors.textFaint, fontFamily: Typography.fonts.displayExtra, fontSize: 10, fontWeight: '800', letterSpacing: 1.6, marginHorizontal: Spacing.md },
+
+  label: { color: Colors.textMuted, fontFamily: Typography.fonts.display, fontSize: 10, fontWeight: '700', letterSpacing: 1.4, marginBottom: 6 },
+  inputWrap: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(2,8,23,0.7)',
+    borderWidth: 1, borderColor: Colors.borderLight,
+    borderRadius: Radius.md, paddingHorizontal: 12, paddingVertical: 10,
   },
-  verifyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: Spacing.xl,
+  input: { flex: 1, color: Colors.text, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.base },
+
+  errorBox: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    marginTop: 12, padding: 10, borderRadius: Radius.md,
+    backgroundColor: 'rgba(239,68,68,0.1)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.4)',
   },
-  verifyTitle: {
-    color: Colors.text,
-    fontSize: Typography.sizes.xl,
-    fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.sm,
-    textAlign: 'center',
+  errorText: { color: Colors.error, fontFamily: Typography.fonts.sansSemibold, fontSize: 12, flex: 1 },
+
+  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: Spacing.lg, alignItems: 'baseline' },
+  footerText: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm },
+  footerLink: { color: Colors.secondary, fontFamily: Typography.fonts.sansBold, fontSize: Typography.sizes.sm, fontWeight: '700' },
+
+  verifyWrap: { flex: 1, justifyContent: 'center', padding: Spacing.lg },
+  verifyIcon: {
+    width: 64, height: 64, borderRadius: 18,
+    backgroundColor: Colors.secondary, alignItems: 'center', justifyContent: 'center',
+    marginBottom: Spacing.lg,
+    shadowColor: Colors.secondary, shadowOpacity: 0.6, shadowRadius: 18, shadowOffset: { width: 0, height: 0 },
   },
-  verifySubtitle: {
-    color: Colors.textMuted,
-    fontSize: Typography.sizes.base,
-    textAlign: 'center',
-    marginBottom: Spacing.xxl,
-  },
-  header: { alignItems: 'center', marginBottom: Spacing.xxl },
-  logo: {
-    fontSize: Typography.sizes.xxxl,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.secondary,
-    letterSpacing: 6,
-  },
-  logoSub: {
-    color: Colors.textMuted,
-    fontSize: Typography.sizes.sm,
-    marginTop: Spacing.xs,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.xl,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    padding: Spacing.xl,
-  },
-  title: {
-    color: Colors.text,
-    fontSize: Typography.sizes.xl,
-    fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.xs,
-  },
-  subtitle: {
-    color: Colors.textMuted,
-    fontSize: Typography.sizes.sm,
-    marginBottom: Spacing.xl,
-  },
-  googleBtn: { marginBottom: Spacing.base },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.base,
-  },
-  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
-  dividerText: {
-    color: Colors.textFaint,
-    fontSize: Typography.sizes.sm,
-    marginHorizontal: Spacing.sm,
-  },
-  field: { marginBottom: Spacing.base },
-  label: {
-    color: Colors.textMuted,
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.medium,
-    marginBottom: Spacing.xs,
-  },
-  input: {
-    backgroundColor: Colors.bg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: Radius.md,
-    padding: Spacing.md,
-    color: Colors.text,
-    fontSize: Typography.sizes.base,
-  },
-  error: {
-    color: Colors.error,
-    fontSize: Typography.sizes.sm,
-    marginBottom: Spacing.base,
-  },
-  submitBtn: { marginTop: Spacing.xs },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: Spacing.base,
-  },
-  footerText: { color: Colors.textMuted, fontSize: Typography.sizes.sm },
-  footerLink: {
-    color: Colors.secondary,
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.semibold,
+  verifyTitle: { color: Colors.text, fontFamily: Typography.fonts.displayExtra, fontSize: 26, fontWeight: '800', letterSpacing: -0.5 },
+  verifySub: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm, lineHeight: 20, textAlign: 'center', marginTop: 8 },
+  codeInput: {
+    backgroundColor: 'rgba(2,8,23,0.7)',
+    borderWidth: 1, borderColor: Colors.borderLight,
+    borderRadius: Radius.md, padding: Spacing.md,
+    color: Colors.text, fontFamily: Typography.fonts.displayExtra,
+    fontSize: 28, fontWeight: '800', letterSpacing: 8,
   },
 });

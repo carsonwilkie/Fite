@@ -1,14 +1,9 @@
 import React from 'react';
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
-import { Colors, Typography, Spacing, Radius } from '../theme';
+import { ViewStyle, TextStyle } from 'react-native';
+import { GradientButton } from './GradientButton';
 
+// Back-compat shim. Old call sites use <Button variant="ghost|primary|gold|danger" />.
+// We map straight through to the slick GradientButton.
 interface ButtonProps {
   label: string;
   onPress: () => void;
@@ -20,108 +15,6 @@ interface ButtonProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export function Button({
-  label,
-  onPress,
-  variant = 'primary',
-  loading = false,
-  disabled = false,
-  style,
-  textStyle,
-  size = 'md',
-}: ButtonProps) {
-  const isDisabled = disabled || loading;
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={isDisabled}
-      activeOpacity={0.75}
-      style={[
-        styles.base,
-        styles[variant],
-        styles[`size_${size}`],
-        isDisabled && styles.disabled,
-        style,
-      ]}
-    >
-      {loading ? (
-        <ActivityIndicator
-          color={variant === 'ghost' ? Colors.secondary : Colors.white}
-          size="small"
-        />
-      ) : (
-        <Text style={[styles.label, styles[`label_${variant}`], styles[`labelSize_${size}`], textStyle]}>
-          {label}
-        </Text>
-      )}
-    </TouchableOpacity>
-  );
+export function Button(props: ButtonProps) {
+  return <GradientButton {...props} />;
 }
-
-const styles = StyleSheet.create({
-  base: {
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  primary: {
-    backgroundColor: Colors.primary,
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  gold: {
-    backgroundColor: Colors.gold,
-  },
-  danger: {
-    backgroundColor: '#7f1d1d',
-    borderWidth: 1,
-    borderColor: '#ef4444',
-  },
-  disabled: {
-    opacity: 0.45,
-  },
-  size_sm: {
-    paddingVertical: Spacing.xs + 2,
-    paddingHorizontal: Spacing.md,
-    minHeight: 34,
-  },
-  size_md: {
-    paddingVertical: Spacing.sm + 2,
-    paddingHorizontal: Spacing.base,
-    minHeight: 44,
-  },
-  size_lg: {
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xl,
-    minHeight: 52,
-  },
-  label: {
-    fontWeight: Typography.weights.semibold,
-  },
-  label_primary: {
-    color: Colors.white,
-  },
-  label_ghost: {
-    color: Colors.secondary,
-  },
-  label_gold: {
-    color: Colors.bg,
-  },
-  label_danger: {
-    color: Colors.error,
-  },
-  labelSize_sm: {
-    fontSize: Typography.sizes.sm,
-  },
-  labelSize_md: {
-    fontSize: Typography.sizes.base,
-  },
-  labelSize_lg: {
-    fontSize: Typography.sizes.md,
-  },
-});

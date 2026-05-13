@@ -1,39 +1,45 @@
 import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUser, useAuth, useClerk } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { Colors, Typography, Spacing, Radius } from '../../src/theme';
-import { Button } from '../../src/components/Button';
-import { Card } from '../../src/components/Card';
+import { Background } from '../../src/components/Background';
+import { GlassCard } from '../../src/components/GlassCard';
+import { GradientButton } from '../../src/components/GradientButton';
+import { PressableScale } from '../../src/components/PressableScale';
+import { SectionHeader } from '../../src/components/SectionHeader';
+import { ScrollFade } from '../../src/components/ScrollFade';
 import { usePaidStatus } from '../../src/hooks/usePaidStatus';
 import { usePrice } from '../../src/hooks/usePrice';
 import { createCheckout } from '../../src/api';
+import { guestMode } from '../../src/guestMode';
+import { Colors, Typography, Spacing, Radius, Gradients } from '../../src/theme';
+
+type Tab = 'profile' | 'billing' | 'security';
 
 export default function AccountScreen() {
   const { user, isLoaded } = useUser();
-  const { getToken, signOut } = useAuth();
-  const { signOut: clerkSignOut } = useClerk();
+  const { getToken } = useAuth();
+  const { signOut } = useClerk();
   const router = useRouter();
   const { isPaid } = usePaidStatus();
   const price = usePrice();
 
-  const [tab, setTab] = useState<'profile' | 'billing' | 'security'>('profile');
+  const [tab, setTab] = useState<Tab>('profile');
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
   const [lastName, setLastName] = useState(user?.lastName ?? '');
   const [saving, setSaving] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
-
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [pwLoading, setPwLoading] = useState(false);
 
   if (!isLoaded) {
-    return <View style={styles.center}><ActivityIndicator color={Colors.secondary} /></View>;
+    return <Background><View style={styles.center}><ActivityIndicator color={Colors.secondary} /></View></Background>;
   }
 
   async function handleSaveName() {
@@ -44,36 +50,53 @@ export default function AccountScreen() {
       Alert.alert('Saved', 'Profile updated.');
     } catch {
       Alert.alert('Error', 'Could not update profile.');
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }
 
-  async function handleUpgrade() {
+  async function handleUpgradeOrManage() {
     setUpgradeLoading(true);
     try {
       const token = await getToken();
       if (!token) { router.push('/(auth)/sign-in'); return; }
+      if (isPaid) {
+        // Open Stripe portal via /api/portal — fallback to checkout if unavailable.
+        try {
+          const res = await fetch('https://fitefinance.com/api/portal', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ returnPath: '/account' }),
+          });
+          const data = await res.json();
+          if (data?.url) {
+            const { openBrowserAsync } = await import('expo-web-browser');
+            await openBrowserAsync(data.url);
+            return;
+          }
+        } catch {}
+      }
       const url = await createCheckout(token);
       if (url) {
         const { openBrowserAsync } = await import('expo-web-browser');
         await openBrowserAsync(url);
       }
     } catch {
-      Alert.alert('Error', 'Could not open checkout.');
+      Alert.alert('Error', 'Could not open billing.');
     } finally {
       setUpgradeLoading(false);
     }
   }
 
-  async function handleSignOut() {
+  function handleSignOut() {
     Alert.alert('Sign out', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Sign out',
-        style: 'destructive',
+        text: 'Sign out', style: 'destructive',
         onPress: async () => {
-          await clerkSignOut();
+          guestMode.reset();
+          await signOut();
           router.replace('/(auth)/sign-in');
         },
       },
@@ -86,172 +109,296 @@ export default function AccountScreen() {
     try {
       await user?.updatePassword({ currentPassword: currentPw || undefined, newPassword: newPw });
       Alert.alert('Password updated');
-      setCurrentPw('');
-      setNewPw('');
+      setCurrentPw(''); setNewPw('');
     } catch (e: any) {
       Alert.alert('Error', e.errors?.[0]?.message ?? 'Could not update password.');
-    } finally {
-      setPwLoading(false);
-    }
+    } finally { setPwLoading(false); }
   }
 
-  const initials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.toUpperCase() || user?.emailAddresses[0]?.emailAddress?.[0]?.toUpperCase() ?? '?';
+  const initials = ((user?.firstName?.[0] ?? '') + (user?.lastName?.[0] ?? '')).toUpperCase()
+    || user?.emailAddresses[0]?.emailAddress?.[0]?.toUpperCase()
+    || '?';
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Avatar */}
-        <View style={styles.avatarRow}>
-          <View style={[styles.avatar, isPaid && styles.avatarPaid]}>
-            <Text style={styles.avatarText}>{initials}</Text>
+    <Background variant="hero">
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Header / avatar */}
+          <Animated.View entering={FadeIn.duration(500)}>
+            <GlassCard accent={isPaid ? 'gold' : 'cyan'} glow padding={20} animate={false}>
+              <View style={styles.profileRow}>
+                {user?.imageUrl && user.hasImage ? (
+                  <View style={[styles.avatar, styles.avatarImageWrap, isPaid && styles.avatarImageWrapGold]}>
+                    <Image source={{ uri: user.imageUrl }} style={styles.avatarImage} />
+                  </View>
+                ) : (
+                  <LinearGradient
+                    colors={(isPaid ? Gradients.gold : Gradients.cyan) as any}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                    style={styles.avatar}
+                  >
+                    <Text style={[styles.avatarText, isPaid && { color: '#1a1408' }]}>{initials}</Text>
+                  </LinearGradient>
+                )}
+                <View style={{ flex: 1, marginLeft: 14 }}>
+                  <Text style={styles.name}>{user?.fullName ?? 'Account'}</Text>
+                  <Text style={styles.email}>{user?.primaryEmailAddress?.emailAddress}</Text>
+                  {isPaid ? (
+                    <View style={styles.premiumPill}>
+                      <Ionicons name="diamond" size={9} color="#1a1408" />
+                      <Text style={styles.premiumText}>PREMIUM MEMBER</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.freePill}>
+                      <Text style={styles.freeText}>FREE PLAN</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </GlassCard>
+          </Animated.View>
+
+          {/* Tabs */}
+          <View style={styles.tabsRow}>
+            {(['profile', 'billing', 'security'] as Tab[]).map(t => {
+              const active = tab === t;
+              const icon = t === 'profile' ? 'person-outline' : t === 'billing' ? 'card-outline' : 'lock-closed-outline';
+              return (
+                <PressableScale
+                  key={t}
+                  onPress={() => setTab(t)}
+                  haptic="selection"
+                  containerStyle={[styles.tabBtn, active && styles.tabBtnActive]}
+                >
+                  <Ionicons name={icon as any} size={14} color={active ? Colors.secondary : Colors.textMuted} />
+                  <Text style={[styles.tabText, active && { color: Colors.secondary }]}>{t.toUpperCase()}</Text>
+                </PressableScale>
+              );
+            })}
           </View>
-          <View>
-            <Text style={styles.name}>{user?.fullName ?? 'Account'}</Text>
-            <Text style={styles.email}>{user?.primaryEmailAddress?.emailAddress}</Text>
-            {isPaid && <Text style={styles.premiumBadge}>👑 Premium</Text>}
+
+          {/* Profile tab */}
+          {tab === 'profile' && (
+            <Animated.View entering={FadeIn.duration(180)}>
+              <GlassCard accent="ghost" padding={18} animate={false}>
+                <Field label="FIRST NAME">
+                  <TextInput style={styles.input} value={firstName} onChangeText={setFirstName} placeholderTextColor={Colors.textFaint} />
+                </Field>
+                <Field label="LAST NAME">
+                  <TextInput style={styles.input} value={lastName} onChangeText={setLastName} placeholderTextColor={Colors.textFaint} />
+                </Field>
+                <Field label="EMAIL">
+                  <TextInput style={[styles.input, { opacity: 0.5 }]} value={user?.primaryEmailAddress?.emailAddress ?? ''} editable={false} />
+                </Field>
+                <GradientButton label="Save Changes" icon="save" onPress={handleSaveName} loading={saving} fullWidth />
+              </GlassCard>
+            </Animated.View>
+          )}
+
+          {/* Billing tab */}
+          {tab === 'billing' && (
+            <Animated.View entering={FadeIn.duration(180)}>
+              <GlassCard accent={isPaid ? 'gold' : 'ghost'} padding={20} animate={false}>
+                {isPaid ? (
+                  <>
+                    <View style={styles.billHeader}>
+                      <Ionicons name="diamond" size={22} color={Colors.gold} />
+                      <Text style={styles.billTitle}>Fite Premium</Text>
+                    </View>
+                    <Text style={styles.billText}>
+                      Thank you for supporting Fite. Manage your subscription, payment method, or cancel below.
+                    </Text>
+                    <GradientButton
+                      label="Manage Billing"
+                      icon="open-outline"
+                      onPress={handleUpgradeOrManage}
+                      loading={upgradeLoading}
+                      variant="ghost"
+                      fullWidth
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.billEyebrow}>UPGRADE</Text>
+                    <Text style={styles.billTitle}>Fite Premium</Text>
+                    <Text style={styles.billPrice}>{price}</Text>
+                    <View style={{ marginVertical: Spacing.base }}>
+                      {[
+                        'Unlimited AI questions',
+                        'AI grading on every answer',
+                        'IB 400 progress tracking',
+                        'Mock interview mode',
+                        'History · Stats · Streaks',
+                        'Practice timer',
+                        'Custom focus prompts',
+                      ].map(f => (
+                        <View key={f} style={styles.perkLine}>
+                          <Ionicons name="checkmark" size={14} color={Colors.gold} />
+                          <Text style={styles.perkText}>{f}</Text>
+                        </View>
+                      ))}
+                    </View>
+                    <GradientButton
+                      label="Upgrade Now"
+                      icon="rocket"
+                      variant="gold"
+                      onPress={handleUpgradeOrManage}
+                      loading={upgradeLoading}
+                      fullWidth
+                    />
+                  </>
+                )}
+              </GlassCard>
+            </Animated.View>
+          )}
+
+          {/* Security tab */}
+          {tab === 'security' && (
+            <Animated.View entering={FadeIn.duration(180)}>
+              <GlassCard accent="ghost" padding={18} animate={false}>
+                <Field label="CURRENT PASSWORD">
+                  <TextInput
+                    style={styles.input}
+                    value={currentPw}
+                    onChangeText={setCurrentPw}
+                    secureTextEntry
+                    placeholder="Leave blank for first-time set"
+                    placeholderTextColor={Colors.textFaint}
+                  />
+                </Field>
+                <Field label="NEW PASSWORD">
+                  <TextInput
+                    style={styles.input}
+                    value={newPw}
+                    onChangeText={setNewPw}
+                    secureTextEntry
+                    placeholder="New password"
+                    placeholderTextColor={Colors.textFaint}
+                  />
+                </Field>
+                <GradientButton label="Update Password" icon="key" onPress={handleChangePw} loading={pwLoading} fullWidth />
+              </GlassCard>
+            </Animated.View>
+          )}
+
+          {/* Actions */}
+          <SectionHeader eyebrow="MORE" title="Help & feedback" style={{ marginTop: Spacing.xl }} />
+          <View style={{ gap: Spacing.sm }}>
+            <ActionRow icon="chatbubble-ellipses-outline" label="Send feedback" onPress={() => router.push('/feedback')} />
+            {isPaid && <ActionRow icon="bulb-outline" label="Vote on roadmap" onPress={() => router.push('/feature-vote')} accent="gold" />}
+            <ActionRow icon="document-text-outline" label="Privacy" onPress={async () => {
+              const { openBrowserAsync } = await import('expo-web-browser');
+              await openBrowserAsync('https://fitefinance.com/privacy');
+            }} />
+            <ActionRow icon="reader-outline" label="Terms" onPress={async () => {
+              const { openBrowserAsync } = await import('expo-web-browser');
+              await openBrowserAsync('https://fitefinance.com/terms');
+            }} />
           </View>
+
+          <View style={{ marginTop: Spacing.xl }}>
+            <GradientButton label="Sign Out" icon="log-out-outline" onPress={handleSignOut} variant="ghost" fullWidth />
+          </View>
+
+          <View style={{ height: 120 }} />
+        </ScrollView>
+        <ScrollFade top={28} bottom={90} />
+      </SafeAreaView>
+    </Background>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <View style={{ marginBottom: Spacing.base }}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      {children}
+    </View>
+  );
+}
+
+function ActionRow({ icon, label, onPress, accent }: { icon: any; label: string; onPress: () => void; accent?: 'gold' | 'cyan' }) {
+  const color = accent === 'gold' ? Colors.gold : Colors.secondary;
+  return (
+    <PressableScale onPress={onPress} haptic="selection">
+      <GlassCard accent="ghost" padding={14} animate={false}>
+        <View style={styles.actionRow}>
+          <View style={[styles.actionIcon, { backgroundColor: color + '1a', borderColor: color + '55' }]}>
+            <Ionicons name={icon} size={16} color={color} />
+          </View>
+          <Text style={styles.actionLabel}>{label}</Text>
+          <Ionicons name="chevron-forward" size={18} color={Colors.textFaint} />
         </View>
-
-        {/* Tabs */}
-        <View style={styles.tabs}>
-          {(['profile', 'billing', 'security'] as const).map(t => (
-            <TouchableOpacity
-              key={t}
-              style={[styles.tabBtn, tab === t && styles.tabBtnActive]}
-              onPress={() => setTab(t)}
-            >
-              <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>
-                {t.charAt(0).toUpperCase() + t.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Profile tab */}
-        {tab === 'profile' && (
-          <Card style={styles.card}>
-            <View style={styles.field}>
-              <Text style={styles.fieldLabel}>First Name</Text>
-              <TextInput style={styles.input} value={firstName} onChangeText={setFirstName} placeholderTextColor={Colors.textFaint} />
-            </View>
-            <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Last Name</Text>
-              <TextInput style={styles.input} value={lastName} onChangeText={setLastName} placeholderTextColor={Colors.textFaint} />
-            </View>
-            <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Email</Text>
-              <TextInput style={[styles.input, styles.inputDisabled]} value={user?.primaryEmailAddress?.emailAddress ?? ''} editable={false} />
-            </View>
-            <Button label="Save Changes" onPress={handleSaveName} loading={saving} />
-          </Card>
-        )}
-
-        {/* Billing tab */}
-        {tab === 'billing' && (
-          <Card style={[styles.card, isPaid && styles.cardGold]}>
-            {isPaid ? (
-              <>
-                <Text style={styles.billingTitle}>👑 Fite Premium</Text>
-                <Text style={styles.billingText}>You're on the Premium plan. Thank you for your support!</Text>
-                <Button
-                  label="Manage Billing"
-                  onPress={handleUpgrade}
-                  loading={upgradeLoading}
-                  variant="ghost"
-                  style={styles.billingBtn}
-                />
-              </>
-            ) : (
-              <>
-                <Text style={styles.billingTitle}>Upgrade to Premium</Text>
-                <Text style={styles.billingPrice}>{price}</Text>
-                {[
-                  'Unlimited question generation',
-                  'AI grading & detailed feedback',
-                  'Question history & search',
-                  'Performance stats & streaks',
-                  'Mock interview mode',
-                  'Practice timer',
-                  'Custom descriptors',
-                ].map(f => (
-                  <Text key={f} style={styles.feature}>✓ {f}</Text>
-                ))}
-                <Button
-                  label="Upgrade Now"
-                  onPress={handleUpgrade}
-                  loading={upgradeLoading}
-                  variant="gold"
-                  style={styles.billingBtn}
-                />
-              </>
-            )}
-          </Card>
-        )}
-
-        {/* Security tab */}
-        {tab === 'security' && (
-          <Card style={styles.card}>
-            <Text style={styles.fieldLabel}>Current Password</Text>
-            <TextInput style={[styles.input, styles.fieldGap]} value={currentPw} onChangeText={setCurrentPw} secureTextEntry placeholder="Leave blank if setting for first time" placeholderTextColor={Colors.textFaint} />
-            <Text style={styles.fieldLabel}>New Password</Text>
-            <TextInput style={[styles.input, styles.fieldGap]} value={newPw} onChangeText={setNewPw} secureTextEntry placeholder="New password" placeholderTextColor={Colors.textFaint} />
-            <Button label="Update Password" onPress={handleChangePw} loading={pwLoading} style={styles.billingBtn} />
-          </Card>
-        )}
-
-        {/* Footer actions */}
-        <View style={styles.footerActions}>
-          <Button label="Send Feedback" onPress={() => router.push('/feedback')} variant="ghost" style={styles.footerBtn} />
-          {isPaid && <Button label="Feature Voting" onPress={() => router.push('/feature-vote')} variant="ghost" style={styles.footerBtn} />}
-          <Button label="Sign Out" onPress={handleSignOut} variant="danger" style={styles.footerBtn} />
-        </View>
-
-        <View style={{ height: Spacing.xxl }} />
-      </ScrollView>
-    </SafeAreaView>
+      </GlassCard>
+    </PressableScale>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.bg },
-  center: { flex: 1, backgroundColor: Colors.bg, justifyContent: 'center', alignItems: 'center' },
-  content: { padding: Spacing.base },
+  safe: { flex: 1 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  content: { paddingHorizontal: Spacing.base, paddingTop: Spacing.sm },
 
-  avatarRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.base, marginBottom: Spacing.xl },
+  profileRow: { flexDirection: 'row', alignItems: 'center' },
   avatar: {
-    width: 64, height: 64, borderRadius: 32,
-    backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: Colors.border,
+    width: 64, height: 64, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: Colors.secondary, shadowOpacity: 0.55, shadowRadius: 14, shadowOffset: { width: 0, height: 0 },
   },
-  avatarPaid: { borderColor: Colors.gold },
-  avatarText: { color: Colors.white, fontSize: Typography.sizes.xl, fontWeight: Typography.weights.bold },
-  name: { color: Colors.text, fontSize: Typography.sizes.lg, fontWeight: Typography.weights.bold },
-  email: { color: Colors.textMuted, fontSize: Typography.sizes.sm },
-  premiumBadge: { color: Colors.gold, fontSize: Typography.sizes.sm, fontWeight: Typography.weights.semibold, marginTop: 2 },
+  avatarText: { color: '#021018', fontFamily: Typography.fonts.displayExtra, fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
+  avatarImageWrap: {
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'rgba(79,195,247,0.55)',
+    backgroundColor: 'rgba(2,8,23,0.6)',
+  },
+  avatarImageWrapGold: {
+    borderColor: 'rgba(201,168,76,0.65)',
+    shadowColor: Colors.gold,
+  },
+  avatarImage: { width: '100%', height: '100%' },
+  name: { color: Colors.text, fontFamily: Typography.fonts.displayExtra, fontSize: Typography.sizes.lg, fontWeight: '800' },
+  email: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm, marginTop: 2 },
+  premiumPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    alignSelf: 'flex-start', marginTop: 6,
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: Radius.full, backgroundColor: Colors.gold,
+  },
+  premiumText: { color: '#1a1408', fontFamily: Typography.fonts.displayExtra, fontSize: 9, fontWeight: '800', letterSpacing: 1.4 },
+  freePill: {
+    alignSelf: 'flex-start', marginTop: 6,
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: Radius.full,
+    backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: StyleSheet.hairlineWidth, borderColor: Colors.borderLight,
+  },
+  freeText: { color: Colors.textMuted, fontFamily: Typography.fonts.displayExtra, fontSize: 9, fontWeight: '800', letterSpacing: 1.4 },
 
-  tabs: { flexDirection: 'row', gap: Spacing.xs, marginBottom: Spacing.base },
-  tabBtn: { flex: 1, paddingVertical: Spacing.sm, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border, alignItems: 'center' },
-  tabBtnActive: { backgroundColor: Colors.secondary + '22', borderColor: Colors.secondary },
-  tabText: { color: Colors.textMuted, fontSize: Typography.sizes.sm, fontWeight: Typography.weights.semibold },
-  tabTextActive: { color: Colors.secondary },
+  tabsRow: { flexDirection: 'row', gap: 6, marginTop: Spacing.lg, marginBottom: Spacing.md },
+  tabBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 10, borderRadius: Radius.md,
+    borderWidth: 1, borderColor: Colors.borderLight, backgroundColor: 'rgba(255,255,255,0.02)',
+  },
+  tabBtnActive: { backgroundColor: 'rgba(79,195,247,0.12)', borderColor: Colors.secondary },
+  tabText: { color: Colors.textMuted, fontFamily: Typography.fonts.displaySemibold, fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
 
-  card: { marginBottom: Spacing.base },
-  cardGold: { borderColor: Colors.gold },
-  field: { marginBottom: Spacing.base },
-  fieldLabel: { color: Colors.textMuted, fontSize: Typography.sizes.xs, fontWeight: Typography.weights.bold, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: Spacing.xs },
-  fieldGap: { marginBottom: Spacing.base },
+  fieldLabel: { color: Colors.textMuted, fontFamily: Typography.fonts.display, fontSize: 10, fontWeight: '700', letterSpacing: 1.6, marginBottom: 6 },
   input: {
-    backgroundColor: Colors.bg, borderWidth: 1, borderColor: Colors.border,
-    borderRadius: Radius.md, padding: Spacing.sm, color: Colors.text, fontSize: Typography.sizes.base,
+    backgroundColor: 'rgba(2,8,23,0.6)',
+    borderWidth: 1, borderColor: Colors.borderLight,
+    borderRadius: Radius.md, padding: Spacing.md,
+    color: Colors.text, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.base,
   },
-  inputDisabled: { opacity: 0.5 },
 
-  billingTitle: { color: Colors.text, fontSize: Typography.sizes.lg, fontWeight: Typography.weights.bold, marginBottom: Spacing.sm },
-  billingPrice: { color: Colors.gold, fontSize: Typography.sizes.xl, fontWeight: Typography.weights.bold, marginBottom: Spacing.base },
-  billingText: { color: Colors.textMuted, fontSize: Typography.sizes.base, marginBottom: Spacing.base },
-  feature: { color: Colors.text, fontSize: Typography.sizes.base, marginBottom: Spacing.xs },
-  billingBtn: { marginTop: Spacing.base },
+  billHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+  billEyebrow: { color: Colors.gold, fontFamily: Typography.fonts.displayExtra, fontSize: 10, fontWeight: '800', letterSpacing: 2 },
+  billTitle: { color: Colors.text, fontFamily: Typography.fonts.displayExtra, fontSize: Typography.sizes.xl, fontWeight: '800', letterSpacing: -0.5 },
+  billPrice: { color: Colors.gold, fontFamily: Typography.fonts.displayExtra, fontSize: 32, fontWeight: '800', letterSpacing: -1, marginTop: 4 },
+  billText: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm, lineHeight: 20, marginVertical: Spacing.sm },
 
-  footerActions: { gap: Spacing.sm },
-  footerBtn: {},
+  perkLine: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+  perkText: { color: Colors.text, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm },
+
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  actionIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  actionLabel: { color: Colors.text, fontFamily: Typography.fonts.sansSemibold, fontSize: Typography.sizes.sm, flex: 1 },
 });

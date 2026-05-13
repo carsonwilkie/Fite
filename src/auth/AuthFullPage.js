@@ -15,10 +15,17 @@ export default function AuthFullPage({ view = "sign-in", title, description }) {
   // to /dashboard when a feature gate triggers it, but the standalone /sign-in
   // and /sign-up routes are usually entered from marketing surfaces, so / is
   // the safer fallback for that flow.
-  const redirectTo = sanitizeRedirectPath(router.query.redirect_url, "/");
+  // Guard on router.isReady: sign-in is a static page so router.query is
+  // empty on the first render and only populated after client-side hydration.
+  // Without this guard the effect can fire with redirectTo="/" before the
+  // redirect_url param becomes available, sending the user to home instead
+  // of the page they were trying to reach.
+  const redirectTo = router.isReady
+    ? sanitizeRedirectPath(router.query.redirect_url, "/")
+    : null;
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
+    if (!isLoaded || !isSignedIn || !router.isReady || redirectTo === null) return;
     // AuthCard also stamps window.__fitePendingAuthRedirect on a successful
     // sign-in. Consume it (and prefer it if set) so the same value isn't
     // applied again the next time the modal opens. If a query-string redirect
@@ -33,7 +40,7 @@ export default function AuthFullPage({ view = "sign-in", title, description }) {
       return;
     }
     router.replace(redirectTo);
-  }, [isLoaded, isSignedIn, redirectTo, router]);
+  }, [isLoaded, isSignedIn, redirectTo, router, router.isReady]);
 
   return (
     <>
@@ -121,7 +128,7 @@ export default function AuthFullPage({ view = "sign-in", title, description }) {
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           style={{ width: "100%", maxWidth: 460, position: "relative", zIndex: 2 }}
         >
-          <AuthCard initialView={view} variant="page" afterAuthRedirect={redirectTo} />
+          <AuthCard initialView={view} variant="page" afterAuthRedirect={redirectTo ?? "/"} />
         </motion.div>
       </div>
     </>

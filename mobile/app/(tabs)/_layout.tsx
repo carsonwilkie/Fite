@@ -1,11 +1,26 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography } from '../../src/theme';
 
-function TabIcon({ focused, icon }: { focused: boolean; icon: string }) {
-  // Using emoji as icons — replace with a vector icon library if desired
-  return null;
+const ICONS: Record<string, { active: keyof typeof Ionicons.glyphMap; idle: keyof typeof Ionicons.glyphMap }> = {
+  index: { active: 'flash', idle: 'flash-outline' },
+  ib400: { active: 'library', idle: 'library-outline' },
+  history: { active: 'time', idle: 'time-outline' },
+  stats: { active: 'stats-chart', idle: 'stats-chart-outline' },
+  account: { active: 'person-circle', idle: 'person-circle-outline' },
+};
+
+function TabIcon({ focused, color, name }: { focused: boolean; color: string; name: string }) {
+  const spec = ICONS[name] ?? ICONS.index;
+  return (
+    <View style={styles.iconWrap}>
+      <Ionicons name={focused ? spec.active : spec.idle} size={22} color={color} />
+      {focused && <View style={styles.dot} />}
+    </View>
+  );
 }
 
 export default function TabLayout() {
@@ -14,20 +29,28 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: Colors.surface,
-          borderTopColor: Colors.border,
-          borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 85 : 65,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 10,
+          position: 'absolute',
+          backgroundColor: Platform.OS === 'ios' ? 'transparent' : 'rgba(13,27,42,0.96)',
+          borderTopColor: 'rgba(79,195,247,0.12)',
+          borderTopWidth: StyleSheet.hairlineWidth,
+          height: Platform.OS === 'ios' ? 88 : 70,
+          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
           paddingTop: 10,
+          paddingHorizontal: 12,
+          elevation: 0,
         },
+        tabBarBackground: () =>
+          Platform.OS === 'ios' ? (
+            <BlurView tint="dark" intensity={60} style={StyleSheet.absoluteFill} />
+          ) : null,
         tabBarActiveTintColor: Colors.secondary,
         tabBarInactiveTintColor: Colors.textFaint,
         tabBarLabelStyle: {
+          fontFamily: Typography.fonts.displaySemibold,
           fontSize: 10,
-          fontWeight: Typography.weights.semibold,
+          fontWeight: '600',
           textTransform: 'uppercase',
-          letterSpacing: 0.5,
+          letterSpacing: 0.8,
         },
       }}
     >
@@ -35,48 +58,53 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Practice',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon icon="⚡" color={color} />
-          ),
+          tabBarIcon: (p) => <TabIcon {...p} name="index" />,
+        }}
+      />
+      <Tabs.Screen
+        name="ib400"
+        options={{
+          title: 'IB 400',
+          tabBarIcon: (p) => <TabIcon {...p} name="ib400" />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: 'History',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon icon="📋" color={color} />
-          ),
+          tabBarIcon: (p) => <TabIcon {...p} name="history" />,
         }}
       />
       <Tabs.Screen
         name="stats"
         options={{
           title: 'Stats',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon icon="📊" color={color} />
-          ),
+          tabBarIcon: (p) => <TabIcon {...p} name="stats" />,
         }}
       />
       <Tabs.Screen
         name="account"
         options={{
           title: 'Account',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon icon="👤" color={color} />
-          ),
+          tabBarIcon: (p) => <TabIcon {...p} name="account" />,
         }}
       />
     </Tabs>
   );
 }
 
-import { Text, StyleSheet } from 'react-native';
-
-function TabBarIcon({ icon, color }: { icon: string; color: string }) {
-  return <Text style={[styles.icon, { opacity: color === Colors.secondary ? 1 : 0.5 }]}>{icon}</Text>;
-}
-
 const styles = StyleSheet.create({
-  icon: { fontSize: 20 },
+  iconWrap: { alignItems: 'center', justifyContent: 'center' },
+  dot: {
+    position: 'absolute',
+    bottom: -24,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.secondary,
+    shadowColor: Colors.secondary,
+    shadowOpacity: 0.9,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+  },
 });

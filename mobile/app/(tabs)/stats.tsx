@@ -1,81 +1,86 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl,
+  PanResponder,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@clerk/clerk-expo';
+import { useRouter } from 'expo-router';
+import { Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeIn, FadeInUp, useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 
-import { Colors, Typography, Spacing, Radius } from '../../src/theme';
-import { Card } from '../../src/components/Card';
+import { Background } from '../../src/components/Background';
+import { GlassCard } from '../../src/components/GlassCard';
+import { SectionHeader } from '../../src/components/SectionHeader';
+import { BrandLogo } from '../../src/components/BrandLogo';
+import { AnimatedNumber } from '../../src/components/AnimatedNumber';
 import { PremiumGate } from '../../src/components/PremiumGate';
+import { ScrollFade } from '../../src/components/ScrollFade';
 import { usePaidStatus } from '../../src/hooks/usePaidStatus';
 import { getHistory, type HistoryEntry } from '../../src/api';
-import { DIFFICULTY_COLORS, type QuestionDifficulty } from '../../src/constants';
+import { DIFFICULTY_COLORS, CATEGORY_ICONS, type QuestionDifficulty } from '../../src/constants';
+import { Colors, Typography, Spacing, Radius, Gradients } from '../../src/theme';
 
 function computeStats(history: HistoryEntry[]) {
   const total = history.length;
-  const graded = history.filter(e => e.score !== undefined);
+  const graded = history.filter(e => typeof e.score === 'number');
   const scores = graded.map(e => e.score!);
   const avgScore = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
   const bestScore = scores.length ? Math.max(...scores) : 0;
   const worstScore = scores.length ? Math.min(...scores) : 0;
 
-  // Streak
   const days = [...new Set(history.map(e => new Date(e.timestamp).toDateString()))].sort().reverse();
+
+  // Current streak: consecutive days ending today/yesterday.
   let streak = 0;
   const today = new Date().toDateString();
   const yesterday = new Date(Date.now() - 86400000).toDateString();
   if (days[0] === today || days[0] === yesterday) {
     streak = 1;
     for (let i = 1; i < days.length; i++) {
-      const prev = new Date(days[i - 1]);
-      const curr = new Date(days[i]);
+      const prev = new Date(days[i - 1]); const curr = new Date(days[i]);
       const diff = (prev.getTime() - curr.getTime()) / 86400000;
-      if (diff === 1) streak++;
-      else break;
+      if (diff === 1) streak++; else break;
     }
   }
 
-  // Category breakdown
-  const catMap: Record<string, { count: number; totalScore: number }> = {};
-  for (const e of history) {
-    const cat = e.category ?? 'Unknown';
-    if (!catMap[cat]) catMap[cat] = { count: 0, totalScore: 0 };
-    catMap[cat].count++;
-    if (e.score !== undefined) catMap[cat].totalScore += e.score;
+  // Longest streak: max run of consecutive practice days anywhere in history.
+  let longestStreak = 0;
+  if (days.length) {
+    const asc = [...days].reverse();
+    let run = 1; longestStreak = 1;
+    for (let i = 1; i < asc.length; i++) {
+      const prev = new Date(asc[i - 1]);
+      const curr = new Date(asc[i]);
+      const diff = (curr.getTime() - prev.getTime()) / 86400000;
+      if (diff === 1) { run++; longestStreak = Math.max(longestStreak, run); }
+      else run = 1;
+    }
   }
 
-  // Difficulty breakdown
+  const catMap: Record<string, { count: number; total: number }> = {};
+  for (const e of history) {
+    const c = e.category ?? 'Unknown';
+    if (!catMap[c]) catMap[c] = { count: 0, total: 0 };
+    catMap[c].count++;
+    if (typeof e.score === 'number') catMap[c].total += e.score;
+  }
   const diffMap: Record<string, number> = {};
   for (const e of history) {
-    const d = e.difficulty ?? 'Unknown';
-    diffMap[d] = (diffMap[d] ?? 0) + 1;
+    const d = e.difficulty ?? 'Unknown'; diffMap[d] = (diffMap[d] ?? 0) + 1;
   }
 
-  // Recent trend (last 10 graded)
-  const trend = graded.slice(0, 10).map(e => e.score!).reverse();
-
+  // Full chronological list of graded scores for the interactive chart.
+  const chartScored = [...graded].sort((a, b) => a.timestamp - b.timestamp);
   const avgPerDay = days.length ? total / days.length : 0;
 
-  return { total, graded: graded.length, avgScore, bestScore, worstScore, streak, catMap, diffMap, trend, avgPerDay };
+  return {
+    total, graded: graded.length, avgScore, bestScore, worstScore,
+    streak, longestStreak, catMap, diffMap, chartScored, avgPerDay,
+  };
 }
-
-function StatBox({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
-  return (
-    <View style={statStyles.box}>
-      <Text style={[statStyles.value, color ? { color } : {}]}>{value}</Text>
-      <Text style={statStyles.label}>{label}</Text>
-      {sub && <Text style={statStyles.sub}>{sub}</Text>}
-    </View>
-  );
-}
-
-const statStyles = StyleSheet.create({
-  box: { flex: 1, alignItems: 'center', padding: Spacing.base },
-  value: { color: Colors.secondary, fontSize: Typography.sizes.xxl, fontWeight: Typography.weights.bold },
-  label: { color: Colors.textMuted, fontSize: Typography.sizes.xs, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 },
-  sub: { color: Colors.textFaint, fontSize: Typography.sizes.xs, marginTop: 2 },
-});
 
 export default function StatsScreen() {
   const { getToken } = useAuth();
@@ -90,169 +95,588 @@ export default function StatsScreen() {
       if (!token) return;
       const data = await getHistory(token);
       setHistory(data);
-    } catch {} finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    } finally { setLoading(false); setRefreshing(false); }
   }, [getToken]);
 
-  useEffect(() => {
-    if (isPaid) load();
-    else setLoading(false);
-  }, [isPaid, load]);
+  useEffect(() => { if (isPaid) load(); else setLoading(false); }, [isPaid, load]);
 
-  if (paidLoading || loading) {
-    return <View style={styles.center}><ActivityIndicator color={Colors.secondary} /></View>;
-  }
+  const stats = useMemo(() => computeStats(history), [history]);
 
-  if (!isPaid) {
-    return <PremiumGate message="Stats require Fite Premium." />;
-  }
+  if (paidLoading) return <Background><View style={styles.center}><ActivityIndicator color={Colors.secondary} /></View></Background>;
+  if (!isPaid) return <Background variant="hero"><SafeAreaView style={styles.safe}><PremiumGate message="Detailed practice stats are a Premium feature." /></SafeAreaView></Background>;
+  if (loading) return <Background><View style={styles.center}><ActivityIndicator color={Colors.secondary} /></View></Background>;
 
   if (!history.length) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No stats yet</Text>
-          <Text style={styles.emptyText}>Practice some questions to see your stats here.</Text>
-        </View>
-      </SafeAreaView>
+      <Background variant="hero">
+        <SafeAreaView style={styles.safe}>
+          <View style={styles.empty}>
+            <Ionicons name="stats-chart-outline" size={40} color={Colors.textFaint} />
+            <Text style={styles.emptyTitle}>No stats yet</Text>
+            <Text style={styles.emptyText}>Practice questions to populate your scoreboard.</Text>
+          </View>
+        </SafeAreaView>
+      </Background>
     );
   }
 
-  const stats = computeStats(history);
-  const maxBar = Math.max(...Object.values(stats.catMap).map(v => v.count), 1);
+  const avgColor = stats.avgScore >= 7 ? Colors.success : stats.avgScore >= 5 ? Colors.warning : Colors.error;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={Colors.secondary} />}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.title}>Stats</Text>
-
-        {/* Overview grid */}
-        <Card style={styles.grid}>
-          <View style={styles.gridRow}>
-            <StatBox label="Questions" value={stats.total} />
-            <View style={styles.vDivider} />
-            <StatBox label="Graded" value={stats.graded} />
+    <Background variant="hero">
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={Colors.secondary} />}
+        >
+          <View style={styles.headerRow}>
+            <BrandLogo size="md" premium={isPaid} />
           </View>
-          <View style={styles.hDivider} />
-          <View style={styles.gridRow}>
-            <StatBox label="Avg Score" value={stats.avgScore ? stats.avgScore.toFixed(1) : '—'} color={stats.avgScore >= 7 ? Colors.success : stats.avgScore >= 5 ? Colors.warning : Colors.error} />
-            <View style={styles.vDivider} />
-            <StatBox label="Streak" value={`${stats.streak}d`} sub="current" color={Colors.gold} />
-          </View>
-          <View style={styles.hDivider} />
-          <View style={styles.gridRow}>
-            <StatBox label="Best" value={stats.bestScore ? `${stats.bestScore}/10` : '—'} color={Colors.success} />
-            <View style={styles.vDivider} />
-            <StatBox label="Per Day" value={stats.avgPerDay.toFixed(1)} sub="avg" />
-          </View>
-        </Card>
 
-        {/* Recent trend */}
-        {stats.trend.length > 1 && (
-          <Card style={styles.trendCard}>
-            <Text style={styles.sectionLabel}>Recent Score Trend</Text>
-            <View style={styles.trendBars}>
-              {stats.trend.map((s, i) => {
-                const h = Math.max((s / 10) * 60, 4);
-                const color = s >= 7 ? Colors.success : s >= 5 ? Colors.secondary : Colors.warning;
-                return (
-                  <View key={i} style={styles.trendBarWrap}>
-                    <Text style={[styles.trendScore, { color }]}>{s}</Text>
-                    <View style={[styles.trendBar, { height: h, backgroundColor: color }]} />
-                  </View>
-                );
-              })}
-            </View>
-          </Card>
-        )}
-
-        {/* Difficulty breakdown */}
-        <Card style={styles.sectionCard}>
-          <Text style={styles.sectionLabel}>By Difficulty</Text>
-          {Object.entries(stats.diffMap).map(([d, count]) => (
-            <View key={d} style={styles.barRow}>
-              <Text style={[styles.barLabel, { color: DIFFICULTY_COLORS[d as QuestionDifficulty] ?? Colors.textMuted }]}>{d}</Text>
-              <View style={styles.barTrack}>
-                <View style={[styles.barFill, { width: `${(count / stats.total) * 100}%`, backgroundColor: DIFFICULTY_COLORS[d as QuestionDifficulty] ?? Colors.secondary }]} />
-              </View>
-              <Text style={styles.barCount}>{count}</Text>
-            </View>
-          ))}
-        </Card>
-
-        {/* Category breakdown */}
-        <Card style={styles.sectionCard}>
-          <Text style={styles.sectionLabel}>By Category</Text>
-          {Object.entries(stats.catMap)
-            .sort((a, b) => b[1].count - a[1].count)
-            .map(([cat, { count, totalScore }]) => {
-              const avg = count ? totalScore / count : 0;
-              return (
-                <View key={cat} style={styles.catRow}>
-                  <View style={styles.catInfo}>
-                    <Text style={styles.catName}>{cat}</Text>
-                    <Text style={styles.catCount}>{count} question{count !== 1 ? 's' : ''}</Text>
-                  </View>
-                  <View style={styles.catBarWrap}>
-                    <View style={[styles.catBar, { width: `${(count / maxBar) * 100}%` }]} />
-                  </View>
-                  {avg > 0 && (
-                    <Text style={[styles.catAvg, { color: avg >= 7 ? Colors.success : avg >= 5 ? Colors.secondary : Colors.warning }]}>
-                      {avg.toFixed(1)}
+          {/* Hero score */}
+          <Animated.View entering={FadeIn.duration(500)}>
+            <GlassCard accent="cyan" glow padding={20} animate={false}>
+              <Text style={styles.heroEyebrow}>YOUR PERFORMANCE</Text>
+              <View style={styles.heroRow}>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.heroValueRow}>
+                    <Text style={styles.heroBig}>
+                      <AnimatedNumber value={stats.avgScore} duration={900} decimals={1} />
                     </Text>
-                  )}
+                    <Text style={styles.heroOf}>/10</Text>
+                  </View>
+                  <Text style={styles.heroLabel}>AVG SCORE · {stats.graded} graded</Text>
                 </View>
+                <View style={styles.heroStreak}>
+                  <Ionicons name="flame" size={18} color={Colors.gold} />
+                  <Text style={styles.streakNum}>
+                    <AnimatedNumber value={stats.streak} duration={700} />
+                  </Text>
+                  <Text style={styles.streakLabel}>DAY STREAK</Text>
+                </View>
+              </View>
+            </GlassCard>
+          </Animated.View>
+
+          {/* Quick stats — first row */}
+          <View style={styles.quickGrid}>
+            <QuickStat
+              icon="document-text" color={Colors.secondary}
+              label="Questions" value={stats.total} description="total practiced" delay={40}
+            />
+            <QuickStat
+              icon="trophy" color={Colors.success}
+              label="Best" value={stats.bestScore} suffix="/10" description="highest score" delay={100}
+            />
+            <QuickStat
+              icon="trending-down" color={Colors.warning}
+              label="Worst" value={stats.worstScore} suffix="/10" description="lowest score" delay={160}
+            />
+          </View>
+
+          {/* Quick stats — second row */}
+          <View style={[styles.quickGrid, { marginTop: 8 }]}>
+            <QuickStat
+              icon="calendar" color={Colors.gold}
+              label="Per day" value={stats.avgPerDay} decimals={1} suffix=" Qs" description="daily average" delay={40}
+            />
+            <QuickStat
+              icon="flame" color={Colors.gold}
+              label="Best streak" value={stats.longestStreak} suffix=" days" description="consecutive days" delay={100}
+            />
+            <QuickStat
+              icon="analytics" color={Colors.secondary}
+              label="Graded" value={stats.graded} description={`of ${stats.total} total`} delay={160}
+            />
+          </View>
+
+          {/* Interactive score-history chart with window slider */}
+          {stats.chartScored.length >= 2 && (
+            <>
+              <SectionHeader eyebrow="SCORE HISTORY" title="Rolling average" style={{ marginTop: Spacing.xl }} />
+              <ScoreChartCard scored={stats.chartScored} />
+            </>
+          )}
+
+          {/* Difficulty */}
+          <SectionHeader eyebrow="DIFFICULTY" title="Practice mix" style={{ marginTop: Spacing.lg }} />
+          <GlassCard accent="ghost" padding={16} animate={false}>
+            {Object.entries(stats.diffMap).map(([d, count]) => {
+              const color = DIFFICULTY_COLORS[d as QuestionDifficulty] ?? Colors.secondary;
+              const pct = (count / stats.total) * 100;
+              return (
+                <Animated.View key={d} entering={FadeInUp.duration(360)} style={styles.barRow}>
+                  <Text style={[styles.barLabel, { color }]}>{d}</Text>
+                  <View style={styles.barTrack}>
+                    <View style={[styles.barFill, { width: `${pct}%`, backgroundColor: color }]} />
+                  </View>
+                  <Text style={styles.barCount}>{count}</Text>
+                  <Text style={styles.barPct}>{Math.round(pct)}%</Text>
+                </Animated.View>
               );
             })}
-        </Card>
+          </GlassCard>
 
-        <View style={{ height: Spacing.xxl }} />
-      </ScrollView>
-    </SafeAreaView>
+          {/* Category */}
+          <SectionHeader eyebrow="CATEGORY" title="Where you spend time" style={{ marginTop: Spacing.lg }} />
+          <GlassCard accent="ghost" padding={16} animate={false}>
+            <View style={styles.catColHeaders}>
+              <View style={{ width: 30 }} />
+              <Text style={[styles.catColLabel, { flex: 1, marginLeft: 10 }]}>CATEGORY</Text>
+              <Text style={[styles.catColLabel, { width: 36, textAlign: 'right' }]}>QS</Text>
+              <Text style={[styles.catColLabel, { width: 36, textAlign: 'right' }]}>AVG</Text>
+            </View>
+            {Object.entries(stats.catMap)
+              .sort((a, b) => b[1].count - a[1].count)
+              .map(([cat, { count, total }], idx) => {
+                const avg = count ? total / count : 0;
+                const maxCount = Math.max(...Object.values(stats.catMap).map(v => v.count), 1);
+                const pct = (count / maxCount) * 100;
+                const avgColor = avg >= 7 ? Colors.success : avg >= 5 ? '#84cc16' : avg > 0 ? Colors.warning : Colors.textFaint;
+                return (
+                  <Animated.View key={cat} entering={FadeInUp.duration(360).delay(idx * 40)} style={styles.catRow}>
+                    <View style={styles.catIconBox}>
+                      <Ionicons name={(CATEGORY_ICONS[cat] as any) ?? 'apps-outline'} size={14} color={Colors.secondary} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.catName}>{cat}</Text>
+                      <View style={styles.catBarWrap}>
+                        <LinearGradient
+                          colors={Gradients.cyan as any}
+                          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                          style={[styles.catBarFill, { width: `${pct}%` }]}
+                        />
+                      </View>
+                    </View>
+                    <View style={styles.catRight}>
+                      <Text style={styles.catCount}>{count}</Text>
+                      <Text style={[styles.catAvg, { color: avg > 0 ? avgColor : Colors.textFaint }]}>
+                        {avg > 0 ? avg.toFixed(1) : '—'}
+                      </Text>
+                    </View>
+                  </Animated.View>
+                );
+              })}
+          </GlassCard>
+
+          <View style={{ height: 120 }} />
+        </ScrollView>
+        <ScrollFade top={28} bottom={90} />
+      </SafeAreaView>
+    </Background>
+  );
+}
+
+function QuickStat({ icon, color, label, value, suffix, decimals, description, delay = 0 }: { icon: any; color: string; label: string; value: number; suffix?: string; decimals?: number; description?: string; delay?: number }) {
+  return (
+    <Animated.View entering={FadeInUp.duration(400).delay(delay)} style={{ flex: 1 }}>
+      <GlassCard accent="ghost" padding={14} animate={false}>
+        <View style={{ alignItems: 'center', gap: 5 }}>
+          <View style={[styles.qIcon, { backgroundColor: color + '22', borderColor: color + '55' }]}>
+            <Ionicons name={icon} size={14} color={color} />
+          </View>
+          <Text style={styles.qLabel}>{label}</Text>
+          <View style={styles.qValueRow}>
+            <Text style={styles.qValue}>
+              <AnimatedNumber value={value} duration={800} decimals={decimals ?? 0} />
+            </Text>
+            {suffix ? <Text style={styles.qSuffix}>{suffix}</Text> : null}
+          </View>
+          {description ? <Text style={styles.qDescription}>{description}</Text> : null}
+        </View>
+      </GlassCard>
+    </Animated.View>
+  );
+}
+
+// ─── Interactive score chart ──────────────────────────────────────────────
+// Shows up to MAX_BARS bars on-screen (samples larger windows). Bar widths
+// scale with bar count so they fill the chart area at any density.
+
+const MAX_BARS = 40;
+const CHART_HEIGHT = 100;
+const Y_MARKS = [10, 7, 5] as const;
+
+function ScoreChartCard({ scored }: { scored: HistoryEntry[] }) {
+  const router = useRouter();
+  const maxN = scored.length;
+  const [windowN, setWindowN] = useState<number>(Math.min(maxN, 12));
+  const [selected, setSelected] = useState<number | null>(null);
+  const [chartWidth, setChartWidth] = useState(0);
+
+  const effectiveN = Math.min(windowN, maxN);
+  const windowBars = useMemo(() => scored.slice(-effectiveN), [scored, effectiveN]);
+
+  // Sample down to MAX_BARS so we never render an unmanageable number of bars.
+  const displayed = useMemo(() => {
+    if (windowBars.length <= MAX_BARS) return windowBars;
+    const step = windowBars.length / MAX_BARS;
+    const out: HistoryEntry[] = [];
+    for (let i = 0; i < MAX_BARS; i++) out.push(windowBars[Math.floor(i * step)]);
+    return out;
+  }, [windowBars]);
+
+  // Reset selection when the window shrinks past the selected index.
+  useEffect(() => {
+    if (selected !== null && selected >= displayed.length) setSelected(null);
+  }, [displayed.length, selected]);
+
+  // Bar width fills the measured chart area; stays between 3–16 px.
+  const barWidth = useMemo(() => {
+    if (!chartWidth || !displayed.length) return 8;
+    const gap = 2;
+    const totalGap = Math.max(0, displayed.length - 1) * gap;
+    return Math.max(3, Math.min(16, (chartWidth - totalGap) / displayed.length));
+  }, [chartWidth, displayed.length]);
+
+  const windowAvg = windowBars.length
+    ? windowBars.reduce((s, e) => s + (e.score ?? 0), 0) / windowBars.length
+    : 0;
+  const avgColor = windowAvg >= 7 ? Colors.success : windowAvg >= 5 ? '#84cc16' : Colors.warning;
+
+  const selectedEntry = selected !== null ? displayed[selected] : null;
+
+  const openInHistory = (ts: number) =>
+    router.push({ pathname: '/(tabs)/history', params: { highlight: String(ts) } } as any);
+
+  const handleBarPress = (i: number) => {
+    if (selected === i) {
+      const e = displayed[i];
+      if (e?.timestamp) openInHistory(e.timestamp);
+    } else {
+      setSelected(i);
+    }
+  };
+
+  return (
+    <GlassCard accent="ghost" padding={16} animate={false}>
+      <View style={styles.chartHeader}>
+        <View style={{ flex: 1 }}>
+          <View style={styles.chartAvgRow}>
+            <Text style={[styles.chartAvg, { color: avgColor }]}>{windowAvg.toFixed(1)}</Text>
+            <Text style={styles.chartAvgOf}>/10</Text>
+          </View>
+          <Text style={styles.chartAvgLabel}>
+            avg over last {effectiveN} question{effectiveN !== 1 ? 's' : ''}
+          </Text>
+        </View>
+        <View style={styles.windowBadge}>
+          <Text style={styles.windowBadgeText}>{effectiveN}</Text>
+          <Text style={styles.windowBadgeUnit}>Qs</Text>
+        </View>
+      </View>
+
+      {/* Tooltip */}
+      <SelectedEntryTooltip
+        entry={selectedEntry}
+        onClose={() => setSelected(null)}
+        onOpen={(ts) => openInHistory(ts)}
+      />
+
+      {/* Chart: y-axis + bars side-by-side */}
+      <View style={styles.chartContainer}>
+        {/* Y-axis labels */}
+        <View style={styles.yAxisCol}>
+          {Y_MARKS.map(s => (
+            <Text key={s} style={[styles.yAxisLabel, { bottom: s * 10 - 4 }]}>{s}</Text>
+          ))}
+          <Text style={[styles.yAxisLabel, { bottom: -4 }]}>0</Text>
+        </View>
+
+        {/* Bars + hairline reference lines */}
+        <View
+          style={styles.chartBars}
+          onLayout={(e) => setChartWidth(e.nativeEvent.layout.width)}
+        >
+          {/* Reference lines */}
+          {Y_MARKS.map(s => (
+            <View
+              key={s}
+              pointerEvents="none"
+              style={[styles.refLine, { bottom: s * 10 }]}
+            />
+          ))}
+          {/* Score bars */}
+          {displayed.map((e, i) => {
+            const s = e.score ?? 0;
+            const color = s >= 7 ? Colors.success : s >= 5 ? '#84cc16' : Colors.warning;
+            return (
+              <ChartBar
+                key={`${e.timestamp}-${i}`}
+                score={s}
+                color={color}
+                delay={Math.min(i * 15, 300)}
+                selected={selected === i}
+                onPress={() => handleBarPress(i)}
+                barWidth={barWidth}
+              />
+            );
+          })}
+        </View>
+      </View>
+
+      <View style={styles.chartAxis}>
+        <Text style={styles.chartAxisLabel}>oldest</Text>
+        <Text style={styles.chartAxisLabel}>newest</Text>
+      </View>
+
+      {/* Slider */}
+      <RangeSlider min={2} max={maxN} value={effectiveN} onChange={setWindowN} />
+      <View style={styles.sliderTicks}>
+        <Text style={styles.tickLabel}>2</Text>
+        <Text style={styles.tickLabel}>{maxN}</Text>
+      </View>
+    </GlassCard>
+  );
+}
+
+function ChartBar({
+  score, color, delay, selected, onPress, barWidth,
+}: { score: number; color: string; delay: number; selected: boolean; onPress: () => void; barWidth: number }) {
+  const h = useSharedValue(0);
+  useEffect(() => {
+    h.value = withTiming(Math.max((score / 10) * CHART_HEIGHT, 3), {
+      duration: 600, easing: Easing.out(Easing.cubic),
+    });
+  }, [score, h]);
+  const animStyle = useAnimatedStyle(() => ({ height: h.value }));
+  const radius = Math.max(2, barWidth * 0.25);
+  return (
+    <Animated.View
+      entering={FadeIn.duration(200).delay(delay)}
+      style={{ width: barWidth, height: CHART_HEIGHT, justifyContent: 'flex-end' }}
+    >
+      <Pressable
+        onPress={onPress}
+        hitSlop={6}
+        style={{ width: barWidth, height: CHART_HEIGHT, justifyContent: 'flex-end' }}
+      >
+        <Animated.View
+          style={[
+            { width: barWidth, borderRadius: radius, minHeight: 3, backgroundColor: color },
+            animStyle,
+            selected && { borderWidth: 1.5, borderColor: Colors.textBright },
+          ]}
+        />
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+function SelectedEntryTooltip({
+  entry, onClose, onOpen,
+}: { entry: HistoryEntry | null; onClose: () => void; onOpen: (ts: number) => void }) {
+  if (!entry) return null;
+  const s = entry.score ?? 0;
+  const hcol = s >= 7 ? Colors.success : s >= 5 ? '#84cc16' : Colors.warning;
+  const date = new Date(entry.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const isInterview = entry.type === 'interview';
+  const title = entry.question ?? entry.scenario ?? (isInterview ? 'Interview session' : '');
+
+  return (
+    <Animated.View entering={FadeIn.duration(180)} style={styles.tooltipWrap}>
+      <Pressable
+        onPress={() => onOpen(entry.timestamp)}
+        style={styles.tooltipCard}
+      >
+        <View style={[styles.tooltipScore, { borderColor: hcol, backgroundColor: hcol + '22' }]}>
+          <Text style={[styles.tooltipScoreText, { color: hcol }]}>{s}</Text>
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={styles.tooltipTitle} numberOfLines={1}>{title}</Text>
+          <View style={styles.tooltipTagsRow}>
+            {isInterview && <Text style={[styles.tooltipTag, { color: Colors.gold }]}>Interview</Text>}
+            {entry.category && <Text style={styles.tooltipTag}>{entry.category}</Text>}
+            {entry.difficulty && <Text style={styles.tooltipTag}>{entry.difficulty}</Text>}
+            <Text style={styles.tooltipDate}>{date}</Text>
+          </View>
+        </View>
+        <Pressable
+          onPress={() => onOpen(entry.timestamp)}
+          hitSlop={8}
+          style={styles.tooltipOpenBtn}
+        >
+          <Ionicons name="information-circle" size={20} color={Colors.secondary} />
+        </Pressable>
+        <Pressable onPress={onClose} hitSlop={8} style={{ paddingLeft: 4 }}>
+          <Ionicons name="close" size={16} color={Colors.textFaint} />
+        </Pressable>
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+function RangeSlider({ min, max, value, onChange }: { min: number; max: number; value: number; onChange: (v: number) => void }) {
+  // Use a ref for width so the PanResponder (created once on mount) always
+  // reads the current layout width instead of the stale closure value of 0.
+  const widthRef = useRef(0);
+
+  // Keep a ref to the latest respond logic so PanResponder always calls
+  // current min/max/value/onChange without recreating the responder.
+  const respondRef = useRef<(xRaw: number) => void>(() => {});
+  respondRef.current = (xRaw: number) => {
+    const w = widthRef.current;
+    if (!w) return;
+    const x = Math.max(0, Math.min(w, xRaw));
+    const v = Math.round(min + (x / w) * (max - min));
+    if (v !== value) onChange(v);
+  };
+
+  const pan = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
+      onPanResponderGrant: (e) => respondRef.current(e.nativeEvent.locationX),
+      onPanResponderMove: (e) => respondRef.current(e.nativeEvent.locationX),
+    })
+  ).current;
+
+  const pct = max > min ? (value - min) / (max - min) : 0;
+
+  return (
+    <View
+      style={styles.sliderHit}
+      onLayout={(e) => { widthRef.current = e.nativeEvent.layout.width; }}
+      {...pan.panHandlers}
+    >
+      <View style={styles.sliderTrack}>
+        <View style={[styles.sliderFill, { width: `${pct * 100}%` }]} />
+      </View>
+      <View style={[styles.sliderThumb, { left: `${pct * 100}%` }]} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.bg },
-  center: { flex: 1, backgroundColor: Colors.bg, justifyContent: 'center', alignItems: 'center' },
-  content: { padding: Spacing.base },
-  title: { color: Colors.text, fontSize: Typography.sizes.xl, fontWeight: Typography.weights.bold, marginBottom: Spacing.base },
+  safe: { flex: 1 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  content: { paddingHorizontal: Spacing.base, paddingTop: Spacing.base },
 
-  empty: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.xl },
-  emptyTitle: { color: Colors.text, fontSize: Typography.sizes.xl, fontWeight: Typography.weights.bold, marginBottom: Spacing.sm },
-  emptyText: { color: Colors.textMuted, fontSize: Typography.sizes.base, textAlign: 'center' },
+  headerRow: { marginBottom: Spacing.lg },
 
-  grid: { marginBottom: Spacing.base, padding: 0, overflow: 'hidden' },
-  gridRow: { flexDirection: 'row' },
-  vDivider: { width: 1, backgroundColor: Colors.border },
-  hDivider: { height: 1, backgroundColor: Colors.border },
+  // Hero
+  heroEyebrow: { color: Colors.secondary, fontFamily: Typography.fonts.displayExtra, fontSize: 10, fontWeight: '800', letterSpacing: 2.2, marginBottom: Spacing.md },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: 20 },
+  heroValueRow: { flexDirection: 'row', alignItems: 'baseline' },
+  heroBig: { color: Colors.text, fontFamily: Typography.fonts.displayExtra, fontSize: 48, fontWeight: '800', letterSpacing: -2, lineHeight: 52 },
+  heroOf: { color: Colors.textMuted, fontFamily: Typography.fonts.sansBold, fontSize: 20, fontWeight: '700', letterSpacing: 0, marginLeft: 6 },
+  heroLabel: { color: Colors.textMuted, fontFamily: Typography.fonts.display, fontSize: 10, fontWeight: '700', letterSpacing: 1.6, marginTop: 4 },
+  heroStreak: {
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: Radius.lg,
+    backgroundColor: 'rgba(201,168,76,0.1)', borderWidth: 1, borderColor: 'rgba(201,168,76,0.35)',
+    alignItems: 'center', gap: 2,
+  },
+  streakNum: { color: Colors.gold, fontFamily: Typography.fonts.displayExtra, fontSize: 26, fontWeight: '800', lineHeight: 30 },
+  streakLabel: { color: Colors.gold, fontFamily: Typography.fonts.display, fontSize: 9, fontWeight: '800', letterSpacing: 1.4 },
 
-  sectionLabel: { color: Colors.textMuted, fontSize: Typography.sizes.xs, fontWeight: Typography.weights.bold, textTransform: 'uppercase', letterSpacing: 1, marginBottom: Spacing.base },
+  // Quick stats
+  quickGrid: { flexDirection: 'row', gap: 8, marginTop: Spacing.md },
+  qIcon: {
+    width: 30, height: 30, borderRadius: 10, borderWidth: 1,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+  },
+  qLabel: { color: Colors.textMuted, fontFamily: Typography.fonts.display, fontSize: 9, fontWeight: '700', letterSpacing: 1.4 },
+  qValueRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 2 },
+  qValue: { color: Colors.text, fontFamily: Typography.fonts.displayExtra, fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
+  qSuffix: { color: Colors.textMuted, fontFamily: Typography.fonts.sansBold, fontSize: 11, fontWeight: '700', marginLeft: 3, letterSpacing: 0 },
+  qDescription: { color: Colors.textFaint, fontFamily: Typography.fonts.sans, fontSize: 9, textAlign: 'center', lineHeight: 13 },
 
-  trendCard: { marginBottom: Spacing.base },
-  trendBars: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.xs, height: 80 },
-  trendBarWrap: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 2 },
-  trendScore: { fontSize: Typography.sizes.xs, fontWeight: Typography.weights.bold },
-  trendBar: { width: '80%', borderRadius: 3, minHeight: 4 },
+  // Score chart card
+  chartHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.md },
+  chartAvgRow: { flexDirection: 'row', alignItems: 'baseline' },
+  chartAvg: { fontFamily: Typography.fonts.displayExtra, fontSize: 30, fontWeight: '800', letterSpacing: -1, lineHeight: 32 },
+  chartAvgOf: { color: Colors.textMuted, fontFamily: Typography.fonts.sansBold, fontSize: 14, fontWeight: '700', marginLeft: 4, letterSpacing: 0 },
+  chartAvgLabel: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: 11, marginTop: 2 },
+  windowBadge: {
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: Radius.md,
+    backgroundColor: 'rgba(79,195,247,0.12)', borderWidth: 1, borderColor: 'rgba(79,195,247,0.4)',
+    flexDirection: 'row', alignItems: 'baseline', gap: 3,
+  },
+  windowBadgeText: { color: Colors.secondary, fontFamily: Typography.fonts.displayExtra, fontSize: 16, fontWeight: '800' },
+  windowBadgeUnit: { color: Colors.secondary, fontFamily: Typography.fonts.display, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
 
-  sectionCard: { marginBottom: Spacing.base },
-  barRow: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.sm, gap: Spacing.sm },
-  barLabel: { width: 60, fontSize: Typography.sizes.sm, fontWeight: Typography.weights.semibold },
-  barTrack: { flex: 1, height: 8, backgroundColor: Colors.border, borderRadius: 4 },
+  // Tooltip for selected bar
+  tooltipWrap: { marginBottom: Spacing.md },
+  tooltipCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    padding: 10, borderRadius: Radius.md,
+    backgroundColor: 'rgba(15,34,54,0.85)',
+    borderWidth: 1, borderColor: 'rgba(79,195,247,0.45)',
+  },
+  tooltipScore: {
+    width: 32, height: 32, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center', borderWidth: 1.5,
+  },
+  tooltipScoreText: { fontFamily: Typography.fonts.displayExtra, fontSize: 12, fontWeight: '800' },
+  tooltipTitle: { color: Colors.text, fontFamily: Typography.fonts.sansMedium, fontSize: 12, lineHeight: 16 },
+  tooltipTagsRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 3 },
+  tooltipTag: {
+    color: Colors.textMuted, fontFamily: Typography.fonts.display,
+    fontSize: 9, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase',
+  },
+  tooltipDate: { color: Colors.textFaint, fontFamily: Typography.fonts.sans, fontSize: 10 },
+  tooltipOpenBtn: { paddingHorizontal: 4, paddingVertical: 2 },
+
+  // Chart layout
+  chartContainer: { flexDirection: 'row', gap: 6, height: CHART_HEIGHT, marginBottom: Spacing.sm },
+  yAxisCol: { width: 14, height: CHART_HEIGHT, position: 'relative' },
+  yAxisLabel: {
+    position: 'absolute', right: 0,
+    color: Colors.textFaint, fontFamily: Typography.fonts.display,
+    fontSize: 8, fontWeight: '700', textAlign: 'right',
+  },
+  refLine: {
+    position: 'absolute', left: 0, right: 0,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  chartBars: {
+    flex: 1, height: CHART_HEIGHT, position: 'relative',
+    flexDirection: 'row', alignItems: 'flex-end', gap: 2,
+  },
+  chartAxis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, marginBottom: 14 },
+  chartAxisLabel: { color: Colors.textFaint, fontFamily: Typography.fonts.display, fontSize: 9, fontWeight: '700', letterSpacing: 1.2 },
+
+  // Range slider
+  sliderHit: { height: 32, justifyContent: 'center' },
+  sliderTrack: { height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.08)' },
+  sliderFill: { height: 4, borderRadius: 2, backgroundColor: Colors.secondary },
+  sliderThumb: {
+    position: 'absolute', width: 18, height: 18, borderRadius: 9,
+    backgroundColor: Colors.secondary, marginLeft: -9,
+    borderWidth: 2, borderColor: Colors.bg,
+    shadowColor: Colors.secondary, shadowOpacity: 0.6, shadowRadius: 6, shadowOffset: { width: 0, height: 0 },
+    elevation: 4,
+  },
+  sliderTicks: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 },
+  tickLabel: { color: Colors.textFaint, fontFamily: Typography.fonts.display, fontSize: 9, fontWeight: '700', letterSpacing: 1 },
+
+  // Bars
+  barRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  barLabel: { width: 70, fontFamily: Typography.fonts.display, fontSize: 10, fontWeight: '700', letterSpacing: 1.4, textTransform: 'uppercase' },
+  barTrack: { flex: 1, height: 8, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 4 },
   barFill: { height: 8, borderRadius: 4 },
-  barCount: { color: Colors.textMuted, fontSize: Typography.sizes.sm, width: 28, textAlign: 'right' },
+  barCount: { color: Colors.text, fontFamily: Typography.fonts.sansBold, fontSize: 13, width: 28, textAlign: 'right' },
+  barPct: { color: Colors.textFaint, fontFamily: Typography.fonts.display, fontSize: 9, fontWeight: '700', width: 30, textAlign: 'right', letterSpacing: 0.5 },
 
-  catRow: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.sm, gap: Spacing.sm },
-  catInfo: { width: 130 },
-  catName: { color: Colors.text, fontSize: Typography.sizes.sm, fontWeight: Typography.weights.medium },
-  catCount: { color: Colors.textFaint, fontSize: Typography.sizes.xs },
-  catBarWrap: { flex: 1, height: 6, backgroundColor: Colors.border, borderRadius: 3 },
-  catBar: { height: 6, backgroundColor: Colors.secondary, borderRadius: 3 },
-  catAvg: { fontSize: Typography.sizes.sm, fontWeight: Typography.weights.bold, width: 30, textAlign: 'right' },
+  // Category
+  catRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
+  catIconBox: { width: 30, height: 30, borderRadius: 9, backgroundColor: 'rgba(79,195,247,0.12)', alignItems: 'center', justifyContent: 'center' },
+  catName: { color: Colors.text, fontFamily: Typography.fonts.sansMedium, fontSize: Typography.sizes.sm, marginBottom: 4 },
+  catBarWrap: { height: 5, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' },
+  catBarFill: { height: 5, borderRadius: 3 },
+  catColHeaders: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  catColLabel: { color: Colors.textFaint, fontFamily: Typography.fonts.display, fontSize: 9, fontWeight: '700', letterSpacing: 1.4 },
+  catRight: { flexDirection: 'row', alignItems: 'center', gap: 0, width: 72 },
+  catCount: { color: Colors.text, fontFamily: Typography.fonts.sansBold, fontSize: 13, width: 36, textAlign: 'right' },
+  catAvg: { fontFamily: Typography.fonts.displayExtra, fontSize: 11, fontWeight: '800', width: 36, textAlign: 'right' },
+
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 40 },
+  emptyTitle: { color: Colors.text, fontFamily: Typography.fonts.displayExtra, fontSize: Typography.sizes.lg, fontWeight: '800' },
+  emptyText: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm, textAlign: 'center' },
 });
