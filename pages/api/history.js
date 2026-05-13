@@ -64,5 +64,13 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ entries: entries.map(e => typeof e === "string" ? JSON.parse(e) : e) });
   }
 
+  if (req.method === "DELETE") {
+    // Pops the most recently saved entry. Used by the question retry flow so
+    // the abandoned attempt is replaced by the retried question's record.
+    const key = `history:${userId}`;
+    await redis.lpop(key);
+    return res.status(200).json({ success: true });
+  }
+
   return res.status(405).json({ error: "Method not allowed" });
 };

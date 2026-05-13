@@ -267,6 +267,22 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
     setLoadingAnswer(false);
   };
 
+  // Retry the active IB question. Resets the local answer + revealed-answer
+  // state so the user can take another fresh attempt. The IB question itself
+  // is fixed (no regeneration), and saved progress is intentionally left in
+  // place — a future grade will overwrite it via saveProgress.
+  const handleRetry = () => {
+    if (!active) return;
+    setUserAnswer("");
+    setAnswerRevealed(false);
+    setModelAnswer("");
+    setFeedback("");
+    setScore(null);
+    setGraded(false);
+    setLoadingAnswer(false);
+    setLoadingGrade(false);
+  };
+
   const handleGrade = async () => {
     if (!active || !isPaid || !userAnswer.trim()) return;
     setLoadingGrade(true);
@@ -487,7 +503,19 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
             >
               {loadingGrade ? "Grading…" : graded ? "Graded ✓" : "Grade My Answer"}
             </motion.button>
-          ) : (
+          ) : null}
+          {isPaid && graded && (
+            <motion.button
+              onClick={handleRetry}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              style={{ padding: "13px 22px", borderRadius: 10, border: `2px solid ${C.secondary}55`, background: "transparent", color: C.secondary, fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", cursor: "pointer", fontFamily: "Manrope, sans-serif", display: "flex", alignItems: "center", gap: 8 }}
+              title="Clear your answer and the revealed model answer to retry this question"
+            >
+              <Icon name="refresh" size={14} /> Retry
+            </motion.button>
+          )}
+          {!isPaid && (
             <div style={{ padding: "10px 16px", borderRadius: 10, background: "rgba(201,168,76,0.08)", border: `1px solid rgba(201,168,76,0.3)`, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               <Icon name="workspace_premium" size={18} style={{ color: C.gold }} />
               <span style={{ fontSize: 12, color: C.gold, fontFamily: "Manrope, sans-serif", fontWeight: 700 }}>AI grading is Premium-only.</span>

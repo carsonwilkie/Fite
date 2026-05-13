@@ -39,7 +39,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { type, question, category, difficulty, math, customPrompt } = req.body;
+  const { type, question, category, difficulty, math, customPrompt, retryFromQuestion } = req.body;
   const userId = getAuthenticatedUserId(req);
 
   let questionsUsed = null;
@@ -175,12 +175,16 @@ Hard rules:
 - No introduction, no closing remarks, no "Here is the answer" — start directly with the ## Model Answer header.
 - Do not hedge with "it depends" without actually committing to a primary answer first.`;
 
+  const retryBlock = type === "question" && retryFromQuestion
+    ? `\nRETRY MODE — The candidate just attempted the following question and wants a fresh attempt at the same concept. Generate a NEW question that tests the SAME underlying concept(s) and uses a similar style/format, but with DIFFERENT specifics: different scenario, company names, numbers, and framing. Do NOT repeat the original question, and do NOT make it trivially identifiable as a re-skin — vary the surface details meaningfully.\n\nOriginal question to vary from:\n"""${retryFromQuestion}"""\n`
+    : "";
+
   const prompt =
     type === "answer"
       ? (isOTGAnswer ? otgAnswerPrompt : standardAnswerPrompt)
       : isOTG
-        ? otgPrompt
-        : `Generate a single ${difficulty}-level finance interview question ${categoryText}.\n\nDifficulty standard: ${difficultyInstruction}\n\n${mathText}\n${customText}${formatInstruction}${examplesBlock}${negativeBlock}\nAdditional requirements:\n- Be specific: include real metrics, deal sizes, named instruments, or market conditions where they add realism\n- Do not start every question with "Walk me through" — vary the opening\n- The question should feel like it came from a real interviewer at a top firm, not a textbook\n\nReturn only the question itself, nothing else.`;
+        ? `${otgPrompt}${retryBlock}`
+        : `Generate a single ${difficulty}-level finance interview question ${categoryText}.\n\nDifficulty standard: ${difficultyInstruction}\n\n${mathText}\n${customText}${formatInstruction}${examplesBlock}${negativeBlock}${retryBlock}\nAdditional requirements:\n- Be specific: include real metrics, deal sizes, named instruments, or market conditions where they add realism\n- Do not start every question with "Walk me through" — vary the opening\n- The question should feel like it came from a real interviewer at a top firm, not a textbook\n\nReturn only the question itself, nothing else.`;
 
   try {
     if (type === "question" && req.body.stream) {

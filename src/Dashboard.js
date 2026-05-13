@@ -464,7 +464,7 @@ function SessionIntel({ count, avgScore, readiness, compact = false }) {
 }
 
 // ─── Question Canvas (right panel, question mode) ─────────────────────────────
-function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback, score, graded, answerRevealed, loadingQuestion, loadingAnswer, loadingFeedback, streamProgress, wordCount, isPaid, category, difficulty, math, onGetAnswer, onGrade, onNewQuestion, onUpgrade, price, questionsUsed, getScoreColor, getScoreBg, timeLeft, timerDuration, timerPaused, onPauseTimer, onResumeTimer, onStartTimer, timerOn, snapshotCategory, snapshotDifficulty, snapshotMath, snapshotCustomPrompt }) {
+function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback, score, graded, answerRevealed, loadingQuestion, loadingAnswer, loadingFeedback, streamProgress, wordCount, isPaid, category, difficulty, math, onGetAnswer, onGrade, onNewQuestion, onRetry, onUpgrade, price, questionsUsed, getScoreColor, getScoreBg, timeLeft, timerDuration, timerPaused, onPauseTimer, onResumeTimer, onStartTimer, timerOn, snapshotCategory, snapshotDifficulty, snapshotMath, snapshotCustomPrompt }) {
   const isLimitMsg = question?.includes("you've reached") || question?.includes("You've reached") || question?.includes("seen all recent");
 
   // Empty / loading state
@@ -726,6 +726,17 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
                 style={{ padding: "14px 32px", borderRadius: 10, border: "none", background: cyberGrad, color: "#fff", fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", cursor: loadingFeedback ? "not-allowed" : "pointer", fontFamily: "Manrope, sans-serif", boxShadow: "0 8px 24px rgba(21,101,192,0.35)", opacity: loadingFeedback ? 0.6 : 1 }}
               >
                 {loadingFeedback ? "Grading..." : graded ? "Graded ✓" : "Submit Answer"}
+              </motion.button>
+            )}
+            {isPaid && graded && onRetry && (
+              <motion.button
+                onClick={onRetry}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                style={{ padding: "14px 28px", borderRadius: 10, border: `2px solid ${C.secondary}55`, background: "transparent", color: C.secondary, fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", cursor: "pointer", fontFamily: "Manrope, sans-serif", display: "flex", alignItems: "center", gap: 8 }}
+                title="Retry with a similar question — different scenario, same concept"
+              >
+                <Icon name="refresh" size={14} /> Retry
               </motion.button>
             )}
             {isPaid && graded && (
@@ -1173,6 +1184,41 @@ export default function Dashboard() {
       if (user?.id) await fetch("/api/history", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entry: { question, answer: answerRef.current, userAnswer: userAnswer.trim() || "No answer submitted.", feedback: d.feedback, score: d.score ?? null, category, difficulty, math: mathParam, customPrompt: customPrompt || null, timeTaken, timeRemaining, timestamp: Date.now() } }) });
     } catch (e) { console.error(e); }
     setLoadingFeedback(false);
+  };
+
+  // ─── Retry handler ───────────────────────────────────────────────────────
+  // Available only after a written answer was graded. Replaces the just-saved
+  // history entry with a fresh, similar-but-different question using the same
+  // snapshot params, so a retry never leaves an extra entry in history.
+  const retryQuestion = async () => {
+    if (!isPaid || !graded || !question) return;
+    const originalQuestion = question;
+    const cat  = snapshotCategory || category;
+    const diff = snapshotDifficulty || difficulty;
+    const m    = snapshotMath || mathParam;
+    const cp   = snapshotCustomPrompt;
+
+    if (user?.id) {
+      try { await fetch("/api/history", { method: "DELETE" }); } catch {}
+    }
+
+    resetQuestion();
+    setLoadingQuestion(true);
+    const EST = diff === "OTG" ? 80 : diff === "Easy" ? 150 : diff === "Hard" ? 350 : 250;
+    try {
+      const res = await fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "question", category: cat, difficulty: diff, math: m, customPrompt: cp || undefined, retryFromQuestion: originalQuestion, stream: true }) });
+      if (res.status === 403) { const d = await res.json(); if (d.limitReached) { setQuestion("You've reached your 5 free questions for today. Upgrade to Premium for unlimited questions."); setLoadingQuestion(false); return; } }
+      const reader = res.body.getReader(); const dec = new TextDecoder(); let txt = ""; let used = null;
+      while (true) { const { done, value } = await reader.read(); if (done) break; for (const line of dec.decode(value, { stream: true }).split("\n")) { if (!line.startsWith("data:")) continue; try { const d = JSON.parse(line.slice(5)); if (d.questionsUsed !== undefined) used = d.questionsUsed; if (d.text) { txt = d.text; setStreamProgress(Math.min(txt.length / EST, 0.95)); } } catch {} } }
+      if (used !== null) setQuestionsUsed(used);
+      const newQ = txt;
+      if (newQ) { saveQuestion(newQ); fetch("/api/question", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "answer", question: newQ, category: cat, difficulty: diff, math: m, customPrompt: cp || undefined }) }).then(r => r.json()).then(d => setAnswer(d.result)); }
+      await new Promise(r => setTimeout(r, 600));
+      setQuestion(newQ || "Couldn't generate a retry — try a new question.");
+    } catch (e) { console.error(e); }
+    setLoadingQuestion(false);
+    setSessionCount(c => c + 1);
+    if (timerOn && timerAutoStart) startTimer();
   };
 
   // ─── Interview handlers ──────────────────────────────────────────────────
@@ -1666,7 +1712,7 @@ export default function Dashboard() {
                   loadingQuestion={loadingQuestion} loadingAnswer={loadingAnswer} loadingFeedback={loadingFeedback}
                   streamProgress={streamProgress} wordCount={wordCount} isPaid={isPaid}
                   category={category} difficulty={difficulty} math={mathParam}
-                  onGetAnswer={getAnswer} onGrade={handleGrade} onNewQuestion={getQuestion}
+                  onGetAnswer={getAnswer} onGrade={handleGrade} onNewQuestion={getQuestion} onRetry={retryQuestion}
                   onUpgrade={handleUpgrade} price={price} questionsUsed={questionsUsed}
                   getScoreColor={getScoreColor} getScoreBg={getScoreBg}
                   timeLeft={timerOn ? timeLeft : null}
