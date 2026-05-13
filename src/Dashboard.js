@@ -645,15 +645,15 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
           )}
         </AnimatePresence>
 
-        {/* Answer loading skeleton */}
-        <AnimatePresence>
-          {loadingAnswer && (
+        {/* Answer loading skeleton / reveal — single AnimatePresence so only one box exists at a time */}
+        <AnimatePresence mode="wait">
+          {loadingAnswer ? (
             <motion.div
               key="answer-skeleton"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
+              transition={{ duration: 0.2 }}
               style={{ padding: 24, borderRadius: 16, backgroundColor: C.surface, border: `1px solid ${C.border}`, overflow: "hidden" }}
             >
               <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.15em", textTransform: "uppercase", color: C.secondary, fontFamily: "Manrope, sans-serif", marginBottom: 14, opacity: 0.5 }}>Model Answer</div>
@@ -676,13 +676,9 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
               <div className="fite-skel" style={{ height: 13, width: "88%", marginBottom: 10 }} />
               <div className="fite-skel" style={{ height: 13, width: "70%" }} />
             </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Answer reveal */}
-        <AnimatePresence>
-          {answerRevealed && answer && !loadingAnswer && (
+          ) : answerRevealed && answer ? (
             <motion.div
+              key="answer-reveal"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
@@ -694,7 +690,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
                 <ReactMarkdown>{answer}</ReactMarkdown>
               </div>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
 
         {/* Action buttons */}

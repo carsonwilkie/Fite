@@ -168,6 +168,7 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
 
   const removeProgress = async (questionId) => {
     setRemoving(true);
+    delete questionCache.current[questionId];
     setProgress(prev => {
       const next = { ...prev };
       delete next[questionId];
@@ -223,18 +224,40 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
   const activeIdRef = useRef(null);
   useEffect(() => { activeIdRef.current = activeId; }, [activeId]);
 
+  // In-memory session cache so switching away and back to a question restores
+  // the model answer, user answer, and grading result without re-generating.
+  const questionCache = useRef({});
+
+  useEffect(() => {
+    if (!activeId) return;
+    questionCache.current[activeId] = {
+      ...(questionCache.current[activeId] || {}),
+      userAnswer,
+    };
+  }, [userAnswer, activeId]);
+
   const handleSelect = (id) => {
     if (id === activeId) return;
     setActiveId(id);
-    setAnswerRevealed(false);
-    setModelAnswer("");
-    setUserAnswer("");
-    setFeedback("");
-    setGraded(false);
     setLoadingAnswer(false);
     setLoadingGrade(false);
-    const saved = progress[id];
-    setScore(saved && typeof saved.score === "number" ? saved.score : null);
+    const cached = questionCache.current[id];
+    if (cached) {
+      setAnswerRevealed(cached.answerRevealed ?? false);
+      setModelAnswer(cached.modelAnswer ?? "");
+      setUserAnswer(cached.userAnswer ?? "");
+      setFeedback(cached.feedback ?? "");
+      setGraded(cached.graded ?? false);
+      setScore(cached.score ?? null);
+    } else {
+      setAnswerRevealed(false);
+      setModelAnswer("");
+      setUserAnswer("");
+      setFeedback("");
+      setGraded(false);
+      const saved = progress[id];
+      setScore(saved && typeof saved.score === "number" ? saved.score : null);
+    }
   };
 
   const handleReveal = async () => {
@@ -256,7 +279,13 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
       });
       const d = await r.json();
       if (activeIdRef.current === currentId) {
-        setModelAnswer(d.result || "");
+        const answer = d.result || "";
+        setModelAnswer(answer);
+        questionCache.current[currentId] = {
+          ...(questionCache.current[currentId] || {}),
+          modelAnswer: answer,
+          answerRevealed: true,
+        };
       }
       if (!progress[currentId]) {
         saveProgress(currentId, null);
@@ -273,6 +302,7 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
   // place — a future grade will overwrite it via saveProgress.
   const handleRetry = () => {
     if (!active) return;
+    delete questionCache.current[active.id];
     setUserAnswer("");
     setAnswerRevealed(false);
     setModelAnswer("");
@@ -299,9 +329,18 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
       });
       const d = await r.json();
       if (activeIdRef.current === currentId) {
-        setFeedback(d.feedback || "");
-        setScore(d.score ?? null);
+        const fb = d.feedback || "";
+        const sc = d.score ?? null;
+        setFeedback(fb);
+        setScore(sc);
         setGraded(true);
+        questionCache.current[currentId] = {
+          ...(questionCache.current[currentId] || {}),
+          userAnswer: userAnswer.trim(),
+          feedback: fb,
+          score: sc,
+          graded: true,
+        };
       }
       if (d.score !== undefined && d.score !== null) {
         saveProgress(currentId, d.score);
