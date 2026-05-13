@@ -163,6 +163,13 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
     handleSelect(pick.id);
   };
 
+  const handleNext = () => {
+    if (filtered.length === 0) return;
+    const idx = filtered.findIndex(q => q.id === activeId);
+    const next = filtered[(idx + 1) % filtered.length];
+    handleSelect(next.id);
+  };
+
   // ── Active question ──
   const [activeId, setActiveId] = useState(null);
   const active = useMemo(
@@ -507,6 +514,76 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
               )}
               <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.15em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", marginBottom: 10 }}>AI Feedback</div>
               <p style={{ fontSize: 15, color: C.text, lineHeight: 1.7, margin: 0, fontFamily: "Inter, sans-serif" }}>{feedback}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Next / Shuffle — shown once answer is revealed */}
+        <AnimatePresence>
+          {answerRevealed && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              style={{ display: "flex", gap: 10, paddingTop: 4 }}
+            >
+              <motion.button
+                onClick={handleShuffle}
+                disabled={filtered.length === 0}
+                whileHover={filtered.length > 0 ? { scale: 1.02 } : {}}
+                whileTap={filtered.length > 0 ? { scale: 0.97 } : {}}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 7,
+                  padding: "13px 0",
+                  borderRadius: 10,
+                  border: `1px solid ${C.border}`,
+                  background: "transparent",
+                  color: C.textMuted,
+                  fontSize: 12,
+                  fontWeight: 900,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  cursor: filtered.length === 0 ? "not-allowed" : "pointer",
+                  fontFamily: "Manrope, sans-serif",
+                  transition: "color 0.15s, border-color 0.15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = C.text; e.currentTarget.style.borderColor = C.borderActive; }}
+                onMouseLeave={e => { e.currentTarget.style.color = C.textMuted; e.currentTarget.style.borderColor = C.border; }}
+              >
+                <Icon name="shuffle" size={16} /> Shuffle
+              </motion.button>
+              <motion.button
+                onClick={handleNext}
+                disabled={filtered.length <= 1}
+                whileHover={filtered.length > 1 ? { scale: 1.02 } : {}}
+                whileTap={filtered.length > 1 ? { scale: 0.97 } : {}}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 7,
+                  padding: "13px 0",
+                  borderRadius: 10,
+                  border: "none",
+                  background: cyberGrad,
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: 900,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  cursor: filtered.length <= 1 ? "not-allowed" : "pointer",
+                  fontFamily: "Manrope, sans-serif",
+                  opacity: filtered.length <= 1 ? 0.45 : 1,
+                }}
+              >
+                Next <Icon name="arrow_forward" size={16} />
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>

@@ -681,7 +681,7 @@ function QuestionCanvas({ question, answer, userAnswer, setUserAnswer, feedback,
 
         {/* Answer reveal */}
         <AnimatePresence>
-          {answerRevealed && answer && (
+          {answerRevealed && answer && !loadingAnswer && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
