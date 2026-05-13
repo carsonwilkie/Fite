@@ -475,7 +475,7 @@ export default function IBQuestionsPage({ initialQuestions = [] }) {
 
         {/* Model Answer */}
         <AnimatePresence>
-          {answerRevealed && modelAnswer && (
+          {answerRevealed && modelAnswer && !loadingAnswer && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
