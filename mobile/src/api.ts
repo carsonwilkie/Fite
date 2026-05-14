@@ -139,50 +139,18 @@ export async function generateAnswer(params: {
   token?: string;
   onChunk?: (text: string) => void;
 }): Promise<string> {
-  const { question, category, difficulty, math, token, onChunk } = params;
+  const { question, category, difficulty, math, token } = params;
 
-  const bodyStr = JSON.stringify({
-    type: 'answer',
-    question,
-    category,
-    difficulty,
-    math,
-    stream: true,
+  const res = await apiFetch('/question', {
+    method: 'POST',
+    body: JSON.stringify({ type: 'answer', question, category, difficulty, math }),
+    token,
   });
 
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${API_BASE}/question`);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-
-    let processed = 0;
-    let answer = '';
-
-    xhr.onprogress = () => {
-      const chunk = xhr.responseText.slice(processed);
-      processed = xhr.responseText.length;
-      for (const line of chunk.split('\n')) {
-        if (!line.startsWith('data: ')) continue;
-        const raw = line.slice(6).trim();
-        if (raw === '[DONE]') continue;
-        try {
-          const parsed = JSON.parse(raw);
-          if (parsed.text) { answer = parsed.text; onChunk?.(answer); }
-        } catch {}
-      }
-    };
-
-    xhr.onload = () => {
-      if (xhr.status >= 400) reject(new Error(`Failed to generate answer (${xhr.status})`));
-      else resolve(answer);
-    };
-
-    xhr.onerror = () => reject(new Error('Network error generating answer'));
-    xhr.ontimeout = () => reject(new Error('Request timed out'));
-    xhr.timeout = 60000;
-    xhr.send(bodyStr);
-  });
+  if (!res.ok) throw new Error(`Failed to generate answer (${res.status})`);
+  const data = await res.json();
+  const text: string = data.result ?? '';
+  return text;
 }
 
 // ─── Grading ──────────────────────────────────────────────────────────────────

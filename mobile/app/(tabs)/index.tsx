@@ -70,6 +70,7 @@ export default function DashboardScreen() {
   const [customPrompt, setCustomPrompt] = useState('');
   const [timerEnabled, setTimerEnabled] = useState(false);
   const [timerPreset, setTimerPreset] = useState<number>(120);
+  const [timerAutoStart, setTimerAutoStart] = useState(false);
 
   // Session snapshots
   const [snap, setSnap] = useState({ category: 'All' as Category, difficulty: 'Medium' as QuestionDifficulty, math: 'No Math' as MathOption });
@@ -93,7 +94,9 @@ export default function DashboardScreen() {
   // Timer
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerStarted, setTimerStarted] = useState(false);
+  const [timerLocked, setTimerLocked] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const timeLeftRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
@@ -102,13 +105,15 @@ export default function DashboardScreen() {
     if (timerRunning) {
       timerRef.current = setInterval(() => {
         setTimeLeft(prev => {
-          if (prev <= 1) {
+          const next = prev <= 1 ? 0 : prev - 1;
+          timeLeftRef.current = next;
+          if (next === 0) {
             if (timerRef.current) clearInterval(timerRef.current);
             setTimerRunning(false);
+            setTimerLocked(true);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-            return 0;
           }
-          return prev - 1;
+          return next;
         });
       }, 1000);
     } else if (timerRef.current) clearInterval(timerRef.current);
@@ -119,11 +124,15 @@ export default function DashboardScreen() {
     if (timerRef.current) clearInterval(timerRef.current);
     setTimerRunning(false);
     setTimerStarted(false);
+    setTimerLocked(false);
+    timeLeftRef.current = timerPreset;
     setTimeLeft(timerPreset);
   }
   function startTimer() {
+    timeLeftRef.current = timerPreset;
     setTimeLeft(timerPreset);
     setTimerStarted(true);
+    setTimerLocked(false);
     setTimerRunning(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
   }
@@ -180,6 +189,7 @@ export default function DashboardScreen() {
         if (result.questionsUsed !== undefined) setQuestionsUsed(result.questionsUsed);
         if (result.questionsLimit !== undefined) setQuestionsLimit(result.questionsLimit);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        if (timerEnabled && timerAutoStart) startTimer();
       }
     } catch (e: any) {
       const msg = e?.message ?? '';
@@ -196,6 +206,10 @@ export default function DashboardScreen() {
 
   async function handleRevealAnswer() {
     if (!question) return;
+    if (timerStarted && timerRunning) {
+      Alert.alert('Timer is running', 'Stop or finish the timer before revealing the model answer.');
+      return;
+    }
     setLoadingA(true); setAnswerRevealed(true); setAnswer('');
     try {
       const token = await getToken();
@@ -222,6 +236,12 @@ export default function DashboardScreen() {
       Alert.alert('Write an answer first', 'Type your answer before grading.');
       return;
     }
+    // Snapshot and freeze timer before any async work.
+    const snapTimeLeft = timeLeftRef.current;
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimerRunning(false);
+    setTimerLocked(true);
+
     setLoadingGrade(true);
     try {
       const token = await getToken();
@@ -230,13 +250,13 @@ export default function DashboardScreen() {
       setFeedback(result.feedback); setScore(result.score); setGraded(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
 
-      const timeTaken = timerStarted ? timerPreset - timeLeft : undefined;
+      const timeTaken = timerStarted ? timerPreset - snapTimeLeft : undefined;
       await saveHistory({
         question, answer, userAnswer,
         feedback: result.feedback, score: result.score,
         category: snap.category, difficulty: snap.difficulty, math: snap.math,
         customPrompt: customPrompt || undefined,
-        timeTaken, timeRemaining: timerEnabled ? timeLeft : undefined,
+        timeTaken, timeRemaining: timerEnabled ? snapTimeLeft : undefined,
         timestamp: Date.now(),
       }, token);
     } catch {
@@ -410,21 +430,41 @@ export default function DashboardScreen() {
               <View style={styles.labelRow}>
                 <View>
                   <Text style={styles.miniLabel}>TIMER</Text>
-                  <Text style={styles.controlValue}>{timerEnabled ? `${timerPreset / 60}m countdown` : 'Off'}</Text>
+                  <Text style={styles.controlValue}>
+                    {timerEnabled ? `${timerPreset / 60}m · ${timerAutoStart ? 'Auto' : 'Manual'}` : 'Off'}
+                  </Text>
                 </View>
                 <Toggle value={timerEnabled} onChange={(v) => { setTimerEnabled(v); resetTimer(); }} />
               </View>
               {timerEnabled && (
-                <Animated.View entering={FadeIn.duration(200)} style={styles.presetRow}>
-                  {TIMER_PRESETS.map(t => (
-                    <Pill
-                      key={t}
-                      label={t < 60 ? `${t}s` : `${t / 60}m`}
-                      active={timerPreset === t}
-                      onPress={() => { setTimerPreset(t); resetTimer(); }}
-                      small
-                    />
-                  ))}
+                <Animated.View entering={FadeIn.duration(200)} style={{ gap: Spacing.sm }}>
+                  <View style={styles.presetRow}>
+                    {TIMER_PRESETS.map(t => (
+                      <Pill
+                        key={t}
+                        label={t < 60 ? `${t}s` : `${t / 60}m`}
+                        active={timerPreset === t}
+                        onPress={() => { setTimerPreset(t); resetTimer(); }}
+                        small
+                      />
+                    ))}
+                  </View>
+                  <View style={styles.modeRow}>
+                    {(['Manual', 'Auto'] as const).map(mode => {
+                      const isActive = (mode === 'Auto') === timerAutoStart;
+                      return (
+                        <Pressable
+                          key={mode}
+                          onPress={() => setTimerAutoStart(mode === 'Auto')}
+                          style={[styles.modeBtn, isActive && styles.modeBtnActive]}
+                        >
+                          <Text style={[styles.modeBtnText, isActive && styles.modeBtnTextActive]}>
+                            {mode}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
                 </Animated.View>
               )}
             </GlassCard>
@@ -461,7 +501,9 @@ export default function DashboardScreen() {
                       {timerStarted ? formatTime(timeLeft) : formatTime(timerPreset)}
                     </Text>
                   </View>
-                  {!timerStarted ? (
+                  {timerLocked ? (
+                    <Text style={styles.timerLockedLabel}>RECORDED</Text>
+                  ) : !timerStarted ? (
                     <GradientButton label="Start" onPress={startTimer} size="sm" icon="play" />
                   ) : (
                     <View style={{ flexDirection: 'row', gap: 6 }}>
@@ -991,6 +1033,15 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.sm,
   },
   presetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: Spacing.sm },
+  modeRow: { flexDirection: 'row', gap: 6 },
+  modeBtn: {
+    flex: 1, paddingVertical: 6, borderRadius: Radius.md,
+    borderWidth: 1, borderColor: Colors.border,
+    alignItems: 'center',
+  },
+  modeBtnActive: { borderColor: Colors.secondary, backgroundColor: 'rgba(79,195,247,0.1)' },
+  modeBtnText: { color: Colors.textMuted, fontFamily: Typography.fonts.display, fontSize: 10, fontWeight: '700', letterSpacing: 1.2 },
+  modeBtnTextActive: { color: Colors.secondary },
 
   toggle: {
     width: 48, height: 26, borderRadius: 13,
@@ -1010,6 +1061,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontVariant: ['tabular-nums'],
     letterSpacing: -0.5,
+  },
+  timerLockedLabel: {
+    color: Colors.textMuted,
+    fontFamily: Typography.fonts.display,
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.8,
   },
 
   // Question
