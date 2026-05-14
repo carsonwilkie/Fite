@@ -35,6 +35,16 @@ const MARKET_CONTEXT = `Current market context (Q2 2026): The Fed is in a gradua
 const FORMAT_KEYS = Object.keys(QUESTION_FORMATS);
 
 module.exports = async function handler(req, res) {
+  // GET /api/question → total questions stat (replaces /api/total-questions)
+  if (req.method === "GET") {
+    const secret = process.env.ADMIN_SECRET;
+    if (secret && req.headers["x-admin-secret"] !== secret) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const total = (await redis.get("stats:total_questions")) || 0;
+    return res.status(200).json({ total: Number(total) });
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }

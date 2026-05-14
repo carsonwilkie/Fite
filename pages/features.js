@@ -598,7 +598,7 @@ export default function FeaturesPage() {
   const [aboutActive, setAboutActive] = useState(false);
 
   useEffect(() => {
-    fetch("/api/total-questions")
+    fetch("/api/question")
       .then((r) => r.json())
       .then((d) => setTotalQuestions(d.total))
       .catch(() => setTotalQuestions(null));
