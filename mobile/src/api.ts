@@ -334,6 +334,16 @@ export async function resetIBProgress(questionId: string | null, token: string):
   await apiFetch(path, { method: 'DELETE', token });
 }
 
+// ─── Account Deletion ─────────────────────────────────────────────────────────
+
+export async function deleteAccount(token: string): Promise<void> {
+  const res = await apiFetch('/delete-account', { method: 'POST', token });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error ?? 'Failed to delete account.');
+  }
+}
+
 // ─── Feedback ─────────────────────────────────────────────────────────────────
 
 export async function submitFeedback(params: {

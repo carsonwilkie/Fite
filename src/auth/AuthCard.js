@@ -5,6 +5,7 @@ import { useSignIn, useSignUp } from "@clerk/nextjs/legacy";
 import { sanitizeRedirectPath } from "./redirects";
 import {
   AUTH_COLORS,
+  AppleButton,
   CodeInput,
   Divider,
   FloatingInput,
@@ -406,8 +407,10 @@ function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   const [oauthLoading, setOauthLoading] = useState(false);
   const [shake, setShake] = useState(0);
 
+  const [appleLoading, setAppleLoading] = useState(false);
+
   const handleGoogle = async () => {
-    if (!isLoaded || oauthLoading) return;
+    if (!isLoaded || oauthLoading || appleLoading) return;
     setErr(null);
     setOauthLoading(true);
     try {
@@ -422,9 +425,25 @@ function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
     }
   };
 
+  const handleApple = async () => {
+    if (!isLoaded || oauthLoading || appleLoading) return;
+    setErr(null);
+    setAppleLoading(true);
+    try {
+      await signIn.authenticateWithRedirect({
+        strategy: "oauth_apple",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: afterAuthRedirect,
+      });
+    } catch (e) {
+      setErr(friendlyError(e));
+      setAppleLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isLoaded || loading || oauthLoading) return;
+    if (!isLoaded || loading || oauthLoading || appleLoading) return;
     setErr(null);
     setLoading(true);
     try {
@@ -464,7 +483,10 @@ function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <ClerkLoadBanner visible={loadTimedOut} kind="sign-in" afterAuthRedirect={afterAuthRedirect} />
-      <GoogleButton onClick={handleGoogle} loading={oauthLoading} disabled={loading || !isLoaded} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <GoogleButton onClick={handleGoogle} loading={oauthLoading} disabled={loading || appleLoading || !isLoaded} label="Google" />
+        <AppleButton onClick={handleApple} loading={appleLoading} disabled={loading || oauthLoading || !isLoaded} label="Apple" />
+      </div>
       <Divider label="or" />
       <ShakeWrapper trigger={shake}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -537,8 +559,10 @@ function SignUpView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   const [oauthLoading, setOauthLoading] = useState(false);
   const [shake, setShake] = useState(0);
 
+  const [appleLoading, setAppleLoading] = useState(false);
+
   const handleGoogle = async () => {
-    if (!isLoaded || oauthLoading) return;
+    if (!isLoaded || oauthLoading || appleLoading) return;
     setErr(null);
     setOauthLoading(true);
     try {
@@ -553,9 +577,25 @@ function SignUpView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
     }
   };
 
+  const handleApple = async () => {
+    if (!isLoaded || oauthLoading || appleLoading) return;
+    setErr(null);
+    setAppleLoading(true);
+    try {
+      await signUp.authenticateWithRedirect({
+        strategy: "oauth_apple",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: afterAuthRedirect,
+      });
+    } catch (e) {
+      setErr(friendlyError(e));
+      setAppleLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isLoaded || loading || oauthLoading) return;
+    if (!isLoaded || loading || oauthLoading || appleLoading) return;
     setErr(null);
     setLoading(true);
     try {
@@ -583,7 +623,10 @@ function SignUpView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <ClerkLoadBanner visible={loadTimedOut} kind="sign-up" afterAuthRedirect={afterAuthRedirect} />
-      <GoogleButton onClick={handleGoogle} loading={oauthLoading} disabled={loading || !isLoaded} label="Sign up with Google" />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <GoogleButton onClick={handleGoogle} loading={oauthLoading} disabled={loading || appleLoading || !isLoaded} label="Google" />
+        <AppleButton onClick={handleApple} loading={appleLoading} disabled={loading || oauthLoading || !isLoaded} label="Apple" />
+      </div>
       <Divider label="or" />
       <ShakeWrapper trigger={shake}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

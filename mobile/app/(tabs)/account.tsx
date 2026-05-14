@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator, Image, Platform, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator, Image, Platform, Linking, Modal, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUser, useAuth, useClerk } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
@@ -15,7 +15,7 @@ import { SectionHeader } from '../../src/components/SectionHeader';
 import { ScrollFade } from '../../src/components/ScrollFade';
 import { usePaidStatus } from '../../src/hooks/usePaidStatus';
 import { usePrice } from '../../src/hooks/usePrice';
-import { createCheckout } from '../../src/api';
+import { createCheckout, deleteAccount } from '../../src/api';
 import { guestMode } from '../../src/guestMode';
 import {
   isRcSupported,
@@ -102,6 +102,9 @@ export default function AccountScreen() {
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [pwLoading, setPwLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   if (!isLoaded) {
     return <Background><View style={styles.center}><ActivityIndicator color={Colors.secondary} /></View></Background>;
@@ -223,6 +226,31 @@ export default function AccountScreen() {
         },
       },
     ]);
+  }
+
+  function handleDeleteAccount() {
+    setDeleteConfirmText('');
+    setDeleteModalVisible(true);
+  }
+
+  async function confirmDeleteAccount() {
+    setDeleteLoading(true);
+    try {
+      const token = await getToken();
+      if (!token) {
+        Alert.alert('Error', 'Could not authenticate. Please sign in again.');
+        return;
+      }
+      await deleteAccount(token);
+      setDeleteModalVisible(false);
+      guestMode.reset();
+      await signOut().catch(() => {});
+      router.replace('/(auth)/sign-in');
+    } catch (e: any) {
+      Alert.alert('Error', e.message ?? 'Could not delete account. Please try again.');
+    } finally {
+      setDeleteLoading(false);
+    }
   }
 
   async function handleChangePw() {
@@ -433,9 +461,89 @@ export default function AccountScreen() {
             <GradientButton label="Sign Out" icon="log-out-outline" onPress={handleSignOut} variant="ghost" fullWidth />
           </View>
 
+          <SectionHeader eyebrow="DANGER ZONE" title="Delete account" style={{ marginTop: Spacing.xl }} />
+          <GlassCard accent="ghost" padding={18} animate={false}>
+            <Text style={styles.deleteWarning}>
+              Permanently deletes your account, all practice history, stats, and cancels any active subscription. This action cannot be undone.
+            </Text>
+            <GradientButton
+              label={deleteLoading ? 'Deleting…' : 'Delete My Account'}
+              icon="trash-outline"
+              onPress={handleDeleteAccount}
+              loading={deleteLoading}
+              variant="ghost"
+              fullWidth
+            />
+          </GlassCard>
+
           <View style={{ height: 120 }} />
         </ScrollView>
         <ScrollFade top={28} bottom={90} />
+
+        {/* Delete account confirmation modal */}
+        <Modal
+          visible={deleteModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => !deleteLoading && setDeleteModalVisible(false)}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                <View style={styles.modalCard}>
+                  <View style={styles.modalIconRow}>
+                    <View style={styles.modalIconBg}>
+                      <Ionicons name="warning-outline" size={28} color="#ef4444" />
+                    </View>
+                  </View>
+                  <Text style={styles.modalTitle}>Delete Account</Text>
+                  <Text style={styles.modalBody}>
+                    This will permanently delete your account, all practice history, stats, and cancel any active subscription.{'\n\n'}
+                    Type{' '}<Text style={styles.modalConfirmWord}>CONFIRM</Text>{' '}to continue.
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      styles.modalInput,
+                      deleteConfirmText === 'CONFIRM' && styles.modalInputValid,
+                    ]}
+                    value={deleteConfirmText}
+                    onChangeText={setDeleteConfirmText}
+                    placeholder="Type CONFIRM"
+                    placeholderTextColor={Colors.textFaint}
+                    autoCapitalize="characters"
+                    autoCorrect={false}
+                    editable={!deleteLoading}
+                  />
+                  <View style={styles.modalActions}>
+                    <PressableScale
+                      onPress={() => setDeleteModalVisible(false)}
+                      haptic="selection"
+                      containerStyle={styles.modalCancelBtn}
+                      disabled={deleteLoading}
+                    >
+                      <Text style={styles.modalCancelText}>Cancel</Text>
+                    </PressableScale>
+                    <PressableScale
+                      onPress={confirmDeleteAccount}
+                      haptic="medium"
+                      containerStyle={[
+                        styles.modalDeleteBtn,
+                        deleteConfirmText !== 'CONFIRM' && styles.modalDeleteBtnDisabled,
+                      ]}
+                      disabled={deleteConfirmText !== 'CONFIRM' || deleteLoading}
+                    >
+                      {deleteLoading
+                        ? <ActivityIndicator size="small" color="#fff" />
+                        : <Text style={styles.modalDeleteText}>Delete Account</Text>
+                      }
+                    </PressableScale>
+                  </View>
+                </View>
+              </KeyboardAvoidingView>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </SafeAreaView>
     </Background>
   );
@@ -543,4 +651,91 @@ const styles = StyleSheet.create({
 
   guestTitle: { color: Colors.text, fontFamily: Typography.fonts.displayExtra, fontSize: Typography.sizes.xl, fontWeight: '800', letterSpacing: -0.5, textAlign: 'center' },
   guestSubtitle: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm, lineHeight: 20, textAlign: 'center' },
+  deleteWarning: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm, lineHeight: 20, marginBottom: Spacing.md },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+  },
+  modalCard: {
+    backgroundColor: '#0d1b2a',
+    borderRadius: Radius.xl,
+    padding: Spacing.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.35)',
+    width: '100%',
+  },
+  modalIconRow: { alignItems: 'center', marginBottom: Spacing.md },
+  modalIconBg: {
+    width: 56, height: 56, borderRadius: 18,
+    backgroundColor: 'rgba(239,68,68,0.12)',
+    borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  modalTitle: {
+    color: Colors.text,
+    fontFamily: Typography.fonts.displayExtra,
+    fontSize: Typography.sizes.xl,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+  },
+  modalBody: {
+    color: Colors.textMuted,
+    fontFamily: Typography.fonts.sans,
+    fontSize: Typography.sizes.sm,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: Spacing.lg,
+  },
+  modalConfirmWord: {
+    color: Colors.text,
+    fontFamily: Typography.fonts.displayExtra,
+    fontWeight: '800',
+  },
+  modalInput: {
+    marginBottom: Spacing.lg,
+    textAlign: 'center',
+    letterSpacing: 2,
+  },
+  modalInputValid: {
+    borderColor: '#ef4444',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    paddingVertical: 13,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelText: {
+    color: Colors.textMuted,
+    fontFamily: Typography.fonts.sansSemibold,
+    fontSize: Typography.sizes.sm,
+  },
+  modalDeleteBtn: {
+    flex: 1,
+    paddingVertical: 13,
+    borderRadius: Radius.md,
+    backgroundColor: '#ef4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalDeleteBtnDisabled: {
+    backgroundColor: 'rgba(239,68,68,0.25)',
+  },
+  modalDeleteText: {
+    color: '#fff',
+    fontFamily: Typography.fonts.sansSemibold,
+    fontSize: Typography.sizes.sm,
+  },
 });
