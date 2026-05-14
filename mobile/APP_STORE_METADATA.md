@@ -23,6 +23,12 @@ Finance Interview Prep & AI
 
 ---
 
+### Promotional Text
+
+400 real IB interview questions. Unlimited AI-generated questions, instant grading, and mock interviews built for banking, PE, consulting, and more. Free to start.
+
+---
+
 ### Description (4000 chars max)
 
 ```

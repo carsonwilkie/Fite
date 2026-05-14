@@ -22,6 +22,7 @@ WebBrowser.maybeCompleteAuthSession();
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  const { startOAuthFlow: startAppleOAuth } = useOAuth({ strategy: 'oauth_apple' });
   const router = useRouter();
 
   const [email, setEmail] = useState('');
@@ -29,6 +30,7 @@ export default function SignInScreen() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
   const [needsCode, setNeedsCode] = useState(false);
   const [code, setCode] = useState('');
@@ -81,6 +83,23 @@ export default function SignInScreen() {
     } finally { setGoogleLoading(false); }
   }
 
+  async function handleApple() {
+    setAppleLoading(true);
+    try {
+      const { createdSessionId, setActive: setActiveOAuth } = await startAppleOAuth();
+      if (createdSessionId) {
+        await setActiveOAuth!({ session: createdSessionId });
+        router.replace('/(tabs)');
+      }
+    } catch (e: any) {
+      // The user canceling the native Apple sheet throws — silently ignore.
+      const msg = e?.message ?? '';
+      if (!/cancel/i.test(msg)) {
+        Alert.alert('Apple sign-in failed', msg || 'Please try again.');
+      }
+    } finally { setAppleLoading(false); }
+  }
+
   function handleSkip() {
     guestMode.allow();
     router.replace('/(tabs)');
@@ -109,6 +128,19 @@ export default function SignInScreen() {
               <GlassCard accent="cyan" glow padding={24} animate={false}>
                 <Text style={styles.title}>Welcome back</Text>
                 <Text style={styles.subtitle}>Sign in to keep streaks rolling.</Text>
+
+                {Platform.OS === 'ios' && (
+                  <View style={{ marginBottom: 10 }}>
+                    <GradientButton
+                      label={appleLoading ? 'Connecting…' : 'Continue with Apple'}
+                      icon="logo-apple"
+                      variant="ghost"
+                      onPress={handleApple}
+                      loading={appleLoading}
+                      fullWidth
+                    />
+                  </View>
+                )}
 
                 <GradientButton
                   label={googleLoading ? 'Connecting…' : 'Continue with Google'}

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-expo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { checkPaid } from '../api';
+import { isRcSupported, isRcPremium } from '../revenuecat';
 
 const CACHE_KEY = 'fite_isPaid';
 
@@ -23,21 +24,24 @@ export function usePaidStatus() {
       if (cached === 'true') setIsPaid(true);
     } catch {}
 
+    // Backend (Stripe + RevenueCat-webhook synced) is the source of truth.
+    let paid = false;
     try {
       const token = await getToken();
-      if (!token) {
-        setIsPaid(false);
-        setLoading(false);
-        return;
-      }
-      const paid = await checkPaid(token);
-      setIsPaid(paid);
-      await AsyncStorage.setItem(CACHE_KEY, paid ? 'true' : 'false');
-    } catch {
-      setIsPaid(false);
-    } finally {
-      setLoading(false);
+      if (token) paid = await checkPaid(token);
+    } catch {}
+
+    // RevenueCat fallback: a fresh App Store purchase unlocks instantly
+    // even if our webhook hasn't reached Redis yet. Only used on iOS.
+    if (!paid && isRcSupported()) {
+      try {
+        paid = await isRcPremium();
+      } catch {}
     }
+
+    setIsPaid(paid);
+    setLoading(false);
+    try { await AsyncStorage.setItem(CACHE_KEY, paid ? 'true' : 'false'); } catch {}
   }, [isSignedIn, getToken]);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Platform, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
@@ -12,7 +12,16 @@ import { GlassCard } from '../src/components/GlassCard';
 import { GradientButton } from '../src/components/GradientButton';
 import { PressableScale } from '../src/components/PressableScale';
 import { usePrice } from '../src/hooks/usePrice';
+import { usePaidStatus } from '../src/hooks/usePaidStatus';
 import { createCheckout } from '../src/api';
+import {
+  isRcSupported,
+  getPremiumPackage,
+  purchasePremium,
+  restorePurchases,
+  PREMIUM_ENTITLEMENT,
+} from '../src/revenuecat';
+import type { PurchasesPackage } from 'react-native-purchases';
 import { Colors, Typography, Spacing, Radius, Gradients } from '../src/theme';
 
 const PERKS = [
@@ -30,19 +39,64 @@ const PERKS = [
 export default function PaywallScreen() {
   const router = useRouter();
   const { getToken, isSignedIn } = useAuth();
-  const price = usePrice();
+  const webPrice = usePrice();
+  const { refresh: refreshPaid } = usePaidStatus();
   const [loading, setLoading] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+
+  // On iOS, fetch the StoreKit-backed package so we can show Apple's
+  // localized price and run the native purchase flow.
+  const [iapPackage, setIapPackage] = useState<PurchasesPackage | null>(null);
+  const useIap = Platform.OS === 'ios' && isRcSupported();
+
+  useEffect(() => {
+    if (!useIap) return;
+    let cancelled = false;
+    (async () => {
+      const result = await getPremiumPackage();
+      if (!cancelled && result) setIapPackage(result.package);
+    })();
+    return () => { cancelled = true; };
+  }, [useIap]);
+
+  // Resolve a single display price string. RC gives us the App Store's localized
+  // price (e.g. "$3.99"), which we trust over the Stripe price on iOS.
+  const iapPriceString = iapPackage?.product.priceString ?? null;
+  const displayPrice = iapPriceString
+    ? `${iapPriceString}/month`
+    : webPrice;
 
   async function handleUpgrade() {
     if (!isSignedIn) {
-      // Dismiss the paywall modal before routing to sign-in so the
-      // paywall doesn't sit behind the auth screen after a successful login.
       try { (router as any).dismiss?.(); } catch {}
       router.push('/(auth)/sign-in');
       return;
     }
+
     setLoading(true);
     try {
+      if (useIap) {
+        if (!iapPackage) {
+          Alert.alert('Unavailable', 'Could not load subscription details. Please try again.');
+          return;
+        }
+        const outcome = await purchasePremium(iapPackage);
+        if (outcome.kind === 'cancelled') return;
+        if (outcome.kind === 'error') {
+          Alert.alert('Purchase failed', outcome.message);
+          return;
+        }
+        // Success — refresh paid status (both RC and backend) and dismiss.
+        const entitled =
+          outcome.customerInfo.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined;
+        if (entitled) {
+          await refreshPaid();
+          try { (router as any).dismiss?.(); } catch { router.back(); }
+        }
+        return;
+      }
+
+      // Non-iOS: keep the existing Stripe checkout flow.
       const token = await getToken();
       if (!token) { router.push('/(auth)/sign-in'); return; }
       const url = await createCheckout(token);
@@ -50,7 +104,38 @@ export default function PaywallScreen() {
         const { openBrowserAsync } = await import('expo-web-browser');
         await openBrowserAsync(url);
       }
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRestore() {
+    if (!useIap) return;
+    setRestoring(true);
+    try {
+      const outcome = await restorePurchases();
+      if (outcome.kind === 'error') {
+        Alert.alert('Restore failed', outcome.message);
+        return;
+      }
+      const entitled =
+        outcome.kind === 'success' &&
+        outcome.customerInfo.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined;
+      if (entitled) {
+        await refreshPaid();
+        Alert.alert('Restored', 'Your premium subscription has been restored.');
+        try { (router as any).dismiss?.(); } catch { router.back(); }
+      } else {
+        Alert.alert('Nothing to restore', 'No active subscription found for this Apple ID.');
+      }
+    } finally {
+      setRestoring(false);
+    }
+  }
+
+  async function openExternal(url: string) {
+    const { openBrowserAsync } = await import('expo-web-browser');
+    await openBrowserAsync(url);
   }
 
   return (
@@ -77,8 +162,8 @@ export default function PaywallScreen() {
               Everything Fite offers, unlocked. Cancel anytime.
             </Text>
             <View style={styles.priceRow}>
-              <Text style={styles.priceBig}>{price.split('/')[0]}</Text>
-              <Text style={styles.priceUnit}>/{price.split('/')[1] ?? 'month'}</Text>
+              <Text style={styles.priceBig}>{displayPrice.split('/')[0]}</Text>
+              <Text style={styles.priceUnit}>/{displayPrice.split('/')[1] ?? 'month'}</Text>
             </View>
           </Animated.View>
 
@@ -101,7 +186,13 @@ export default function PaywallScreen() {
 
           <View style={styles.ctaBlock}>
             <GradientButton
-              label={isSignedIn ? `Upgrade for ${price}` : 'Sign in to upgrade'}
+              label={
+                !isSignedIn
+                  ? 'Sign in to upgrade'
+                  : useIap && !iapPackage
+                  ? 'Loading…'
+                  : `Upgrade for ${displayPrice}`
+              }
               icon="rocket"
               variant="gold"
               size="lg"
@@ -109,7 +200,42 @@ export default function PaywallScreen() {
               onPress={handleUpgrade}
               loading={loading}
             />
-            <Text style={styles.terms}>Cancel anytime · Secure Stripe checkout · No hidden fees</Text>
+
+            {useIap && (
+              <Pressable
+                onPress={handleRestore}
+                disabled={restoring}
+                style={styles.restoreBtn}
+                hitSlop={10}
+              >
+                <Text style={styles.restoreText}>
+                  {restoring ? 'Restoring…' : 'Restore Purchases'}
+                </Text>
+              </Pressable>
+            )}
+
+            {useIap ? (
+              <Text style={styles.legalCopy}>
+                Fite Premium is a {displayPrice.replace('/', ' / ')} auto-renewing
+                subscription. Payment will be charged to your Apple ID at confirmation
+                of purchase. Your subscription automatically renews unless auto-renew
+                is turned off at least 24 hours before the end of the current period.
+                You can manage and cancel subscriptions in your App Store account
+                settings after purchase.
+              </Text>
+            ) : (
+              <Text style={styles.terms}>Cancel anytime · Secure Stripe checkout · No hidden fees</Text>
+            )}
+
+            <View style={styles.legalLinks}>
+              <Pressable onPress={() => openExternal('https://fitefinance.com/terms')} hitSlop={8}>
+                <Text style={styles.legalLink}>Terms of Use</Text>
+              </Pressable>
+              <Text style={styles.legalSep}>·</Text>
+              <Pressable onPress={() => openExternal('https://fitefinance.com/privacy')} hitSlop={8}>
+                <Text style={styles.legalLink}>Privacy Policy</Text>
+              </Pressable>
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -153,4 +279,24 @@ const styles = StyleSheet.create({
 
   ctaBlock: { marginTop: Spacing.xl, gap: 12, alignItems: 'center' },
   terms: { color: Colors.textFaint, fontFamily: Typography.fonts.sans, fontSize: 11, textAlign: 'center' },
+
+  restoreBtn: { paddingVertical: 6, paddingHorizontal: 12 },
+  restoreText: {
+    color: Colors.secondary, fontFamily: Typography.fonts.sansSemibold,
+    fontSize: Typography.sizes.sm, textDecorationLine: 'underline',
+  },
+  legalCopy: {
+    color: Colors.textFaint, fontFamily: Typography.fonts.sans,
+    fontSize: 11, lineHeight: 16, textAlign: 'center',
+    marginTop: 4, paddingHorizontal: 8,
+  },
+  legalLinks: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    marginTop: 4,
+  },
+  legalLink: {
+    color: Colors.textMuted, fontFamily: Typography.fonts.sansSemibold,
+    fontSize: 11, textDecorationLine: 'underline',
+  },
+  legalSep: { color: Colors.textFaint, fontSize: 11 },
 });

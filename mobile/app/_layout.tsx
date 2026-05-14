@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
+import { ClerkProvider, useAuth, useUser } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -10,6 +10,7 @@ import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import Constants from 'expo-constants';
 import * as SplashScreen from 'expo-splash-screen';
 import { guestMode } from '../src/guestMode';
+import { configureRevenueCat, isRcSupported } from '../src/revenuecat';
 import {
   useFonts as useInterFonts,
   Inter_400Regular,
@@ -51,8 +52,17 @@ const tokenCache = {
 
 function AuthGate() {
   const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
   const segments = useSegments();
   const router = useRouter();
+
+  // Configure RevenueCat once, then keep its app-user-id in sync with Clerk
+  // so the backend webhook can map StoreKit events to paid:${userId} in Redis.
+  useEffect(() => {
+    if (!isRcSupported()) return;
+    if (!isLoaded) return;
+    configureRevenueCat(isSignedIn ? user?.id ?? null : null).catch(() => {});
+  }, [isLoaded, isSignedIn, user?.id]);
 
   useEffect(() => {
     if (!isLoaded) return;

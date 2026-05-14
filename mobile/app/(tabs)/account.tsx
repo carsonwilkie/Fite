@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator, Image, Platform, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUser, useAuth, useClerk } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
@@ -17,7 +17,71 @@ import { usePaidStatus } from '../../src/hooks/usePaidStatus';
 import { usePrice } from '../../src/hooks/usePrice';
 import { createCheckout } from '../../src/api';
 import { guestMode } from '../../src/guestMode';
+import {
+  isRcSupported,
+  getPremiumPackage,
+  purchasePremium,
+  restorePurchases,
+  PREMIUM_ENTITLEMENT,
+} from '../../src/revenuecat';
 import { Colors, Typography, Spacing, Radius, Gradients } from '../../src/theme';
+
+function GuestAccountScreen() {
+  const router = useRouter();
+  return (
+    <Background variant="hero">
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <Animated.View entering={FadeIn.duration(500)}>
+            <GlassCard accent="cyan" glow padding={24} animate={false}>
+              <View style={{ alignItems: 'center', gap: Spacing.md }}>
+                <LinearGradient
+                  colors={Gradients.cyan as any}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                  style={[styles.avatar, { marginBottom: 4 }]}
+                >
+                  <Ionicons name="person-outline" size={28} color="#021018" />
+                </LinearGradient>
+                <Text style={styles.guestTitle}>Not signed in</Text>
+                <Text style={styles.guestSubtitle}>Sign in or create an account to manage your profile, track history, and unlock premium features.</Text>
+              </View>
+              <View style={{ gap: Spacing.sm, marginTop: Spacing.lg }}>
+                <GradientButton
+                  label="Sign In"
+                  icon="log-in-outline"
+                  onPress={() => router.push('/(auth)/sign-in')}
+                  fullWidth
+                />
+                <GradientButton
+                  label="Create Account"
+                  icon="person-add-outline"
+                  onPress={() => router.push('/(auth)/sign-up')}
+                  variant="ghost"
+                  fullWidth
+                />
+              </View>
+            </GlassCard>
+          </Animated.View>
+
+          <SectionHeader eyebrow="MORE" title="Help & info" style={{ marginTop: Spacing.xl }} />
+          <View style={{ gap: Spacing.sm }}>
+            <ActionRow icon="chatbubble-ellipses-outline" label="Send feedback" onPress={() => router.push('/feedback')} />
+            <ActionRow icon="document-text-outline" label="Privacy" onPress={async () => {
+              const { openBrowserAsync } = await import('expo-web-browser');
+              await openBrowserAsync('https://fitefinance.com/privacy');
+            }} />
+            <ActionRow icon="reader-outline" label="Terms" onPress={async () => {
+              const { openBrowserAsync } = await import('expo-web-browser');
+              await openBrowserAsync('https://fitefinance.com/terms');
+            }} />
+          </View>
+          <View style={{ height: 120 }} />
+        </ScrollView>
+        <ScrollFade top={28} bottom={90} />
+      </SafeAreaView>
+    </Background>
+  );
+}
 
 type Tab = 'profile' | 'billing' | 'security';
 
@@ -26,8 +90,9 @@ export default function AccountScreen() {
   const { getToken } = useAuth();
   const { signOut } = useClerk();
   const router = useRouter();
-  const { isPaid } = usePaidStatus();
+  const { isPaid, refresh: refreshPaid } = usePaidStatus();
   const price = usePrice();
+  const useIap = Platform.OS === 'ios' && isRcSupported();
 
   const [tab, setTab] = useState<Tab>('profile');
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
@@ -40,6 +105,10 @@ export default function AccountScreen() {
 
   if (!isLoaded) {
     return <Background><View style={styles.center}><ActivityIndicator color={Colors.secondary} /></View></Background>;
+  }
+
+  if (!user) {
+    return <GuestAccountScreen />;
   }
 
   async function handleSaveName() {
@@ -56,10 +125,17 @@ export default function AccountScreen() {
   async function handleUpgradeOrManage() {
     setUpgradeLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push('/(auth)/sign-in'); return; }
+      // ── Manage existing subscription ─────────────────────────────────────
       if (isPaid) {
-        // Open Stripe portal via /api/portal — fallback to checkout if unavailable.
+        if (useIap) {
+          // Apple requires us to send users to the App Store subscriptions screen
+          // for native subscriptions (we can't manage them ourselves).
+          await Linking.openURL('https://apps.apple.com/account/subscriptions');
+          return;
+        }
+        const token = await getToken();
+        if (!token) { router.push('/(auth)/sign-in'); return; }
+        // Stripe portal for web/Android subscribers.
         try {
           const res = await fetch('https://fitefinance.com/api/portal', {
             method: 'POST',
@@ -76,7 +152,30 @@ export default function AccountScreen() {
             return;
           }
         } catch {}
+        return;
       }
+
+      // ── Upgrade flow ─────────────────────────────────────────────────────
+      if (useIap) {
+        const pkg = await getPremiumPackage();
+        if (!pkg) {
+          Alert.alert('Unavailable', 'Could not load subscription details. Please try again later.');
+          return;
+        }
+        const outcome = await purchasePremium(pkg.package);
+        if (outcome.kind === 'cancelled') return;
+        if (outcome.kind === 'error') {
+          Alert.alert('Purchase failed', outcome.message);
+          return;
+        }
+        const entitled =
+          outcome.customerInfo.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined;
+        if (entitled) await refreshPaid();
+        return;
+      }
+
+      const token = await getToken();
+      if (!token) { router.push('/(auth)/sign-in'); return; }
       const url = await createCheckout(token);
       if (url) {
         const { openBrowserAsync } = await import('expo-web-browser');
@@ -84,6 +183,29 @@ export default function AccountScreen() {
       }
     } catch {
       Alert.alert('Error', 'Could not open billing.');
+    } finally {
+      setUpgradeLoading(false);
+    }
+  }
+
+  async function handleRestoreIap() {
+    if (!useIap) return;
+    setUpgradeLoading(true);
+    try {
+      const outcome = await restorePurchases();
+      if (outcome.kind === 'error') {
+        Alert.alert('Restore failed', outcome.message);
+        return;
+      }
+      const entitled =
+        outcome.kind === 'success' &&
+        outcome.customerInfo.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined;
+      if (entitled) {
+        await refreshPaid();
+        Alert.alert('Restored', 'Your premium subscription has been restored.');
+      } else {
+        Alert.alert('Nothing to restore', 'No active subscription found for this Apple ID.');
+      }
     } finally {
       setUpgradeLoading(false);
     }
@@ -206,10 +328,12 @@ export default function AccountScreen() {
                       <Text style={styles.billTitle}>Fite Premium</Text>
                     </View>
                     <Text style={styles.billText}>
-                      Thank you for supporting Fite. Manage your subscription, payment method, or cancel below.
+                      {useIap
+                        ? 'Thank you for supporting Fite. Manage your subscription in your Apple ID settings.'
+                        : 'Thank you for supporting Fite. Manage your subscription, payment method, or cancel below.'}
                     </Text>
                     <GradientButton
-                      label="Manage Billing"
+                      label={useIap ? 'Manage in App Store' : 'Manage Billing'}
                       icon="open-outline"
                       onPress={handleUpgradeOrManage}
                       loading={upgradeLoading}
@@ -246,6 +370,15 @@ export default function AccountScreen() {
                       loading={upgradeLoading}
                       fullWidth
                     />
+                    {useIap && (
+                      <PressableScale
+                        onPress={handleRestoreIap}
+                        haptic="selection"
+                        containerStyle={{ alignSelf: 'center', marginTop: 12 }}
+                      >
+                        <Text style={styles.restoreLink}>Restore Purchases</Text>
+                      </PressableScale>
+                    )}
                   </>
                 )}
               </GlassCard>
@@ -397,8 +530,17 @@ const styles = StyleSheet.create({
 
   perkLine: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
   perkText: { color: Colors.text, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm },
+  restoreLink: {
+    color: Colors.secondary,
+    fontFamily: Typography.fonts.sansSemibold,
+    fontSize: Typography.sizes.sm,
+    textDecorationLine: 'underline',
+  },
 
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   actionIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   actionLabel: { color: Colors.text, fontFamily: Typography.fonts.sansSemibold, fontSize: Typography.sizes.sm, flex: 1 },
+
+  guestTitle: { color: Colors.text, fontFamily: Typography.fonts.displayExtra, fontSize: Typography.sizes.xl, fontWeight: '800', letterSpacing: -0.5, textAlign: 'center' },
+  guestSubtitle: { color: Colors.textMuted, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm, lineHeight: 20, textAlign: 'center' },
 });
