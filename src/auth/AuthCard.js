@@ -483,9 +483,9 @@ function SignInView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <ClerkLoadBanner visible={loadTimedOut} kind="sign-in" afterAuthRedirect={afterAuthRedirect} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        <GoogleButton onClick={handleGoogle} loading={oauthLoading} disabled={loading || appleLoading || !isLoaded} label="Google" />
-        <AppleButton onClick={handleApple} loading={appleLoading} disabled={loading || oauthLoading || !isLoaded} label="Apple" />
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <GoogleButton onClick={handleGoogle} loading={oauthLoading} disabled={loading || appleLoading || !isLoaded} />
+        <AppleButton onClick={handleApple} loading={appleLoading} disabled={loading || oauthLoading || !isLoaded} />
       </div>
       <Divider label="or" />
       <ShakeWrapper trigger={shake}>
@@ -623,9 +623,9 @@ function SignUpView({ onSwitch, onAuthenticated, afterAuthRedirect }) {
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <ClerkLoadBanner visible={loadTimedOut} kind="sign-up" afterAuthRedirect={afterAuthRedirect} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        <GoogleButton onClick={handleGoogle} loading={oauthLoading} disabled={loading || appleLoading || !isLoaded} label="Google" />
-        <AppleButton onClick={handleApple} loading={appleLoading} disabled={loading || oauthLoading || !isLoaded} label="Apple" />
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <GoogleButton onClick={handleGoogle} loading={oauthLoading} disabled={loading || appleLoading || !isLoaded} />
+        <AppleButton onClick={handleApple} loading={appleLoading} disabled={loading || oauthLoading || !isLoaded} />
       </div>
       <Divider label="or" />
       <ShakeWrapper trigger={shake}>
