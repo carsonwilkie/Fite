@@ -29,6 +29,8 @@ export const AUTH_COLORS = {
 
 export const cyberGrad = "linear-gradient(45deg, #1565C0, #4FC3F7)";
 
+const OAUTH_BUTTON_INNER_WIDTH = 190;
+
 export function FloatingInput({
   id,
   type = "text",
@@ -399,6 +401,7 @@ export function GoogleButton({ onClick, disabled, loading, label = "Continue wit
       // were tucked under the sign-in/sign-up tabs above it.
       whileTap={inactive ? undefined : { scale: 0.98 }}
       style={{
+        position: "relative",
         width: "100%",
         height: 48,
         border: `1px solid ${AUTH_COLORS.border}`,
@@ -412,7 +415,6 @@ export function GoogleButton({ onClick, disabled, loading, label = "Continue wit
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 10,
         transition: "border-color 0.2s, background 0.2s",
         opacity: inactive ? 0.6 : 1,
       }}
@@ -427,8 +429,30 @@ export function GoogleButton({ onClick, disabled, loading, label = "Continue wit
         e.currentTarget.style.background = "rgba(255,255,255,0.04)";
       }}
     >
-      {loading ? <ButtonSpinner /> : <GoogleIcon />}
-      {loading ? "Opening Google..." : label}
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 10,
+          width: OAUTH_BUTTON_INNER_WIDTH,
+        }}
+      >
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 18,
+            height: 18,
+            flex: "0 0 18px",
+          }}
+        >
+          {loading ? <ButtonSpinner /> : <GoogleIcon />}
+        </span>
+        <span style={{ textAlign: "left" }}>
+          {loading ? "Opening Google..." : label}
+        </span>
+      </span>
     </motion.button>
   );
 }
@@ -454,6 +478,7 @@ export function AppleButton({ onClick, disabled, loading, label = "Continue with
       disabled={inactive}
       whileTap={inactive ? undefined : { scale: 0.98 }}
       style={{
+        position: "relative",
         width: "100%",
         height: 48,
         border: `1px solid ${AUTH_COLORS.border}`,
@@ -467,7 +492,6 @@ export function AppleButton({ onClick, disabled, loading, label = "Continue with
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 10,
         transition: "border-color 0.2s, background 0.2s",
         opacity: inactive ? 0.6 : 1,
       }}
@@ -482,8 +506,30 @@ export function AppleButton({ onClick, disabled, loading, label = "Continue with
         e.currentTarget.style.background = "rgba(255,255,255,0.04)";
       }}
     >
-      {loading ? <ButtonSpinner /> : <AppleIcon />}
-      {loading ? "Opening Apple..." : label}
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 10,
+          width: OAUTH_BUTTON_INNER_WIDTH,
+        }}
+      >
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 18,
+            height: 18,
+            flex: "0 0 18px",
+          }}
+        >
+          {loading ? <ButtonSpinner /> : <AppleIcon />}
+        </span>
+        <span style={{ textAlign: "left" }}>
+          {loading ? "Opening Apple..." : label}
+        </span>
+      </span>
     </motion.button>
   );
 }
