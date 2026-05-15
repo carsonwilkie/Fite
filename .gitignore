@@ -29,4 +29,4 @@ yarn-error.log*
 .vercel
 .env*.local
 
-AuthKey_DH96YYUDMA.p8
+auth_keys/

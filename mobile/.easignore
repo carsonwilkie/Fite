@@ -2,7 +2,6 @@
 app_store_screenshots/
 APP_STORE_METADATA.md
 SETUP.md
-AuthKey_DH96YYUDMA.p8
 
 # iOS build artifacts
 ios/Pods/
@@ -10,3 +9,5 @@ ios/build/
 
 # Misc
 .claude-flow/
+
+auth_keys/
