@@ -17,10 +17,12 @@ interface ScoreDisplayProps {
   size?: 'sm' | 'lg';
 }
 
-function getScoreColor(score: number): string {
+function getScoreColor(score: number, alpha = 1): string {
   const s = Math.max(0, Math.min(10, score));
   const hue = (s / 10) * 120; // red → yellow → green
-  return `hsl(${Math.round(hue)}, 78%, 50%)`;
+  return alpha >= 1
+    ? `hsl(${Math.round(hue)}, 78%, 50%)`
+    : `hsla(${Math.round(hue)}, 78%, 50%, ${alpha})`;
 }
 
 function getScoreLabel(score: number): string {
@@ -55,7 +57,7 @@ export function ScoreDisplay({ score, size = 'lg' }: ScoreDisplayProps) {
 
   if (size === 'sm') {
     return (
-      <View style={[styles.badgeSm, { borderColor: color, backgroundColor: color + '22' }]}>
+      <View style={[styles.badgeSm, { borderColor: color, backgroundColor: getScoreColor(score, 0.18) }]}>
         <Text style={[styles.scoreSm, { color }]}>{score}/10</Text>
       </View>
     );

@@ -25,10 +25,12 @@ import { DIFFICULTY_COLORS, CATEGORY_ICONS, type QuestionDifficulty } from '../.
 import { Colors, Typography, Spacing, Radius, Gradients } from '../../src/theme';
 
 // Smooth red → yellow → green gradient over a 0–10 score range.
-function scoreColor(score: number): string {
+function scoreColor(score: number, alpha = 1): string {
   const s = Math.max(0, Math.min(10, score));
   const hue = (s / 10) * 120; // 0 = red, 60 = yellow, 120 = green
-  return `hsl(${Math.round(hue)}, 78%, 50%)`;
+  return alpha >= 1
+    ? `hsl(${Math.round(hue)}, 78%, 50%)`
+    : `hsla(${Math.round(hue)}, 78%, 50%, ${alpha})`;
 }
 
 function computeStats(history: HistoryEntry[]) {
@@ -491,7 +493,7 @@ function SelectedEntryTooltip({
         onPress={() => onOpen(entry.timestamp)}
         style={styles.tooltipCard}
       >
-        <View style={[styles.tooltipScore, { borderColor: hcol, backgroundColor: hcol + '22' }]}>
+        <View style={[styles.tooltipScore, { borderColor: hcol, backgroundColor: scoreColor(s, 0.18) }]}>
           <Text style={[styles.tooltipScoreText, { color: hcol }]}>{s}</Text>
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>

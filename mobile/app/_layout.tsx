@@ -83,16 +83,15 @@ function AuthGate() {
     }
   }, [isSignedIn, isLoaded, segments, router]);
 
-  // Briefly hold the UI on a loader until paid status resolves so paid
-  // users don't see a flash of the free-tier view on cold start.
-  const inAuthGroup = segments[0] === '(auth)';
-  if (isLoaded && isSignedIn && !inAuthGroup && paidLoading) {
-    return (
-      <View style={[styles.root, styles.loading]}>
-        <ActivityIndicator color={Colors.secondary} />
-      </View>
-    );
-  }
+  // Keep the native splash screen up until Clerk has resolved and (for signed-in
+  // users) paid status has resolved. This prevents a flash of the free-tier UI
+  // on cold start for paid users without showing a separate loading screen.
+  const ready = isLoaded && (!isSignedIn || !paidLoading);
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync().catch(() => {});
+  }, [ready]);
+
+  if (!ready) return null;
 
   return (
     <Stack
@@ -140,17 +139,10 @@ export default function RootLayout() {
     Manrope_800ExtraBold,
   });
 
-  useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) {
-    return (
-      <View style={[styles.root, styles.loading]}>
-        <ActivityIndicator color={Colors.secondary} />
-      </View>
-    );
-  }
+  // Splash hide is owned by <AuthGate> so we can also wait for Clerk + paid
+  // status to resolve before revealing the app. Render nothing (splash stays
+  // visible) until fonts load.
+  if (!fontsLoaded) return null;
 
   return (
     <GestureHandlerRootView style={styles.root}>

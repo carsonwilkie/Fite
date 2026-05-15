@@ -98,36 +98,60 @@ export default function HistoryScreen() {
     setPendingHighlight(ts);
   }, [highlight, loading, history]);
 
-  // Once the pending entry is mounted, measure it against the ScrollView's
-  // inner node and scroll to it. Retries a few times in case the first layout
-  // pass runs before the entry has finished expanding.
+  // Once the pending entry is mounted, measure it against the ScrollView and
+  // scroll to it. We schedule multiple measure+scroll passes because the date
+  // section expand + FadeInUp/Layout animations shift the entry's Y position
+  // over several hundred ms — a single early measurement lands at the wrong
+  // offset (often 0) and the user never actually moves.
   useEffect(() => {
     if (pendingHighlight === null) return;
-    let attempts = 0;
+    const target = pendingHighlight;
     let cancelled = false;
-    const tryScroll = () => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    const measureAndScroll = () => {
       if (cancelled) return;
-      const node = entryRefs.current[pendingHighlight] as any;
+      const node = entryRefs.current[target] as any;
       const sv = scrollRef.current as any;
       const svHandle = sv ? findNodeHandle(sv) : null;
-      if (node && svHandle != null) {
-        try {
-          node.measureLayout(
-            svHandle,
-            (_x: number, y: number) => {
-              scrollRef.current?.scrollTo({ y: Math.max(0, y - 24), animated: true });
-            },
-            () => {}
-          );
-        } catch {}
-        setPendingHighlight(null);
-        try { router.setParams({ highlight: undefined } as any); } catch {}
+      if (!node || svHandle == null) return false;
+      try {
+        node.measureLayout(
+          svHandle,
+          (_x: number, y: number) => {
+            if (cancelled) return;
+            scrollRef.current?.scrollTo({ y: Math.max(0, y - 24), animated: true });
+          },
+          () => {}
+        );
+      } catch {}
+      return true;
+    };
+
+    // Wait for the node to mount, then run several scroll passes as the
+    // expand/fade animations settle.
+    let attempts = 0;
+    const waitForMount = () => {
+      if (cancelled) return;
+      if (measureAndScroll()) {
+        [120, 320, 560, 850].forEach((d) => {
+          timers.push(setTimeout(measureAndScroll, d));
+        });
+        timers.push(setTimeout(() => {
+          if (cancelled) return;
+          setPendingHighlight(null);
+          try { router.setParams({ highlight: undefined } as any); } catch {}
+        }, 1000));
         return;
       }
-      if (attempts++ < 12) setTimeout(tryScroll, 80);
+      if (attempts++ < 15) timers.push(setTimeout(waitForMount, 80));
     };
-    const t = setTimeout(tryScroll, 60);
-    return () => { cancelled = true; clearTimeout(t); };
+    timers.push(setTimeout(waitForMount, 60));
+
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
   }, [pendingHighlight, router]);
 
   const filtered = useMemo(() => {
