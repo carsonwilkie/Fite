@@ -258,6 +258,13 @@ export default function App({ Component, pageProps }) {
       ) {
         setDisplayedView(incoming);
       }
+      // If a transition is in flight (e.g. an SSR redirect from gSSP bounced
+      // us back to the route we already display), no view swap will arrive
+      // to satisfy tryAdvanceToReveal — lift the cover immediately instead
+      // of waiting for the STUCK_MS failsafe.
+      if (phaseRef.current !== "idle") {
+        goIdle();
+      }
       return;
     }
 
@@ -272,7 +279,7 @@ export default function App({ Component, pageProps }) {
 
     pendingViewRef.current = incoming;
     tryAdvanceToReveal();
-  }, [Component, pageProps, router.asPath, displayedView.route, displayedView.Component, displayedView.pageProps, tryAdvanceToReveal]);
+  }, [Component, pageProps, router.asPath, displayedView.route, displayedView.Component, displayedView.pageProps, tryAdvanceToReveal, goIdle]);
 
   // ─── Misc browser plumbing ────────────────────────────────────────────────
   useEffect(() => {
