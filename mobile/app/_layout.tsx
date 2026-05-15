@@ -48,6 +48,11 @@ const tokenCache = {
       await SecureStore.setItemAsync(key, value);
     } catch {}
   },
+  async deleteToken(key: string) {
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch {}
+  },
 };
 
 function AuthGate() {

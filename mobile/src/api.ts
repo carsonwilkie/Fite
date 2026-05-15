@@ -117,7 +117,9 @@ export async function generateQuestion(params: {
 
     xhr.onload = () => {
       console.log('XHR onload status:', xhr.status, '| question length:', question.length, '| body preview:', xhr.responseText.slice(0, 200));
-      if (xhr.status >= 400) {
+      if (xhr.status === 403) {
+        reject(new Error('LIMIT_REACHED'));
+      } else if (xhr.status >= 400) {
         reject(new Error(`Failed to generate question (${xhr.status})`));
       } else {
         resolve({ question, questionsUsed, questionsLimit });

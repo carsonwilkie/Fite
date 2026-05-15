@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, StyleSheet, ScrollView,
   KeyboardAvoidingView, Platform, Alert, Pressable,
 } from 'react-native';
-import { useSignIn, useOAuth } from '@clerk/clerk-expo';
+import { useSignIn, useOAuth, useUser } from '@clerk/clerk-expo';
 import { useRouter, Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as WebBrowser from 'expo-web-browser';
@@ -23,7 +23,13 @@ export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
   const { startOAuthFlow: startAppleOAuth } = useOAuth({ strategy: 'oauth_apple' });
+  const { isSignedIn } = useUser();
   const router = useRouter();
+
+  // If Clerk still has a valid session (e.g. after a sign-out race), go straight to tabs.
+  React.useEffect(() => {
+    if (isSignedIn) router.replace('/(tabs)');
+  }, [isSignedIn, router]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,7 +56,13 @@ export default function SignInScreen() {
         setError(`Unexpected status: ${result.status}`);
       }
     } catch (e: any) {
-      setError(e.errors?.[0]?.message ?? e.message ?? 'Sign in failed.');
+      const code = e.errors?.[0]?.code ?? '';
+      const msg = e.errors?.[0]?.message ?? e.message ?? '';
+      if (code === 'session_exists' || msg.toLowerCase().includes('already signed')) {
+        router.replace('/(tabs)');
+        return;
+      }
+      setError(msg || 'Sign in failed.');
     } finally { setLoading(false); }
   }
 
@@ -79,7 +91,13 @@ export default function SignInScreen() {
         router.replace('/(tabs)');
       }
     } catch (e: any) {
-      Alert.alert('Google sign-in failed', e.message ?? 'Please try again.');
+      const msg = e?.message ?? '';
+      const code = e?.errors?.[0]?.code ?? '';
+      if (code === 'session_exists' || msg.toLowerCase().includes('already signed')) {
+        router.replace('/(tabs)');
+      } else if (msg) {
+        Alert.alert('Google sign-in failed', msg);
+      }
     } finally { setGoogleLoading(false); }
   }
 
@@ -92,10 +110,13 @@ export default function SignInScreen() {
         router.replace('/(tabs)');
       }
     } catch (e: any) {
-      // The user canceling the native Apple sheet throws — silently ignore.
       const msg = e?.message ?? '';
-      if (!/cancel/i.test(msg)) {
-        Alert.alert('Apple sign-in failed', msg || 'Please try again.');
+      const code = e?.errors?.[0]?.code ?? '';
+      if (code === 'session_exists' || msg.toLowerCase().includes('already signed')) {
+        router.replace('/(tabs)');
+      } else if (!/cancel/i.test(msg) && msg) {
+        // Silently ignore native Apple sheet cancels; show everything else.
+        Alert.alert('Apple sign-in failed', msg);
       }
     } finally { setAppleLoading(false); }
   }

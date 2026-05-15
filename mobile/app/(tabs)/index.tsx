@@ -194,8 +194,9 @@ export default function DashboardScreen() {
     } catch (e: any) {
       const msg = e?.message ?? '';
       console.log('Generate question error:', msg, JSON.stringify(e));
-      if (msg.includes('limit') || msg.includes('429')) {
-        Alert.alert('Daily limit reached', 'Free users get 5 questions/day. Upgrade for unlimited access.');
+      if (msg === 'LIMIT_REACHED' || msg.includes('limit') || msg.includes('429')) {
+        // Set used to max so the bar goes full-red and shows the inline message.
+        setQuestionsUsed(questionsLimit ?? FREE_DAILY_LIMIT);
       } else {
         Alert.alert('Error', msg || 'Failed to generate question. Please try again.');
       }
@@ -267,6 +268,7 @@ export default function DashboardScreen() {
   }
 
   const isOTG = difficulty === 'OTG';
+  const limitReached = !isPaid && questionsUsed !== null && questionsUsed >= (questionsLimit ?? FREE_DAILY_LIMIT);
 
   return (
     <Background variant="hero">
@@ -477,6 +479,7 @@ export default function DashboardScreen() {
               icon={question ? 'refresh' : 'sparkles'}
               onPress={handleGenerate}
               loading={loadingQ}
+              disabled={limitReached}
               size="lg"
               fullWidth
               haptic="medium"
@@ -788,23 +791,41 @@ function TagChip({ label, color }: { label: string; color?: string }) {
 
 function QuotaBar({ used, limit }: { used: number; limit: number }) {
   const pct = Math.min(1, used / limit);
+  const remaining = Math.max(0, limit - used);
+
+  // Green → red as questions are consumed.
+  const barColors: [string, string] =
+    remaining === 0 ? [Colors.error, '#ff5252'] :
+    remaining === 1 ? ['#ff8c42', Colors.error] :
+    remaining <= 3  ? [Colors.warning, '#84cc16'] :
+    Gradients.cyan as unknown as [string, string];
+
   const pulse = useSharedValue(1);
   useEffect(() => {
-    pulse.value = withRepeat(withTiming(0.6, { duration: 1200, easing: Easing.inOut(Easing.quad) }), -1, true);
-  }, [pulse]);
-  const style = useAnimatedStyle(() => ({ opacity: pulse.value }));
+    if (remaining > 0) {
+      pulse.value = withRepeat(withTiming(0.6, { duration: 1200, easing: Easing.inOut(Easing.quad) }), -1, true);
+    } else {
+      pulse.value = 0;
+    }
+  }, [pulse, remaining]);
+  const tipStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
+
   return (
     <View style={styles.quotaWrap}>
       <View style={styles.quotaTrack}>
         <LinearGradient
-          colors={Gradients.cyan as any}
+          colors={barColors}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
           style={[styles.quotaFill, { width: `${pct * 100}%` }]}
         />
-        <Animated.View style={[styles.quotaTip, { left: `${pct * 100}%` }, style]} />
+        {remaining > 0 && (
+          <Animated.View style={[styles.quotaTip, { left: `${pct * 100}%` }, tipStyle]} />
+        )}
       </View>
-      <Text style={styles.quotaText}>
-        {limit - used} of {limit} free questions remaining today
+      <Text style={[styles.quotaText, remaining === 0 && { color: Colors.error }]}>
+        {remaining > 0
+          ? `${remaining} of ${limit} free questions remaining today`
+          : 'Daily limit reached · resets at midnight UTC'}
       </Text>
     </View>
   );

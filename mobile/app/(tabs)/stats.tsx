@@ -508,12 +508,13 @@ function SelectedEntryTooltip({
 }
 
 function RangeSlider({ min, max, value, onChange }: { min: number; max: number; value: number; onChange: (v: number) => void }) {
-  // Use a ref for width so the PanResponder (created once on mount) always
-  // reads the current layout width instead of the stale closure value of 0.
   const widthRef = useRef(0);
+  // Store the container's absolute screen-X so we can map gestureState coords correctly.
+  // locationX is relative to the touch target (could be the thumb, not the container),
+  // which causes jumps. gestureState.moveX is always absolute screen coords.
+  const pageXRef = useRef(0);
+  const viewRef = useRef<View>(null);
 
-  // Keep a ref to the latest respond logic so PanResponder always calls
-  // current min/max/value/onChange without recreating the responder.
   const respondRef = useRef<(xRaw: number) => void>(() => {});
   respondRef.current = (xRaw: number) => {
     const w = widthRef.current;
@@ -531,8 +532,8 @@ function RangeSlider({ min, max, value, onChange }: { min: number; max: number; 
       onMoveShouldSetPanResponderCapture: () => true,
       onPanResponderTerminationRequest: () => false,
       onShouldBlockNativeResponder: () => true,
-      onPanResponderGrant: (e) => respondRef.current(e.nativeEvent.locationX),
-      onPanResponderMove: (e) => respondRef.current(e.nativeEvent.locationX),
+      onPanResponderGrant: (_, g) => respondRef.current(g.x0 - pageXRef.current),
+      onPanResponderMove: (_, g) => respondRef.current(g.moveX - pageXRef.current),
     })
   ).current;
 
@@ -540,8 +541,14 @@ function RangeSlider({ min, max, value, onChange }: { min: number; max: number; 
 
   return (
     <View
+      ref={viewRef}
       style={styles.sliderHit}
-      onLayout={(e) => { widthRef.current = e.nativeEvent.layout.width; }}
+      onLayout={(e) => {
+        widthRef.current = e.nativeEvent.layout.width;
+        viewRef.current?.measure((_x, _y, _w, _h, pageX) => {
+          pageXRef.current = pageX;
+        });
+      }}
       {...pan.panHandlers}
     >
       <View style={styles.sliderTrack}>

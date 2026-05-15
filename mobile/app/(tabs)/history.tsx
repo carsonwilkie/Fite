@@ -19,10 +19,11 @@ import { PremiumGate } from '../../src/components/PremiumGate';
 import { ScrollFade } from '../../src/components/ScrollFade';
 import { usePaidStatus } from '../../src/hooks/usePaidStatus';
 import { getHistory, type HistoryEntry } from '../../src/api';
-import { CATEGORIES, DIFFICULTY_COLORS, type QuestionDifficulty } from '../../src/constants';
+import { CATEGORIES, QUESTION_DIFFICULTIES, MATH_OPTIONS, DIFFICULTY_COLORS, type QuestionDifficulty } from '../../src/constants';
 import { Colors, Typography, Spacing, Radius } from '../../src/theme';
 
 type SortOrder = 'newest' | 'oldest';
+type TimedFilter = 'All' | 'Timed' | 'Untimed';
 
 function formatDate(ts: number) {
   const d = new Date(ts);
@@ -45,6 +46,9 @@ export default function HistoryScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
+  const [filterDifficulty, setFilterDifficulty] = useState<string>('All');
+  const [filterMath, setFilterMath] = useState<string>('All');
+  const [filterTimed, setFilterTimed] = useState<TimedFilter>('All');
   const [sort, setSort] = useState<SortOrder>('newest');
   const [expanded, setExpanded] = useState<number | null>(null);
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
@@ -106,11 +110,15 @@ export default function HistoryScreen() {
       const text = (e.question ?? e.scenario ?? '').toLowerCase();
       if (search && !text.includes(search.toLowerCase())) return false;
       if (filterCategory !== 'All' && e.category !== filterCategory) return false;
+      if (filterDifficulty !== 'All' && e.difficulty !== filterDifficulty) return false;
+      if (filterMath !== 'All' && e.math !== filterMath) return false;
+      if (filterTimed === 'Timed' && !e.timeTaken) return false;
+      if (filterTimed === 'Untimed' && e.timeTaken !== undefined) return false;
       return true;
     });
     if (sort === 'oldest') xs = [...xs].reverse();
     return xs;
-  }, [history, search, filterCategory, sort]);
+  }, [history, search, filterCategory, filterDifficulty, filterMath, filterTimed, sort]);
 
   const grouped = useMemo(() => {
     const m: Record<string, HistoryEntry[]> = {};
@@ -202,11 +210,46 @@ export default function HistoryScreen() {
           </View>
 
           {/* Category filters */}
+          <Text style={styles.filterLabel}>CATEGORY</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
             {(['All', ...CATEGORIES.filter(c => c !== 'All')]).map(c => (
               <Pill key={c} label={c} active={filterCategory === c} onPress={() => setFilterCategory(c)} />
             ))}
           </ScrollView>
+
+          {/* Difficulty filters */}
+          <Text style={styles.filterLabel}>DIFFICULTY</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+            {(['All', ...QUESTION_DIFFICULTIES]).map(d => (
+              <Pill
+                key={d}
+                label={d}
+                active={filterDifficulty === d}
+                color={d !== 'All' ? DIFFICULTY_COLORS[d as QuestionDifficulty] : undefined}
+                onPress={() => setFilterDifficulty(d)}
+              />
+            ))}
+          </ScrollView>
+
+          {/* Math + Timed filters side by side */}
+          <View style={styles.filterTwoCol}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.filterLabel}>MATH</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+                {(['All', ...MATH_OPTIONS]).map(m => (
+                  <Pill key={m} label={m === 'With Math' ? 'Math' : m === 'No Math' ? 'No Math' : m} active={filterMath === m} onPress={() => setFilterMath(m)} small />
+                ))}
+              </ScrollView>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.filterLabel}>TIMED</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+                {(['All', 'Timed', 'Untimed'] as TimedFilter[]).map(t => (
+                  <Pill key={t} label={t} active={filterTimed === t} onPress={() => setFilterTimed(t)} small />
+                ))}
+              </ScrollView>
+            </View>
+          </View>
 
           {Object.keys(grouped).length === 0 ? (
             <GlassCard accent="ghost" padding={32} animate={false} style={{ marginTop: Spacing.xl }}>
@@ -421,6 +464,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   searchInput: { flex: 1, color: Colors.text, fontFamily: Typography.fonts.sans, fontSize: Typography.sizes.sm, paddingVertical: 0, textAlignVertical: 'center' },
+  filterLabel: {
+    color: Colors.textMuted, fontFamily: Typography.fonts.display,
+    fontSize: 9, fontWeight: '700', letterSpacing: 1.6,
+    marginTop: Spacing.sm, marginBottom: 4,
+  },
+  filterTwoCol: { flexDirection: 'row', gap: Spacing.base, marginTop: 0 },
   filterRow: { gap: 6, paddingRight: Spacing.base, paddingVertical: 4 },
 
   dateHeaderRow: {

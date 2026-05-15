@@ -20,7 +20,8 @@
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "runtimeVersion": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,7 +30,10 @@
       },
       "package": "com.fitefinance.app",
       "versionCode": 1,
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -61,6 +65,9 @@
         "projectId": "fdb0d132-8f06-4504-bd5c-35e8d3fdfafe"
       }
     },
-    "owner": "carsonwilkie"
+    "owner": "carsonwilkie",
+    "updates": {
+      "url": "https://u.expo.dev/fdb0d132-8f06-4504-bd5c-35e8d3fdfafe"
+    }
   }
 }

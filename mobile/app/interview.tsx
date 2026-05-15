@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
 
   topBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: Spacing.base, paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.base, paddingVertical: Spacing.lg,
   },
   closeBtn: {
     width: 40, height: 40, borderRadius: 20,
