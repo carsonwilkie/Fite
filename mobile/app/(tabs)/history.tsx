@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, StyleSheet, ScrollView, TextInput,
   ActivityIndicator, RefreshControl, Pressable, useWindowDimensions,
+  findNodeHandle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@clerk/clerk-expo';
@@ -55,6 +56,8 @@ export default function HistoryScreen() {
   const scrollRef = useRef<ScrollView | null>(null);
   const entryRefs = useRef<Record<number, View | null>>({});
   const scrollOffsetY = useRef(0);
+  const [pendingHighlight, setPendingHighlight] = useState<number | null>(null);
+  const processedHighlightRef = useRef<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -71,39 +74,61 @@ export default function HistoryScreen() {
     if (isPaid) load(); else setLoading(false);
   }, [isPaid, load]);
 
-  // Auto-expand and scroll to a highlighted entry (driven from /stats).
+  // Auto-expand a highlighted entry (driven from /stats) and remember it as
+  // pending so the entry's own onLayout can scroll into view once measurable.
   useEffect(() => {
     if (!highlight || loading) return;
+    // Process each highlight value only once — otherwise a later refetch of
+    // `history` (or a stale param) keeps forcing the original question back
+    // open and prevents the user from selecting another entry.
+    if (processedHighlightRef.current === highlight) return;
     const ts = Number(highlight);
     if (!Number.isFinite(ts)) return;
     const entry = history.find(e => e.timestamp === ts);
     if (!entry) return;
-    setExpanded(ts);
-    // Also open the date group containing this entry.
-    const dateKey = formatDate(entry.timestamp);
-    setExpandedDates(prev => new Set([...prev, dateKey]));
-    // Reset filters that might be hiding the entry.
+    processedHighlightRef.current = highlight;
+    // Reset filters that might be hiding the entry, then open it.
     setSearch('');
     setFilterCategory('All');
-    // Wait for layout + state, then measure the entry's position relative
-    // to the ScrollView's inner content and scroll to it.
-    const t = setTimeout(() => {
-      const node = entryRefs.current[ts] as any;
+    setFilterDifficulty('All');
+    setFilterMath('All');
+    setFilterTimed('All');
+    setExpanded(ts);
+    setExpandedDates(prev => new Set([...prev, formatDate(entry.timestamp)]));
+    setPendingHighlight(ts);
+  }, [highlight, loading, history]);
+
+  // Once the pending entry is mounted, measure it against the ScrollView's
+  // inner node and scroll to it. Retries a few times in case the first layout
+  // pass runs before the entry has finished expanding.
+  useEffect(() => {
+    if (pendingHighlight === null) return;
+    let attempts = 0;
+    let cancelled = false;
+    const tryScroll = () => {
+      if (cancelled) return;
+      const node = entryRefs.current[pendingHighlight] as any;
       const sv = scrollRef.current as any;
-      if (!node || !sv) return;
-      try {
-        node.measure((_x: number, _y: number, _w: number, _h: number, _px: number, pageY: number) => {
-          sv.measure((_sx: number, _sy: number, _sw: number, _sh: number, _spx: number, svPageY: number) => {
-            const contentY = pageY - svPageY + scrollOffsetY.current;
-            scrollRef.current?.scrollTo({ y: Math.max(0, contentY - 24), animated: true });
-          });
-        });
-      } catch {}
-      // Clear the param so re-visiting the tab doesn't keep snapping.
-      try { router.setParams({ highlight: undefined } as any); } catch {}
-    }, 280);
-    return () => clearTimeout(t);
-  }, [highlight, loading, history, router]);
+      const svHandle = sv ? findNodeHandle(sv) : null;
+      if (node && svHandle != null) {
+        try {
+          node.measureLayout(
+            svHandle,
+            (_x: number, y: number) => {
+              scrollRef.current?.scrollTo({ y: Math.max(0, y - 24), animated: true });
+            },
+            () => {}
+          );
+        } catch {}
+        setPendingHighlight(null);
+        try { router.setParams({ highlight: undefined } as any); } catch {}
+        return;
+      }
+      if (attempts++ < 12) setTimeout(tryScroll, 80);
+    };
+    const t = setTimeout(tryScroll, 60);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [pendingHighlight, router]);
 
   const filtered = useMemo(() => {
     let xs = history.filter(e => {

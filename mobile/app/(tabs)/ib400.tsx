@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, memo } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeIn, FadeInDown, FadeInUp, Layout } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { Background } from '../../src/components/Background';
 import { GlassCard } from '../../src/components/GlassCard';
@@ -75,6 +75,34 @@ export default function IB400Screen() {
     await load();
     setRefreshing(false);
   }
+
+  const confirmResetQuestion = useCallback((q: IBQuestion) => {
+    if (!progress[q.id]) return;
+    Alert.alert(
+      'Reset this question?',
+      `Clear your saved score for ${q.id.toUpperCase()} so it shows as unanswered again.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await getToken();
+              if (token) await resetIBProgress(q.id, token);
+              setProgress(prev => {
+                const next = { ...prev };
+                delete next[q.id];
+                return next;
+              });
+            } catch {
+              Alert.alert('Error', 'Failed to reset this question. Please try again.');
+            }
+          },
+        },
+      ],
+    );
+  }, [getToken, progress]);
 
   function confirmResetAll() {
     Alert.alert(
@@ -169,16 +197,22 @@ export default function IB400Screen() {
     );
   }
 
-  return (
-    <Background variant="hero">
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.secondary} />}
-        >
-          {/* Header */}
-          <Animated.View entering={FadeIn.duration(400)} style={styles.headerRow}>
+  const renderItem = useCallback(({ item: q }: { item: IBQuestion }) => {
+    const p = progress[q.id];
+    return (
+      <QuestionRow
+        q={q}
+        scored={p && typeof p.score === 'number' ? p.score : null}
+        onPress={() => router.push({ pathname: '/ib-question', params: { id: q.id } } as any)}
+        onLongPress={() => confirmResetQuestion(q)}
+      />
+    );
+  }, [progress, router, confirmResetQuestion]);
+
+  const ListHeader = (
+    <>
+      {/* Header */}
+      <Animated.View entering={FadeIn.duration(400)} style={styles.headerRow}>
             <BrandLogo size="md" premium={isPaid} />
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <View style={styles.headerBadge}>
@@ -309,6 +343,7 @@ export default function IB400Screen() {
               <Text style={styles.listHeaderTitle}>
                 {activeCategory === 'All' ? 'All topics' : activeCategory}
               </Text>
+              <Text style={styles.listHint}>Long-press a question to reset its score.</Text>
             </View>
             <PressableScale
               onPress={handleShuffle}
@@ -325,66 +360,94 @@ export default function IB400Screen() {
               <Text style={styles.shuffleText}>Shuffle</Text>
             </PressableScale>
           </View>
-          {loading ? (
-            <SkeletonList />
-          ) : filtered.length === 0 ? (
-            <GlassCard accent="ghost" padding={24} animate={false}>
-              <View style={{ alignItems: 'center', gap: 8 }}>
-                <Ionicons name="search-outline" size={28} color={Colors.textFaint} />
-                <Text style={styles.emptyTitle}>No matches</Text>
-                <Text style={styles.emptySub}>Try clearing search or changing filters.</Text>
-              </View>
-            </GlassCard>
-          ) : (
-            filtered.map((q, idx) => {
-              const p = progress[q.id];
-              const dColor = DIFFICULTY_COLORS[q.difficulty as keyof typeof DIFFICULTY_COLORS];
-              return (
-                <Animated.View
-                  key={q.id}
-                  entering={FadeInUp.duration(280).delay(Math.min(idx * 10, 200))}
-                  layout={Layout.springify()}
-                  style={{ marginBottom: Spacing.sm }}
-                >
-                  <PressableScale
-                    onPress={() => router.push({ pathname: '/ib-question', params: { id: q.id } } as any)}
-                    haptic="selection"
-                  >
-                    <GlassCard accent="ghost" padding={14} animate={false}>
-                      <View style={styles.qRow}>
-                        <View style={{ flex: 1 }}>
-                          <View style={styles.qTagRow}>
-                            <View style={[styles.qIdChip, { borderColor: dColor + '55' }]}>
-                              <Text style={[styles.qIdText, { color: dColor }]}>{q.id.toUpperCase()}</Text>
-                            </View>
-                            <View style={[styles.qDiffChip, { backgroundColor: dColor + '1a', borderColor: dColor + '55' }]}>
-                              <Text style={[styles.qDiffText, { color: dColor }]}>{q.difficulty}</Text>
-                            </View>
-                          </View>
-                          <Text style={styles.qText} numberOfLines={2}>{q.question}</Text>
-                        </View>
-                        <View style={styles.qRight}>
-                          {p && typeof p.score === 'number' ? (
-                            <ScoreBadge score={p.score} />
-                          ) : (
-                            <Ionicons name="chevron-forward" size={20} color={Colors.textFaint} />
-                          )}
-                        </View>
-                      </View>
-                    </GlassCard>
-                  </PressableScale>
-                </Animated.View>
-              );
-            })
-          )}
+    </>
+  );
 
-          <View style={{ height: 120 }} />
-        </ScrollView>
+  return (
+    <Background variant="hero">
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        {loading ? (
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+            {ListHeader}
+            <SkeletonList />
+          </ScrollView>
+        ) : (
+          <FlatList
+            data={filtered}
+            keyExtractor={(q) => q.id}
+            renderItem={renderItem}
+            ListHeaderComponent={ListHeader}
+            ListEmptyComponent={
+              <GlassCard accent="ghost" padding={24} animate={false}>
+                <View style={{ alignItems: 'center', gap: 8 }}>
+                  <Ionicons name="search-outline" size={28} color={Colors.textFaint} />
+                  <Text style={styles.emptyTitle}>No matches</Text>
+                  <Text style={styles.emptySub}>Try clearing search or changing filters.</Text>
+                </View>
+              </GlassCard>
+            }
+            ListFooterComponent={<View style={{ height: 120 }} />}
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.secondary} />
+            }
+            initialNumToRender={12}
+            maxToRenderPerBatch={10}
+            updateCellsBatchingPeriod={50}
+            windowSize={7}
+            removeClippedSubviews
+          />
+        )}
         <ScrollFade top={28} bottom={90} />
       </SafeAreaView>
     </Background>
   );
 }
+
+interface QuestionRowProps {
+  q: IBQuestion;
+  scored: number | null;
+  onPress: () => void;
+  onLongPress: () => void;
+}
+
+const QuestionRow = memo(function QuestionRow({ q, scored, onPress, onLongPress }: QuestionRowProps) {
+  const dColor = DIFFICULTY_COLORS[q.difficulty as keyof typeof DIFFICULTY_COLORS];
+  return (
+    <View style={{ marginBottom: Spacing.sm }}>
+      <PressableScale
+        onPress={onPress}
+        onLongPress={onLongPress}
+        delayLongPress={350}
+        haptic="selection"
+      >
+        <GlassCard accent="ghost" padding={14} animate={false}>
+          <View style={styles.qRow}>
+            <View style={{ flex: 1 }}>
+              <View style={styles.qTagRow}>
+                <View style={[styles.qIdChip, { borderColor: dColor + '55' }]}>
+                  <Text style={[styles.qIdText, { color: dColor }]}>{q.id.toUpperCase()}</Text>
+                </View>
+                <View style={[styles.qDiffChip, { backgroundColor: dColor + '1a', borderColor: dColor + '55' }]}>
+                  <Text style={[styles.qDiffText, { color: dColor }]}>{q.difficulty}</Text>
+                </View>
+              </View>
+              <Text style={styles.qText} numberOfLines={2}>{q.question}</Text>
+            </View>
+            <View style={styles.qRight}>
+              {scored !== null ? (
+                <ScoreBadge score={scored} />
+              ) : (
+                <Ionicons name="chevron-forward" size={20} color={Colors.textFaint} />
+              )}
+            </View>
+          </View>
+        </GlassCard>
+      </PressableScale>
+    </View>
+  );
+});
 
 function ScoreBadge({ score }: { score: number }) {
   const color =
@@ -516,6 +579,10 @@ const styles = StyleSheet.create({
     color: Colors.text, fontFamily: Typography.fonts.displayExtra,
     fontSize: Typography.sizes.lg, fontWeight: '800', letterSpacing: -0.3,
     marginTop: 2,
+  },
+  listHint: {
+    color: Colors.textFaint, fontFamily: Typography.fonts.sans,
+    fontSize: 11, marginTop: 4,
   },
   shuffleBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,

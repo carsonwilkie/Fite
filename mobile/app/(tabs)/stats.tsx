@@ -10,6 +10,7 @@ import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeInUp, useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 import { Background } from '../../src/components/Background';
 import { GlassCard } from '../../src/components/GlassCard';
@@ -22,6 +23,13 @@ import { usePaidStatus } from '../../src/hooks/usePaidStatus';
 import { getHistory, type HistoryEntry } from '../../src/api';
 import { DIFFICULTY_COLORS, CATEGORY_ICONS, type QuestionDifficulty } from '../../src/constants';
 import { Colors, Typography, Spacing, Radius, Gradients } from '../../src/theme';
+
+// Smooth red → yellow → green gradient over a 0–10 score range.
+function scoreColor(score: number): string {
+  const s = Math.max(0, Math.min(10, score));
+  const hue = (s / 10) * 120; // 0 = red, 60 = yellow, 120 = green
+  return `hsl(${Math.round(hue)}, 78%, 50%)`;
+}
 
 function computeStats(history: HistoryEntry[]) {
   const total = history.length;
@@ -101,6 +109,7 @@ export default function StatsScreen() {
   useEffect(() => { if (isPaid) load(); else setLoading(false); }, [isPaid, load]);
 
   const stats = useMemo(() => computeStats(history), [history]);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
 
   if (paidLoading) return <Background><View style={styles.center}><ActivityIndicator color={Colors.secondary} /></View></Background>;
   if (!isPaid) return <Background variant="hero"><SafeAreaView style={styles.safe}><PremiumGate message="Detailed practice stats are a Premium feature." /></SafeAreaView></Background>;
@@ -120,7 +129,7 @@ export default function StatsScreen() {
     );
   }
 
-  const avgColor = stats.avgScore >= 7 ? Colors.success : stats.avgScore >= 5 ? Colors.warning : Colors.error;
+  const avgColor = scoreColor(stats.avgScore);
 
   return (
     <Background variant="hero">
@@ -128,6 +137,7 @@ export default function StatsScreen() {
         <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          scrollEnabled={scrollEnabled}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={Colors.secondary} />}
         >
           <View style={styles.headerRow}>
@@ -195,7 +205,7 @@ export default function StatsScreen() {
           {stats.chartScored.length >= 2 && (
             <>
               <SectionHeader eyebrow="SCORE HISTORY" title="Rolling average" style={{ marginTop: Spacing.xl }} />
-              <ScoreChartCard scored={stats.chartScored} />
+              <ScoreChartCard scored={stats.chartScored} setScrollEnabled={setScrollEnabled} />
             </>
           )}
 
@@ -233,7 +243,7 @@ export default function StatsScreen() {
                 const avg = count ? total / count : 0;
                 const maxCount = Math.max(...Object.values(stats.catMap).map(v => v.count), 1);
                 const pct = (count / maxCount) * 100;
-                const avgColor = avg >= 7 ? Colors.success : avg >= 5 ? '#84cc16' : avg > 0 ? Colors.warning : Colors.textFaint;
+                const avgColor = avg > 0 ? scoreColor(avg) : Colors.textFaint;
                 return (
                   <Animated.View key={cat} entering={FadeInUp.duration(360).delay(idx * 40)} style={styles.catRow}>
                     <View style={styles.catIconBox}>
@@ -298,7 +308,7 @@ const MAX_BARS = 40;
 const CHART_HEIGHT = 100;
 const Y_MARKS = [10, 7, 5] as const;
 
-function ScoreChartCard({ scored }: { scored: HistoryEntry[] }) {
+function ScoreChartCard({ scored, setScrollEnabled }: { scored: HistoryEntry[]; setScrollEnabled: (v: boolean) => void }) {
   const router = useRouter();
   const maxN = scored.length;
   const [windowN, setWindowN] = useState<number>(Math.min(maxN, 12));
@@ -333,7 +343,7 @@ function ScoreChartCard({ scored }: { scored: HistoryEntry[] }) {
   const windowAvg = windowBars.length
     ? windowBars.reduce((s, e) => s + (e.score ?? 0), 0) / windowBars.length
     : 0;
-  const avgColor = windowAvg >= 7 ? Colors.success : windowAvg >= 5 ? '#84cc16' : Colors.warning;
+  const avgColor = scoreColor(windowAvg);
 
   const selectedEntry = selected !== null ? displayed[selected] : null;
 
@@ -345,6 +355,7 @@ function ScoreChartCard({ scored }: { scored: HistoryEntry[] }) {
       const e = displayed[i];
       if (e?.timestamp) openInHistory(e.timestamp);
     } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
       setSelected(i);
     }
   };
@@ -400,7 +411,7 @@ function ScoreChartCard({ scored }: { scored: HistoryEntry[] }) {
           {/* Score bars */}
           {displayed.map((e, i) => {
             const s = e.score ?? 0;
-            const color = s >= 7 ? Colors.success : s >= 5 ? '#84cc16' : Colors.warning;
+            const color = scoreColor(s);
             return (
               <ChartBar
                 key={`${e.timestamp}-${i}`}
@@ -422,7 +433,7 @@ function ScoreChartCard({ scored }: { scored: HistoryEntry[] }) {
       </View>
 
       {/* Slider */}
-      <RangeSlider min={2} max={maxN} value={effectiveN} onChange={setWindowN} />
+      <RangeSlider min={2} max={maxN} value={effectiveN} onChange={setWindowN} setScrollEnabled={setScrollEnabled} />
       <View style={styles.sliderTicks}>
         <Text style={styles.tickLabel}>2</Text>
         <Text style={styles.tickLabel}>{maxN}</Text>
@@ -469,7 +480,7 @@ function SelectedEntryTooltip({
 }: { entry: HistoryEntry | null; onClose: () => void; onOpen: (ts: number) => void }) {
   if (!entry) return null;
   const s = entry.score ?? 0;
-  const hcol = s >= 7 ? Colors.success : s >= 5 ? '#84cc16' : Colors.warning;
+  const hcol = scoreColor(s);
   const date = new Date(entry.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const isInterview = entry.type === 'interview';
   const title = entry.question ?? entry.scenario ?? (isInterview ? 'Interview session' : '');
@@ -507,13 +518,15 @@ function SelectedEntryTooltip({
   );
 }
 
-function RangeSlider({ min, max, value, onChange }: { min: number; max: number; value: number; onChange: (v: number) => void }) {
+function RangeSlider({ min, max, value, onChange, setScrollEnabled }: { min: number; max: number; value: number; onChange: (v: number) => void; setScrollEnabled?: (v: boolean) => void }) {
   const widthRef = useRef(0);
   // Store the container's absolute screen-X so we can map gestureState coords correctly.
   // locationX is relative to the touch target (could be the thumb, not the container),
   // which causes jumps. gestureState.moveX is always absolute screen coords.
   const pageXRef = useRef(0);
   const viewRef = useRef<View>(null);
+  const lastValueRef = useRef(value);
+  lastValueRef.current = value;
 
   const respondRef = useRef<(xRaw: number) => void>(() => {});
   respondRef.current = (xRaw: number) => {
@@ -521,7 +534,11 @@ function RangeSlider({ min, max, value, onChange }: { min: number; max: number; 
     if (!w) return;
     const x = Math.max(0, Math.min(w, xRaw));
     const v = Math.round(min + (x / w) * (max - min));
-    if (v !== value) onChange(v);
+    if (v !== lastValueRef.current) {
+      lastValueRef.current = v;
+      Haptics.selectionAsync().catch(() => {});
+      onChange(v);
+    }
   };
 
   const pan = useRef(
@@ -532,8 +549,17 @@ function RangeSlider({ min, max, value, onChange }: { min: number; max: number; 
       onMoveShouldSetPanResponderCapture: () => true,
       onPanResponderTerminationRequest: () => false,
       onShouldBlockNativeResponder: () => true,
-      onPanResponderGrant: (_, g) => respondRef.current(g.x0 - pageXRef.current),
+      onPanResponderGrant: (_, g) => {
+        setScrollEnabled?.(false);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        respondRef.current(g.x0 - pageXRef.current);
+      },
       onPanResponderMove: (_, g) => respondRef.current(g.moveX - pageXRef.current),
+      onPanResponderRelease: () => {
+        setScrollEnabled?.(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft).catch(() => {});
+      },
+      onPanResponderTerminate: () => setScrollEnabled?.(true),
     })
   ).current;
 

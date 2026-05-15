@@ -18,10 +18,9 @@ interface ScoreDisplayProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 8) return Colors.success;
-  if (score >= 6) return '#84cc16';
-  if (score >= 4) return Colors.warning;
-  return Colors.error;
+  const s = Math.max(0, Math.min(10, score));
+  const hue = (s / 10) * 120; // red → yellow → green
+  return `hsl(${Math.round(hue)}, 78%, 50%)`;
 }
 
 function getScoreLabel(score: number): string {

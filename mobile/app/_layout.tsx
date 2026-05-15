@@ -11,6 +11,7 @@ import Constants from 'expo-constants';
 import * as SplashScreen from 'expo-splash-screen';
 import { guestMode } from '../src/guestMode';
 import { configureRevenueCat, isRcSupported } from '../src/revenuecat';
+import { PaidStatusProvider, usePaidStatus } from '../src/hooks/usePaidStatus';
 import {
   useFonts as useInterFonts,
   Inter_400Regular,
@@ -58,6 +59,7 @@ const tokenCache = {
 function AuthGate() {
   const { isSignedIn, isLoaded } = useAuth();
   const { user } = useUser();
+  const { loading: paidLoading } = usePaidStatus();
   const segments = useSegments();
   const router = useRouter();
 
@@ -80,6 +82,17 @@ function AuthGate() {
       router.replace('/(tabs)');
     }
   }, [isSignedIn, isLoaded, segments, router]);
+
+  // Briefly hold the UI on a loader until paid status resolves so paid
+  // users don't see a flash of the free-tier view on cold start.
+  const inAuthGroup = segments[0] === '(auth)';
+  if (isLoaded && isSignedIn && !inAuthGroup && paidLoading) {
+    return (
+      <View style={[styles.root, styles.loading]}>
+        <ActivityIndicator color={Colors.secondary} />
+      </View>
+    );
+  }
 
   return (
     <Stack
@@ -143,8 +156,10 @@ export default function RootLayout() {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-          <StatusBar style="light" />
-          <AuthGate />
+          <PaidStatusProvider>
+            <StatusBar style="light" />
+            <AuthGate />
+          </PaidStatusProvider>
         </ClerkProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
