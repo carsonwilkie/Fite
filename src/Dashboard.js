@@ -1342,7 +1342,7 @@ export default function Dashboard() {
           </div>
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid rgba(21,101,192,0.06)` }}>
             <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: C.textMuted, fontFamily: "Manrope, sans-serif", padding: "0 14px", marginBottom: 6, opacity: 0.4 }}>Account</div>
-            <NavItem icon="menu_book" label="IB 400" onClick={() => router.push("/ib-questions")} />
+            <NavItem icon="menu_book" label="IB 400" onClick={() => isPaid ? router.push("/ib-questions") : null} muted={!isPaid} />
             <NavItem icon="history" label="History" onClick={() => isPaid ? router.push("/history") : null} muted={!isPaid} />
             <NavItem icon="bar_chart" label="Stats" onClick={() => isPaid ? router.push("/stats") : null} muted={!isPaid} />
             {isPaid
@@ -1784,12 +1784,12 @@ export default function Dashboard() {
 
           {/* IB 400 */}
           <motion.button
-            onClick={() => router.push("/ib-questions")}
+            onClick={() => isPaid ? router.push("/ib-questions") : null}
             whileTap={{ scale: 0.88 }}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 12px", borderRadius: 10 }}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: isPaid ? "pointer" : "default", padding: "6px 12px", borderRadius: 10 }}
           >
-            <Icon name="menu_book" size={22} style={{ color: C.textMuted }} />
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>IB 400</span>
+            <Icon name="menu_book" size={22} style={{ color: isPaid ? C.textMuted : `${C.textMuted}40` }} />
+            <span style={{ fontSize: 9, fontWeight: 700, color: isPaid ? C.textMuted : `${C.textMuted}40`, fontFamily: "Manrope, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>IB 400</span>
           </motion.button>
 
           {/* History */}
