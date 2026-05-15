@@ -28,6 +28,9 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        lazy: false,
+        freezeOnBlur: true,
+        animation: 'none',
         tabBarStyle: {
           position: 'absolute',
           backgroundColor: Platform.OS === 'ios' ? 'transparent' : 'rgba(13,27,42,0.96)',

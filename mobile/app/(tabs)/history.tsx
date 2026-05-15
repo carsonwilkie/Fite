@@ -231,25 +231,21 @@ export default function HistoryScreen() {
             ))}
           </ScrollView>
 
-          {/* Math + Timed filters side by side */}
-          <View style={styles.filterTwoCol}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.filterLabel}>MATH</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
-                {(['All', ...MATH_OPTIONS]).map(m => (
-                  <Pill key={m} label={m === 'With Math' ? 'Math' : m === 'No Math' ? 'No Math' : m} active={filterMath === m} onPress={() => setFilterMath(m)} small />
-                ))}
-              </ScrollView>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.filterLabel}>TIMED</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
-                {(['All', 'Timed', 'Untimed'] as TimedFilter[]).map(t => (
-                  <Pill key={t} label={t} active={filterTimed === t} onPress={() => setFilterTimed(t)} small />
-                ))}
-              </ScrollView>
-            </View>
-          </View>
+          {/* Math filter */}
+          <Text style={styles.filterLabel}>MATH</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+            {(['All', ...MATH_OPTIONS]).map(m => (
+              <Pill key={m} label={m === 'With Math' ? 'Math' : m === 'No Math' ? 'No Math' : m} active={filterMath === m} onPress={() => setFilterMath(m)} small />
+            ))}
+          </ScrollView>
+
+          {/* Timed filter */}
+          <Text style={styles.filterLabel}>TIMED</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+            {(['All', 'Timed', 'Untimed'] as TimedFilter[]).map(t => (
+              <Pill key={t} label={t} active={filterTimed === t} onPress={() => setFilterTimed(t)} small />
+            ))}
+          </ScrollView>
 
           {Object.keys(grouped).length === 0 ? (
             <GlassCard accent="ghost" padding={32} animate={false} style={{ marginTop: Spacing.xl }}>
