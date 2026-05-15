@@ -1,9 +1,11 @@
 # Fite Finance — Project Context
 
 ## Overview
-Fite Finance is a finance interview prep app at `fitefinance.com`. The product combines a cinematic landing experience with a dark-theme practice dashboard where users can generate finance questions, reveal model answers, get AI grading, run structured mock interviews, review saved history, inspect stats, submit feedback, and vote on future features.
+Fite Finance is a finance interview prep platform that ships as both a website at `fitefinance.com` and a native mobile app for iOS + Android (in `/mobile`). The product combines a cinematic landing experience with a dark-theme practice dashboard where users can generate finance questions, reveal model answers, get AI grading, work through a curated 400-question IB bank, run structured mock interviews, review saved history, inspect stats, submit feedback, and vote on future features.
 
-Free users are limited to 5 generated questions per day. Premium users unlock unlimited question generation, answer grading, history, stats, interview mode, custom descriptors, the timer, and premium-only feature voting.
+Free users are limited to 5 generated questions per day. Premium users unlock unlimited question generation, answer grading, history, stats, interview mode, custom descriptors, the timer, IB 400 progress tracking, and premium-only feature voting.
+
+The website and the mobile app share the same backend (`fitefinance.com/api/*`), the same Clerk users, and the same Upstash Redis paid flag. The mobile app is fully documented in the "Mobile App" section near the end of this file.
 
 ## Tech Stack
 - Frontend: Next.js 16.2.3 (Pages Router), React 19, `motion/react`
@@ -34,6 +36,7 @@ Never read, display, or reference the contents of `.env`, `.env.local`, or any `
 /              → Animated landing page
 /features      → Supplemental marketing/features page
 /dashboard     → Main practice dashboard
+/ib-questions  → Premium-only IB 400 curated question bank
 /history       → Premium history page
 /stats         → Premium stats page
 /success       → Premium success page
@@ -52,7 +55,8 @@ Never read, display, or reference the contents of `.env`, `.env.local`, or any `
 Notes:
 - Legacy redirect routes like `/practice` and the old `/questions/...` routes were removed.
 - There is no shared runtime navbar file anymore; `src/Navbar.js` was deleted.
-- `/account` and `/sso-callback` are marked `noindex`.
+- `/account`, `/sso-callback`, and `/ib-questions` are marked `noindex`.
+- `/ib-questions` runs `getServerSideProps` which redirects non-signed-in users to `/sign-in` and non-paid users to `/`. The page itself also re-verifies Clerk auth on the client.
 
 ## App Shell
 
@@ -96,6 +100,7 @@ Notes:
   features.js
   feedback.js
   history.js
+  ib-questions.js
   index.js
   privacy.js
   refunds.js
@@ -110,16 +115,18 @@ Notes:
     admin-users.js
     checkPaid.js
     checkout.js
+    delete-account.js
     feedback.js
     grade.js
     history.js
+    ib-questions.js
     interview.js
     portal.js
     price.js
     question.js
-    total-questions.js
     webhook.js
     _constants.js
+    _ibQuestions.js
     _openai.js
     _questionBank.js
 
@@ -127,6 +134,7 @@ Notes:
   App.css
   Dashboard.js
   HistoryDark.js
+  IBQuestionsPage.js
   LandingNav.js
   LandingPage.css
   LightsaberLoader.js
@@ -155,6 +163,8 @@ Notes:
     redirects.js
     UserMenu.js
 
+/mobile               — Expo React Native app (iOS + Android). See "Mobile App" section.
+
 /public
   Fite_Premium_NB.png
   apple-touch-icon.png
@@ -176,6 +186,8 @@ Notes:
   robots.txt
   Logo/
 ```
+
+Note: `pages/api/total-questions.js` was removed. Its functionality has been folded into `GET /api/question` (still protected with the same `x-admin-secret` header).
 
 ## Frontend Architecture
 
@@ -393,6 +405,25 @@ Timer behavior:
 - Tracks OTG in the difficulty breakdown
 - Links back into `/history` with a `highlight` timestamp
 
+### IB 400 question bank
+
+#### `src/IBQuestionsPage.js`
+- Premium-only page rendered at `/ib-questions`
+- Server-rendered: `getServerSideProps` redirects unauthenticated users to `/sign-in` and non-paid users to `/`, then injects the full `IB_QUESTIONS` array (from `pages/api/_ibQuestions.js`) as the initial prop
+- Loads existing per-question progress from `GET /api/history?scope=ib`
+- Filters by category and difficulty, searches by text
+- Clicking a question opens an inline answer surface that uses the same `POST /api/question` (`type: "answer"`) and `POST /api/grade` flow as the main dashboard
+- Progress is upserted to `POST /api/history?scope=ib` with `{ questionId, score }`
+- Supports per-question reset and full-bank reset via `DELETE /api/history?scope=ib`
+- Reuses the dark navy/cyan palette and the same shared viewport-stability hook
+
+#### `pages/api/_ibQuestions.js`
+- Static, server-side question bank — 400 items, never edited at runtime
+- Each entry has `{ id, question, category, difficulty }`
+- Categories used by IB 400 only: `Accounting`, `DCF`, `LBO`, `M&A`, `Valuation`, `Markets`, `Debt & Capital Structure`, `Brain Teasers`
+- Difficulties: `Easy`, `Medium`, `Hard`
+- Note: these categories differ from the global `CATEGORIES` list. IB 400 categories live exclusively inside this file and the IB 400 UI.
+
 ### Feedback and feature voting
 
 #### `src/SubmissionPage.js`
@@ -544,18 +575,37 @@ OTG is intentionally frontend/question-route only. Interview mode and backend ca
 - Returns Stripe price info from `STRIPE_PRICE_ID`
 - Output shape: `{ amount, interval }`
 
-### `GET /api/total-questions`
+### `GET /api/question` (admin stats)
 - Returns the aggregate `stats:total_questions` counter from Redis
 - Can be protected with `ADMIN_SECRET` via the `x-admin-secret` header
 - Output shape: `{ total }`
+- Replaces the old `/api/total-questions` route, which has been removed
 
-### `GET|POST /api/history`
+### `GET|POST|DELETE /api/history`
 - Requires authenticated Clerk user
-- GET input: none
-- POST input: `{ entry }`
-- Storage key: `history:${authenticatedUserId}`
-- Entries are stored with `LPUSH`
-- History is capped to 100 entries with `LTRIM`
+- Default scope (standard question + interview history):
+  - GET input: none → returns `{ entries: HistoryEntry[] }`
+  - POST input: `{ entry }`
+  - DELETE: pops (`LPOP`) the most recently saved entry — used by the retry flow so an abandoned attempt is replaced by the retried question's record
+  - Storage key: `history:${authenticatedUserId}`
+  - Entries are stored with `LPUSH` and capped to 100 with `LTRIM`
+- IB 400 progress scope (`?scope=ib` query or `{ scope: "ib" }` body):
+  - GET: returns `{ progress: Record<questionId, { score, timestamp }> }`
+  - POST input: `{ questionId, score, timestamp }` → upserts that field on the Redis hash
+  - DELETE: with `questionId` removes one entry from the hash; without it deletes the whole hash
+  - Storage key: `ib_progress:${authenticatedUserId}` (Redis hash, `HSET`/`HGETALL`/`HDEL`)
+
+### `GET /api/ib-questions`
+- Premium-only
+- Requires authenticated Clerk user
+- Returns the full static IB 400 bank: `{ questions: { id, question, category, difficulty }[] }`
+- Returns `403` for users without the `paid:${userId}` flag
+
+### `POST /api/delete-account`
+- Requires authenticated Clerk user
+- Deletes all user data from Redis (`paid:${userId}`, `stripe_customer:${userId}`, `history:${userId}`, `ib_progress:${userId}`) and then deletes the Clerk user via `clerkClient().users.deleteUser(userId)`
+- Deleting the Clerk user revokes every Clerk session and every OAuth grant (including Sign in with Apple and Google) — required by App Store account-deletion rules
+- Returns `{ deleted: true }` on success, `500` on failure
 
 ### `POST /api/feedback`
 - Handles both feedback and feature-vote submissions
@@ -632,12 +682,23 @@ Unified interview endpoint. Dispatches on `action` in the request body:
 Consolidated from three separate `interview-*` routes to stay under Vercel Hobby's 12-function cap.
 
 ### `POST /api/webhook`
-- Stripe webhook handler
-- Disables the default Next.js body parser so Stripe signature verification can use the raw body
-- On `checkout.session.completed`, sets `paid:${userId}` to `"true"`
-- On `checkout.session.completed`, also stores `stripe_customer:${userId}` when Stripe provides a customer ID
-- On `customer.subscription.deleted`, deletes `paid:${userId}`
-- On `customer.subscription.updated`, deletes `paid:${userId}` when `cancel_at_period_end` is true
+- Unified billing webhook — handles both Stripe (web + Android) and RevenueCat (iOS in-app purchases) on a single route to stay under Vercel Hobby's 12-function cap
+- Disables the default Next.js body parser; the raw body is read manually so Stripe signature verification still works
+- Branches on which provider sent the request:
+  - `stripe-signature` header → Stripe handler
+  - `authorization` header → RevenueCat handler (shared secret in `REVENUECAT_WEBHOOK_AUTH`)
+- Stripe handler:
+  - On `checkout.session.completed`, sets `paid:${userId}` to `"true"` and stores `stripe_customer:${userId}` when Stripe provides a customer ID
+  - On `customer.subscription.deleted`, deletes `paid:${userId}`
+  - On `customer.subscription.updated`, deletes `paid:${userId}` when `cancel_at_period_end` is true
+- RevenueCat handler:
+  - Requires `Authorization` header to match `REVENUECAT_WEBHOOK_AUTH`
+  - Reads `app_user_id` from the RC event payload (set by the mobile app to the Clerk user ID, so the keyspace stays consistent with Stripe)
+  - Grant events (`INITIAL_PURCHASE`, `RENEWAL`, `UNCANCELLATION`, `PRODUCT_CHANGE`, `NON_RENEWING_PURCHASE`, `SUBSCRIPTION_EXTENDED`) → `SET paid:${userId} "true"`
+  - Revoke events (`EXPIRATION`, `BILLING_ISSUE`, `SUBSCRIPTION_PAUSED`) → `DEL paid:${userId}`
+  - `CANCELLATION` is a no-op — access is retained until `EXPIRATION` fires later
+  - `TRANSFER` grants or revokes based on `expiration_at_ms`
+  - `TEST` is acknowledged for RC dashboard validation
 - Check this file before changing billing assumptions because Redis paid-state is driven here
 
 ## History Data Shapes
@@ -695,6 +756,16 @@ Consolidated from three separate `interview-*` routes to stay under Vercel Hobby
 }
 ```
 
+### IB 400 progress entry
+Stored as a field on the Redis hash `ib_progress:${userId}`, keyed by question id.
+```json
+{
+  "score": 7,
+  "timestamp": 1234567890000
+}
+```
+`score` may be `null` if the user marked the question as attempted without grading.
+
 ## Premium Gating
 - Free users:
   - 5 generated questions per day
@@ -704,6 +775,7 @@ Consolidated from three separate `interview-*` routes to stay under Vercel Hobby
   - no interview mode
   - no timer
   - no custom descriptor
+  - no IB 400 question bank
   - no feature voting
 - Paid users:
   - unlimited generation
@@ -713,6 +785,7 @@ Consolidated from three separate `interview-*` routes to stay under Vercel Hobby
   - interview mode
   - timer
   - custom descriptor
+  - IB 400 bank with progress tracking
   - feature voting
 
 ## Visual Design Notes
@@ -738,26 +811,338 @@ Consolidated from three separate `interview-*` routes to stay under Vercel Hobby
 
 ## Environment Variables
 ```text
+# Auth
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 CLERK_SECRET_KEY
+
+# Billing (web + Android)
 STRIPE_SECRET_KEY
 STRIPE_PRICE_ID
 STRIPE_WEBHOOK_SECRET
+
+# Billing (iOS in-app purchases via RevenueCat)
+REVENUECAT_WEBHOOK_AUTH        # shared-secret value in the Authorization header of RC webhook posts
+
+# App
 NEXT_PUBLIC_URL
 OPENAI_API_KEY
+
+# Data
 UPSTASH_REDIS_REST_URL
 UPSTASH_REDIS_REST_TOKEN
+
+# Admin
 ADMIN_SECRET
+
+# Email
 RESEND_API_KEY
 FEEDBACK_FROM_EMAIL
 ```
 
 ## Safe Assumptions for Future Edits
 - If you are changing practice behavior, start in `src/Dashboard.js`
+- If you are changing the IB 400 page, start in `src/IBQuestionsPage.js` and `pages/api/_ibQuestions.js`
 - If you are changing premium gating, inspect both the UI hooks and the Stripe/Redis API routes
 - If you are changing landing visuals, check both `pages/index.js` / `pages/features.js` and `src/LandingPage.css`
 - If you are changing auth UI, inspect `src/auth/AuthCard.js`, `src/auth/AuthPrimitives.js`, and `src/auth/AuthProvider.js`
 - If you are changing account management, inspect `src/auth/AccountPanel.js`
-- If you are changing billing behavior, verify `checkout.js`, `portal.js`, and `webhook.js` together
+- If you are changing account deletion, verify `pages/api/delete-account.js` clears every relevant Redis key
+- If you are changing billing behavior, verify `checkout.js`, `portal.js`, and `webhook.js` together. Remember `webhook.js` now serves both Stripe AND RevenueCat.
 - If you are changing feedback or feature voting, inspect `src/SubmissionPage.js` and `pages/api/feedback.js`
-- If you are changing categories, update both `src/constants.js` and `api/_constants.js`
+- If you are changing categories, update `src/constants.js`, `api/_constants.js`, AND `mobile/src/constants.ts`
+- If you are changing API shapes the mobile app consumes (`/checkPaid`, `/checkout`, `/price`, `/question`, `/grade`, `/history`, `/interview`, `/ib-questions`, `/delete-account`, `/feedback`), update `mobile/src/api.ts` and any affected mobile screens
+- If you are changing anything mobile-related, see the "Mobile App" section below
+
+---
+
+# Mobile App
+
+The native mobile app lives in `/mobile`. It is an Expo (React Native) build of Fite Finance for iOS and Android. It calls the same `fitefinance.com/api/*` backend as the website — no backend changes are needed when iterating on mobile features unless a new endpoint or response shape is required.
+
+## Mobile Tech Stack
+- Runtime: Expo SDK 55 with `newArchEnabled: true`
+- Router: Expo Router v5 (`expo-router`) with `typedRoutes` enabled
+- Language: TypeScript (strict TSX)
+- React: React 19 + React Native 0.83
+- Auth: Clerk via `@clerk/clerk-expo`, with Clerk tokens cached in `expo-secure-store`
+- Payments:
+  - iOS → RevenueCat (`react-native-purchases`) backed by StoreKit, with the RC webhook hitting `POST /api/webhook` to set `paid:${userId}` in Redis
+  - Android + web fallback → Stripe Checkout opened in `expo-web-browser`
+- AI: same backend as the website — `POST /api/question`, `POST /api/grade`, `POST /api/interview`
+- Data: Upstash Redis via the same web API; local persistence via `@react-native-async-storage/async-storage` for recent-question dedupe and a paid-status hint
+- Animation: `react-native-reanimated` + `react-native-gesture-handler`
+- Fonts: `@expo-google-fonts/inter` (Inter 400/500/600/700) + `@expo-google-fonts/manrope` (Manrope 500/600/700/800)
+- Iconography: `@expo/vector-icons` (Ionicons)
+- Build & submit: EAS Build + EAS Submit (`build:ios`, `build:android`, `submit:ios`, `submit:android` scripts)
+- Updates: `expo-updates` pointed at `https://u.expo.dev/<eas project id>`
+
+## Mobile Bundle Identifiers
+- iOS bundle id: `com.fitefinance.app`
+- Android package: `com.fitefinance.app`
+- App scheme: `fitefinance://`
+- Display name: `Fite Finance`
+- EAS owner: `carsonwilkie`
+- EAS project id: declared in `mobile/app.json` under `extra.eas.projectId`
+
+## Mobile Route Map (Expo Router)
+```text
+app/_layout.tsx                 → Root layout: ClerkProvider, PaidStatusProvider, AuthGate, splash
+app/(auth)/_layout.tsx          → Auth group layout (no header)
+app/(auth)/sign-in.tsx          → Sign in (email/password, Google OAuth, Sign in with Apple)
+app/(auth)/sign-up.tsx          → Sign up (email/password, Google OAuth, Sign in with Apple)
+app/(tabs)/_layout.tsx          → Tab bar (Practice · IB 400 · History · Stats · Account)
+app/(tabs)/index.tsx            → Practice dashboard
+app/(tabs)/ib400.tsx            → IB 400 question bank (premium)
+app/(tabs)/history.tsx          → Practice history (premium)
+app/(tabs)/stats.tsx            → Stats (premium)
+app/(tabs)/account.tsx          → Account (profile, billing, sign out, delete account)
+app/interview.tsx               → Mock interview flow (modal)
+app/paywall.tsx                 → Premium upgrade (modal)
+app/feedback.tsx                → Feedback form (modal)
+app/feature-vote.tsx            → Feature voting (modal, premium)
+app/ib-question.tsx             → Single IB 400 question detail (modal)
+```
+
+Stack modal routes use `presentation: 'modal'` with `slide_from_bottom` animation, and tabs use `freezeOnBlur: true` with no inter-tab animation.
+
+## Mobile File Structure
+```text
+/mobile
+  app.json                      Expo config (name, scheme, plugins, extra)
+  eas.json                      EAS Build/Submit configuration
+  babel.config.js
+  tsconfig.json
+  package.json
+  App.tsx
+  index.ts
+  SETUP.md                      Local-dev and store-submission walkthrough
+  APP_STORE_METADATA.md         Apple/Google metadata source of truth
+  RESUBMISSION_CHECKLIST.md     Re-submission checklist for binary updates
+
+  /app                          Expo Router screens (see route map above)
+    _layout.tsx
+    feature-vote.tsx
+    feedback.tsx
+    ib-question.tsx
+    interview.tsx
+    paywall.tsx
+    (auth)/
+      _layout.tsx
+      sign-in.tsx
+      sign-up.tsx
+    (tabs)/
+      _layout.tsx
+      account.tsx
+      history.tsx
+      ib400.tsx
+      index.tsx
+      stats.tsx
+
+  /src
+    api.ts                      Typed fetch client for fitefinance.com/api/*
+    constants.ts                Shared categories, difficulties, math options, etc.
+    theme.ts                    Colors, gradients, typography, spacing, radius, shadows, motion
+    revenuecat.ts               iOS StoreKit purchases + restore + entitlement check
+    guestMode.ts                Module-level "let me browse without signing in" flag
+    hooks/
+      usePaidStatus.tsx         Paid-status context + cache + RC fallback
+      usePrice.ts               Stripe price string for UI
+    components/
+      AnimatedNumber.tsx
+      Background.tsx
+      BrandLogo.tsx
+      Button.tsx
+      Card.tsx
+      GlassCard.tsx
+      GradientButton.tsx
+      InfoBadge.tsx             InfoButton + InfoSheet pair
+      LoadingDots.tsx
+      Pill.tsx
+      PremiumGate.tsx
+      PressableScale.tsx
+      ScoreDisplay.tsx
+      ScrollFade.tsx
+      SectionHeader.tsx
+      SimpleMarkdown.tsx        Minimal markdown renderer for model answers
+
+  /assets                       App icon, splash icon, favicon, adaptive icon
+  /auth_keys                    Local-only auth provider helper artifacts (ignored from EAS)
+  /app_store_screenshots        Polished + raw screenshots used in App Store Connect
+  /ios                          Native iOS shell (generated by `expo prebuild` for Sign in with Apple)
+  /dist                         Local build artifacts (gitignored)
+```
+
+## Mobile App Shell
+
+### `mobile/app/_layout.tsx`
+- Loads Inter and Manrope from `@expo-google-fonts/*`
+- Wraps the tree in `GestureHandlerRootView` → `SafeAreaProvider` → `ClerkProvider` → `PaidStatusProvider`
+- `ClerkProvider` uses a `tokenCache` backed by `expo-secure-store`
+- `AuthGate` inside the tree:
+  - Configures RevenueCat once on iOS via `configureRevenueCat(clerkUserId)` and keeps RC's app-user-id in sync with the signed-in Clerk user, so the RC webhook can map StoreKit events to `paid:${clerkUserId}` in Redis
+  - Routes unauthenticated users to `(auth)/sign-in` unless they have explicitly entered guest mode via `guestMode.allow()`
+  - Holds the native splash screen up until Clerk has resolved AND (for signed-in users) `usePaidStatus()` has resolved, so paid users don't briefly see the free-tier UI on cold start
+- The root `Stack` registers each modal route with `presentation: 'modal'` and `slide_from_bottom` animation
+- `userInterfaceStyle: "dark"` is enforced app-wide
+
+### `mobile/app.json` highlights
+- `scheme: "fitefinance"` → Clerk OAuth callbacks return to `fitefinance://oauth-callback`
+- `ios.usesAppleSignIn: true` → Sign in with Apple is required by App Store rules whenever Google sign-in is offered
+- `ios.infoPlist.ITSAppUsesNonExemptEncryption: false` (export-compliance answer is baked in)
+- `extra.clerkPublishableKey` and `extra.revenueCatIosKey` are read at runtime through `expo-constants`
+- Plugins: `expo-router`, `expo-secure-store`, `expo-apple-authentication`, `expo-splash-screen`, `expo-web-browser`, `expo-font`
+
+## Mobile Auth
+- `@clerk/clerk-expo` is used directly — same Clerk application as the website
+- Sign in / sign up screens support:
+  - Email + password
+  - Google OAuth via `useOAuth({ strategy: 'oauth_google' })`
+  - Sign in with Apple via `useOAuth({ strategy: 'oauth_apple' })`
+  - Email verification codes during sign-up
+- Tokens are persisted with `expo-secure-store`
+- Clerk requires `fitefinance://oauth-callback` to be listed under Google + Apple social connections in the Clerk dashboard
+- A "Continue as guest" path stores a session-only flag via `guestMode.allow()` so users can explore the dashboard without an account; the flag is cleared on sign-out so the next launch still prompts
+
+## Mobile Premium Gating
+
+### `src/hooks/usePaidStatus.tsx`
+- `PaidStatusProvider` exposes `{ isPaid, loading, refresh }` and:
+  - Hydrates `isPaid` from `AsyncStorage` (`fite_isPaid`) on mount so returning paid users don't flash the free UI
+  - Calls `POST /api/checkPaid` with the Clerk session token
+  - On iOS, falls back to RevenueCat (`isRcPremium()`) when the backend says not-paid — this unlocks the app instantly after a fresh StoreKit purchase even before the RC webhook has set `paid:${userId}` in Redis
+  - If neither source confirms a status (transient network failure), trusts the cached value rather than flipping a paid user to free
+- All gated UI in the app reads from this hook
+
+### `src/revenuecat.ts`
+- Lazy-loads `react-native-purchases` so Android and web bundles never try to require the native module
+- `configureRevenueCat(clerkUserId)` is called from `AuthGate` and re-runs on user-id changes so RC's `appUserID` matches the Clerk user id
+- `PREMIUM_ENTITLEMENT = "premium"` — single entitlement that gates everything premium on mobile
+- Exposes `getPremiumPackage()`, `purchasePremium(pkg)`, `restorePurchases()`, `isRcPremium()`, and `getCustomerInfo()`
+- `isRcSupported()` is `true` only on iOS with a non-empty `revenueCatIosKey`
+
+### Paywall flow
+- `app/paywall.tsx` shows the perks list and the price string
+- Price string is the RC-localized `priceString` from StoreKit on iOS, or the Stripe-derived price from `usePrice()` elsewhere
+- iOS purchases call `purchasePremium(iapPackage)` (native StoreKit sheet) and refresh paid status on success; everything else opens Stripe Checkout in `expo-web-browser`
+- Apple requires a "Restore Purchases" action — wired to `restorePurchases()`
+
+## Mobile API Client
+
+### `mobile/src/api.ts`
+All calls go to `https://fitefinance.com/api/*` (defined in `src/constants.ts` as `API_BASE`). The Clerk session token is passed as `Authorization: Bearer <token>` on every authenticated call.
+
+Exports:
+- `checkPaid(token)` → `POST /api/checkPaid`
+- `getPrice()` → `GET /api/price` → formatted string like `$3.00/month`
+- `createCheckout(token)` → `POST /api/checkout`, returns Stripe Checkout URL for `expo-web-browser`
+- `generateQuestion({ category, difficulty, math, customPrompt?, token?, onChunk? })`:
+  - Uses `XMLHttpRequest` instead of `fetch` because React Native's `fetch` does not support `ReadableStream`. XHR's `onprogress` keeps the SSE chunks flowing past the 10s Vercel function ceiling.
+  - Surfaces `questionsUsed` and `questionsLimit` from the stream and throws `LIMIT_REACHED` on 403
+- `generateAnswer({ question, category, difficulty, math, token? })` → non-streaming JSON from `POST /api/question` (`type: "answer"`)
+- `gradeAnswer({ question, userAnswer, idealAnswer, token })` → `POST /api/grade`
+- `getHistory(token)` / `saveHistory(entry, token)` → `GET|POST /api/history`
+- `generateInterview` / `respondToInterview` / `debriefInterview` → all hit `POST /api/interview` with different `action` values
+- `getIBQuestions(token)` → `GET /api/ib-questions`
+- `getIBProgress(token)` / `saveIBProgress(...)` / `resetIBProgress(qid|null, token)` → `GET|POST|DELETE /api/history?scope=ib`
+- `deleteAccount(token)` → `POST /api/delete-account`
+- `submitFeedback({ type, message, token? })` → `POST /api/feedback`
+
+## Mobile Screens
+
+### `app/(tabs)/index.tsx` — Practice dashboard
+Closest analogue to `src/Dashboard.js` on the web.
+- Glass-card hero with quota bar for free users (color-shifts from cyan → orange → red as questions are consumed)
+- Category picker as a `pageSheet` modal listing all 8 categories with Ionicons
+- Difficulty pills (`Easy`, `Medium`, `Hard`, `OTG`) — OTG is a compound pill with an integrated info affordance
+- Math toggle pills (`No Math` / `With Math`)
+- Premium-only custom focus prompt, disabled while `OTG` is selected
+- Premium-only timer with `[60, 120, 180, 300]` presets and Manual/Auto modes
+- Streaming question generation via `generateQuestion` (XHR + SSE parsing)
+- Reveal-answer and Grade-answer flow with `react-native-reanimated` enter animations and haptic feedback
+- 24h anti-repeat dedupe via `AsyncStorage` key `fite_questionHistory` (up to 100 entries; 5 retries before accepting)
+
+### `app/(tabs)/ib400.tsx` — IB 400 bank
+- Premium-gated via `<PremiumGate>` when `!isPaid`
+- Fetches the 400-question bank from `/api/ib-questions` and the user's per-question progress from `/api/history?scope=ib`
+- Category filter (IB 400 specific: Accounting, DCF, LBO, M&A, Valuation, Markets, Debt & Capital Structure, Brain Teasers), difficulty filter, search input, pull-to-refresh
+- Tapping a question opens `/ib-question` modal which reuses the same reveal/grade flow as the dashboard and writes the result back to IB progress
+
+### `app/(tabs)/history.tsx`
+- Premium-gated; loads from `GET /api/history`
+- Same filters as the web (`search`, category, difficulty, math, sort) — works on both standard question entries and interview entries
+
+### `app/(tabs)/stats.tsx`
+- Premium-gated; reads the same history source as the history tab
+- Computes totals, average/best/worst score, streaks, per-category performance, difficulty breakdown (including OTG), and a recent trend
+
+### `app/(tabs)/account.tsx`
+- Signed-in: shows profile, paid-status pill, manage-billing entry (Stripe portal URL on non-iOS, Restore Purchases on iOS), Send Feedback / Feature Vote shortcuts, Privacy / Terms links, Sign Out, and a typed-DELETE account deletion flow that calls `POST /api/delete-account`
+- Guest: shows sign-in / sign-up CTAs plus Privacy / Terms / Feedback links
+
+### `app/interview.tsx`
+- 4-step structured mock interview using `POST /api/interview` with `action: "generate" | "respond" | "debrief"`
+- Setup → loading → active → debrief phases driven by a local `Phase` state machine
+- Interview category list mirrors the web (no `OTG` here either)
+
+### `app/paywall.tsx`
+- Premium upsell; iOS uses the StoreKit purchase flow via RevenueCat, everything else falls back to Stripe Checkout via in-app browser
+
+### `app/feedback.tsx` and `app/feature-vote.tsx`
+- Modal versions of the web feedback/feature-vote pages, posting to `POST /api/feedback` with `type: "feedback"` or `type: "vote"`
+- Feature voting is premium-only; feedback is open to everyone, including guests
+
+### `app/(auth)/sign-in.tsx` and `app/(auth)/sign-up.tsx`
+- Clerk-driven email/password, Google OAuth, and Sign in with Apple flows
+- Sign-up handles email verification with a code input
+- Both screens auto-redirect to `(tabs)` if Clerk reports an existing session
+
+## Mobile Shared Constants (`mobile/src/constants.ts`)
+- `DIFFICULTIES = ['Easy', 'Medium', 'Hard']`
+- `QUESTION_DIFFICULTIES = ['Easy', 'Medium', 'Hard', 'OTG']`
+- `CATEGORIES = ['All', 'Investment Banking', 'Private Equity', 'Asset Management', 'Accounting', 'Consulting', 'Valuation', 'Sales and Trading']` (matches web `src/constants.js`)
+- `IB_CATEGORIES = CATEGORIES.filter(c => c !== 'All')` (IB 400 picker excludes "All")
+- `MATH_OPTIONS = ['No Math', 'With Math']`
+- `TIMER_PRESETS = [60, 120, 180, 300]`
+- `INTERVIEW_QUESTIONS = 4`
+- `FREE_DAILY_LIMIT = 5`
+- `API_BASE = 'https://fitefinance.com/api'`
+- `DIFFICULTY_COLORS`, `CATEGORY_ICONS`, `CATEGORY_SUBTITLES`, and `ROADMAP_IDEAS` for UI
+
+When categories or difficulties change on the web, also update this file.
+
+## Mobile Theme (`mobile/src/theme.ts`)
+Mirrors the website palette:
+- `bg` `#020817`, `surface` `#0d1b2a`, brand `#1565C0` / `#4FC3F7`, premium gold `#c9a84c`
+- Inter for body, Manrope for display/eyebrow labels
+- Gradient tuples for `expo-linear-gradient`, animation timing tokens, and shadow presets are all centralized here
+
+## Mobile Dev Commands
+```bash
+cd mobile
+npm install
+npm start                # Expo Dev Server (scan QR code in Expo Go)
+npm run ios              # `expo run:ios`
+npm run android          # `expo run:android`
+npm run build:ios        # `eas build --platform ios`
+npm run build:android    # `eas build --platform android`
+npm run submit:ios       # `eas submit --platform ios`
+npm run submit:android   # `eas submit --platform android`
+```
+
+## Mobile Environment Variables
+The mobile app reads its public Clerk key and RevenueCat key primarily through `app.json` `extra`, with `EXPO_PUBLIC_*` env fallbacks:
+
+```text
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY      # fallback if app.json `extra.clerkPublishableKey` is missing
+EXPO_PUBLIC_REVENUECAT_IOS_KEY         # fallback if app.json `extra.revenueCatIosKey` is missing
+```
+
+No server secrets are bundled into the mobile app — Stripe + OpenAI + Clerk secret keys + RevenueCat webhook auth live exclusively on the Vercel backend.
+
+## Mobile Implementation Notes
+- The mobile app does NOT have its own backend. Every authenticated request is signed by a Clerk JWT minted from `useAuth().getToken()` and verified server-side by `src/server/auth.js`. Don't introduce mobile-only endpoints — extend the existing ones.
+- Streaming endpoints must continue to send SSE so the XHR-based mobile client keeps the connection alive past Vercel's 10s function timeout.
+- `paid:${userId}` Redis flag is the single source of truth for premium across web AND mobile. Both Stripe (web/Android) and RevenueCat (iOS) webhooks write into it.
+- When deleting accounts, `pages/api/delete-account.js` must clear every per-user Redis key AND call `clerkClient().users.deleteUser(userId)` — App Store rules require account deletion to fully revoke OAuth grants (Sign in with Apple, Google) on the auth provider side.
+- The mobile app already passes the App Store / Play Store review process. When making changes that touch billing UX, account deletion, or Sign in with Apple, run through `mobile/RESUBMISSION_CHECKLIST.md` before tagging a new build.
+- Local dev requires Expo Go (or a development build) and `fitefinance://oauth-callback` registered in Clerk's social connections for Google and Apple.

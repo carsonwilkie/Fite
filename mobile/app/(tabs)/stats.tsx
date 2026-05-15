@@ -314,7 +314,7 @@ function ScoreChartCard({ scored, setScrollEnabled }: { scored: HistoryEntry[]; 
   const router = useRouter();
   const maxN = scored.length;
   const [windowN, setWindowN] = useState<number>(Math.min(maxN, 12));
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selectedTs, setSelectedTs] = useState<number | null>(null);
   const [chartWidth, setChartWidth] = useState(0);
 
   const effectiveN = Math.min(windowN, maxN);
@@ -329,10 +329,16 @@ function ScoreChartCard({ scored, setScrollEnabled }: { scored: HistoryEntry[]; 
     return out;
   }, [windowBars]);
 
-  // Reset selection when the window shrinks past the selected index.
+  const selectedIndex = useMemo(() => {
+    if (selectedTs === null) return null;
+    const idx = displayed.findIndex(e => e.timestamp === selectedTs);
+    return idx === -1 ? null : idx;
+  }, [displayed, selectedTs]);
+
+  // Clear selection if the selected question is no longer in the visible window.
   useEffect(() => {
-    if (selected !== null && selected >= displayed.length) setSelected(null);
-  }, [displayed.length, selected]);
+    if (selectedTs !== null && selectedIndex === null) setSelectedTs(null);
+  }, [selectedTs, selectedIndex]);
 
   // Bar width fills the measured chart area; stays between 3–16 px.
   const barWidth = useMemo(() => {
@@ -347,18 +353,19 @@ function ScoreChartCard({ scored, setScrollEnabled }: { scored: HistoryEntry[]; 
     : 0;
   const avgColor = scoreColor(windowAvg);
 
-  const selectedEntry = selected !== null ? displayed[selected] : null;
+  const selectedEntry = selectedIndex !== null ? displayed[selectedIndex] : null;
 
   const openInHistory = (ts: number) =>
     router.push({ pathname: '/(tabs)/history', params: { highlight: String(ts) } } as any);
 
   const handleBarPress = (i: number) => {
-    if (selected === i) {
-      const e = displayed[i];
-      if (e?.timestamp) openInHistory(e.timestamp);
+    const e = displayed[i];
+    if (!e) return;
+    if (selectedTs === e.timestamp) {
+      if (e.timestamp) openInHistory(e.timestamp);
     } else {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      setSelected(i);
+      setSelectedTs(e.timestamp);
     }
   };
 
@@ -383,7 +390,7 @@ function ScoreChartCard({ scored, setScrollEnabled }: { scored: HistoryEntry[]; 
       {/* Tooltip */}
       <SelectedEntryTooltip
         entry={selectedEntry}
-        onClose={() => setSelected(null)}
+        onClose={() => setSelectedTs(null)}
         onOpen={(ts) => openInHistory(ts)}
       />
 
@@ -416,11 +423,11 @@ function ScoreChartCard({ scored, setScrollEnabled }: { scored: HistoryEntry[]; 
             const color = scoreColor(s);
             return (
               <ChartBar
-                key={`${e.timestamp}-${i}`}
+                key={i}
                 score={s}
                 color={color}
                 delay={Math.min(i * 15, 300)}
-                selected={selected === i}
+                selected={selectedIndex === i}
                 onPress={() => handleBarPress(i)}
                 barWidth={barWidth}
               />
@@ -448,10 +455,14 @@ function ChartBar({
   score, color, delay, selected, onPress, barWidth,
 }: { score: number; color: string; delay: number; selected: boolean; onPress: () => void; barWidth: number }) {
   const h = useSharedValue(0);
+  const mounted = useRef(false);
   useEffect(() => {
-    h.value = withTiming(Math.max((score / 10) * CHART_HEIGHT, 3), {
-      duration: 600, easing: Easing.out(Easing.cubic),
+    const target = Math.max((score / 10) * CHART_HEIGHT, 3);
+    h.value = withTiming(target, {
+      duration: mounted.current ? 140 : 600,
+      easing: Easing.out(Easing.cubic),
     });
+    mounted.current = true;
   }, [score, h]);
   const animStyle = useAnimatedStyle(() => ({ height: h.value }));
   const radius = Math.max(2, barWidth * 0.25);

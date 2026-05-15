@@ -227,7 +227,7 @@ mobile/
 → Delete `node_modules` and run `npm install` again.
 
 **Clerk OAuth not redirecting back**
-→ Make sure `fitefinance://oauth-callback` is listed in Clerk Dashboard → Social Connections → Google → Redirect URIs.
+→ Make sure `fitefinance://oauth-callback` is listed in Clerk Dashboard → Native Applications → Allowlist for mobile SSO redirect.
 
 **API calls failing in production**
 → Check that `fitefinance.com` allows requests from mobile user agents. The existing Vercel serverless functions should work without changes since they use Clerk auth tokens, not session cookies.

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, StyleSheet, ScrollView, TextInput,
   ActivityIndicator, RefreshControl, Pressable, useWindowDimensions,
-  findNodeHandle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@clerk/clerk-expo';
@@ -110,20 +109,23 @@ export default function HistoryScreen() {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     const measureAndScroll = () => {
-      if (cancelled) return;
+      if (cancelled) return false;
       const node = entryRefs.current[target] as any;
       const sv = scrollRef.current as any;
-      const svHandle = sv ? findNodeHandle(sv) : null;
-      if (!node || svHandle == null) return false;
+      if (!node || !sv || typeof node.measureInWindow !== 'function') return false;
       try {
-        node.measureLayout(
-          svHandle,
-          (_x: number, y: number) => {
-            if (cancelled) return;
-            scrollRef.current?.scrollTo({ y: Math.max(0, y - 24), animated: true });
-          },
-          () => {}
-        );
+        node.measureInWindow((_x: number, entryPageY: number) => {
+          if (cancelled) return;
+          if (typeof sv.measureInWindow === 'function') {
+            sv.measureInWindow((_sx: number, svPageY: number) => {
+              if (cancelled) return;
+              const targetY = scrollOffsetY.current + (entryPageY - svPageY) - 24;
+              scrollRef.current?.scrollTo({ y: Math.max(0, targetY), animated: true });
+            });
+          } else {
+            scrollRef.current?.scrollTo({ y: Math.max(0, entryPageY - 24), animated: true });
+          }
+        });
       } catch {}
       return true;
     };
